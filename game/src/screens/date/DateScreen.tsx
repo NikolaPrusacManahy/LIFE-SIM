@@ -42,6 +42,7 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
 
       <div className="dts-stage">
         <div className="dts-partner">
+          {d.quote && <div className="dts-say" key={d.time}>“{d.quote}”</div>}
           <Portrait look={p.look} age={game.ageOf(p)} size={150} seed={p.id} mood={Math.min(100, 40 + d.spark)} />
           <PersonChip game={game} p={p} />
         </div>

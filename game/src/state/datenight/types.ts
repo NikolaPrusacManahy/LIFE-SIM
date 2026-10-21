@@ -16,6 +16,8 @@ export interface DateScene {
   log: string[];
   /** they suggested going back to yours */
   offer: boolean;
+  /** what they just said (speech bubble) */
+  quote?: string;
 }
 
 export const DATE_ACTIONS = 8;

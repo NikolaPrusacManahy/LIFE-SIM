@@ -6,7 +6,8 @@ import { createLife, randomLook } from '../src/state/newGame';
 import type { Game } from '../src/state/Game';
 import type { Person } from '../src/state/types';
 import { DATE_AUDIT, actionLock, actionsFor, calmNight, oddsOf, dateAct, doMoment, endDate, isRomanticDate, momentLock, startDate, answerOffer } from '../src/state/datenight/date';
-import { HOME_BONUS, VENUES, VENUE_ORDER } from '../src/state/datenight/venues';
+import { HOME_BONUS, SHARED_ACTIONS, VENUES, VENUE_ORDER } from '../src/state/datenight/venues';
+import { QUOTES } from '../src/state/datenight/quotes';
 import { sendChip } from '../src/state/phone/chat';
 import { INTOX_LIMIT } from '../src/state/nightlife/types';
 import { INTIMACY_AUDIT } from '../src/state/systems/intimacy';
@@ -172,6 +173,20 @@ const partnerOf = (g: Game, role: Person['role'] = 'partner', age = 27) => {
   const hi = oddsOf(g, act);
   check('shared flat < mansion odds (by 20 points)', Math.round((hi - lo) * 100) === 20, `${Math.round(lo * 100)}% vs ${Math.round(hi * 100)}%`);
   check('home bonus ladder: shared < apartment < house < mansion', HOME_BONUS.shared < HOME_BONUS.apartment && HOME_BONUS.apartment < HOME_BONUS.house && HOME_BONUS.house < HOME_BONUS.mansion);
+  endDate(g);
+}
+
+// ---------- your date talks back (speech bubble)
+{
+  const ids = [...SHARED_ACTIONS, ...VENUE_ORDER.flatMap((v) => VENUES[v].actions)].map((x) => x.id);
+  const missing = ids.filter((id) => !QUOTES[id] || QUOTES[id].ok.length < 2 || QUOTES[id].fail.length < 2);
+  check('every date action has its own reactions (2 good, 2 bad)', missing.length === 0, missing.join(','));
+  const g = mk();
+  const p = partnerOf(g);
+  startDate(g, p, 'restaurant');
+  dateAct(g, 'footsie');
+  const q = g.s.date!.quote ?? '';
+  check('after an action they say something about it', [...QUOTES.footsie.ok, ...QUOTES.footsie.fail].includes(q), q);
   endDate(g);
 }
 

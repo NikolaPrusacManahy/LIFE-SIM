@@ -125,6 +125,14 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const eventsPending = !!eventResult || !!game.currentEvent;
   // Update 0.8 — a computer sitting holds the queue until you shut down
   const showEvent = eventsPending && canShowEvents(pipe) && !game.s.session && !game.s.night && !game.s.date;
+  // Update 0.10 — a story card, date, night out or computer sitting takes over: put the phone / panels away
+  const takeover = showEvent || !!game.s.date || !!game.s.night || !!game.s.session;
+  useEffect(() => {
+    if (!takeover) return;
+    setDevice(null);
+    setKiosk(null);
+    setPeople(null);
+  }, [takeover]);
   // next banner, only once the result card and all queued events are done
   const nextBanner = banner ?? (canShowBanners(pipe, eventsPending) && hasPhone(game) ? pendingBanners(game)[0]?.id ?? null : null);
   const bannerNote = nextBanner ? game.s.notes.find((n) => n.id === nextBanner) ?? null : null;
@@ -146,10 +154,10 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
       {pipe.stage === 'result' && pipe.result && <ResultCard key={`${pipe.result.title}-${game.s.turn}`} game={game} result={pipe.result} onDone={dismiss} />}
       {bannerNote && !showEvent && pipe.stage === 'idle' && <NotificationBanner key={bannerNote.id} game={game} note={bannerNote} onOpen={openChat} onDone={bannerDone} />}
       {showEvent && <EventModal game={game} result={eventResult} onChoose={choose} onContinue={() => setEventResult(null)} />}
-      {device && !showEvent && <PhoneDevice {...host} mode={hasPhone(game) ? 'phone' : 'journal'} initial={device.app} thread={device.thread} onClose={() => setDevice(null)} />}
-      {kiosk && !showEvent && <KioskCard {...host} app={kiosk.app} title={kiosk.title} icon={kiosk.icon} onClose={() => setKiosk(null)} />}
+      {device && !takeover && <PhoneDevice {...host} mode={hasPhone(game) ? 'phone' : 'journal'} initial={device.app} thread={device.thread} onClose={() => setDevice(null)} />}
+      {kiosk && !takeover && <KioskCard {...host} app={kiosk.app} title={kiosk.title} icon={kiosk.icon} onClose={() => setKiosk(null)} />}
       {scene && <EvidenceScreen game={game} onResult={onResult} />}
-      {people && !showEvent && <PeopleScreen game={game} initial={people.pid} onClose={() => setPeople(null)} onResult={onResult} onOpenChat={hasPhone(game) ? openChat : undefined} />}
+      {people && !takeover && <PeopleScreen game={game} initial={people.pid} onClose={() => setPeople(null)} onResult={onResult} onOpenChat={hasPhone(game) ? openChat : undefined} />}
       {report && !showEvent && <MonthSummary game={game} report={report} onClose={() => setReport(null)} />}
       {game.s.session && pipe.stage === 'idle' && (
         <Desktop game={game} host={{ ...host, onClose: () => undefined }} onShutdown={(summary) => onResult(game.flush('Computer session', '🖥️', summary))} />

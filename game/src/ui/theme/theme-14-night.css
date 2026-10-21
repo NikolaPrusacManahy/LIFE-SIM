@@ -1,6 +1,6 @@
-/* Update 0.8 — night-out scene (DOM room over the Pixi venue backdrop) */
+/* Update 0.8 — night-out scene. Update 0.10 — solid navy like every activity screen */
 
-.ngt-screen { position: absolute; inset: 0; z-index: 34; display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: linear-gradient(180deg, rgba(12, 6, 26, 0.78), rgba(20, 8, 40, 0.86)); color: #fff; overflow: hidden; }
+.ngt-screen { position: absolute; inset: 0; z-index: 34; display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; background: linear-gradient(180deg, #121833, #1b2350 60%, #141a3a); color: #fff; overflow: hidden; }
 .ngt-lights { position: absolute; inset: 0; pointer-events: none !important; opacity: 0.45; mix-blend-mode: screen; background: radial-gradient(circle at 20% 30%, #ff3d9a55, transparent 40%), radial-gradient(circle at 80% 20%, #3dd6ff55, transparent 40%), radial-gradient(circle at 50% 80%, #8b72f555, transparent 45%); animation: ngt-beat 0.9s ease-in-out infinite; }
 .ngt-dive .ngt-lights, .ngt-pub .ngt-lights, .ngt-trivia .ngt-lights { animation-duration: 3s; opacity: 0.25; background: radial-gradient(circle at 30% 20%, #ffb64855, transparent 50%); }
 .ngt-country .ngt-lights { animation-duration: 2s; background: radial-gradient(circle at 50% 10%, #ffd36b66, transparent 50%); }

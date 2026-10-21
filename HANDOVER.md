@@ -30,6 +30,9 @@ Built from your chat request. The name "Date Night" is my placeholder. All of `n
   - Accepting an invitation, or making plans by text, in the evening or at night starts the plan in the current slot. The scene opens as soon as you put the phone down.
   - In the morning or afternoon, the plan is set for this evening.
   - Invitations lapse after today's slot. "Another time?" still moves it to a later day.
+- **Activity screens are solid navy:** dates, nights out and the crime-scene cover-up.
+- **Fixed:** a phone left open while accepting a plan came back underneath the date. The phone, service counters and the People screen now close when a story card, date, night out or computer sitting takes over.
+- **Date screen:** a solid navy background (nothing behind shows through), and your date answers every action in a speech bubble, with 2 good and 2 bad lines per action (`datenight/quotes.ts`).
 - **Euros for EU lives** (`ui/currency.ts`). Display only: game rules, prices and saves stay in dollars.
   - One observer rewrites `$N` in UI text and tooltips to `€` at 1 € = 1.12 $, and restores the dollars when laws switch back to US.
   - The canvas floating numbers use `cur()`. The save-slot list formats each life in its own currency (`data-cur="fixed"`).

@@ -11,6 +11,7 @@ import { canBeIntimate, beginNight } from '../systems/intimacy';
 import { legalAge } from '../rules/us';
 import { itemCount, spendItem } from '../inventory/items';
 import { homeBonus } from './venues';
+import { quoteFor } from './quotes';
 
 // Update 0.10 — dates as a scene. Romantic dates only. Every action moves the spark; moments unlock as it rises.
 // HARD RULES: hand-holding is fine for any couple; kisses and intimacy need canBeIntimate (both 18+, Mature on,
@@ -79,6 +80,7 @@ export function dateAct(g: Game, id: string): string {
   if (a.drink) d.intox = Math.min(100, d.intox + a.drink);
   const ok = Math.random() < oddsOf(g, a);
   d.spark = Math.max(0, Math.min(100, d.spark + (ok ? a.gain : -5)));
+  d.quote = quoteFor(a.id, ok);
   const line = ok ? say(g.pick([`${a.icon} {name} lights up.`, `${a.icon} {name} can’t stop smiling.`, `${a.icon} That went perfectly.`]), p, g.s.name) : say(g.pick([`${a.icon} It fell a little flat.`, `${a.icon} {name} smiles politely.`, `${a.icon} Awkward pause.`]), p, g.s.name);
   tick(g, line);
   // sometimes they're the one who suggests going back to yours
@@ -116,6 +118,7 @@ export function doMoment(g: Game, m: Moment): string {
   if (!d || !p || momentLock(g, m)) return '';
   if (m !== 'hands') DATE_AUDIT.push({ moment: m, playerAge: g.age, npcAge: g.ageOf(p), intox: d.intox });
   if (!d.moments.includes(m)) d.moments.push(m);
+  if (m === 'hands' || m === 'kiss' || m === 'french') d.quote = quoteFor(m, true);
   if (m === 'hands') {
     bump(p, 'romance', 3);
     d.spark = Math.min(100, d.spark + 5);

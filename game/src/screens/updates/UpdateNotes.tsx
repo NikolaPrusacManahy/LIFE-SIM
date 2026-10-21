@@ -6,7 +6,7 @@ const UPDATES: [string, Card[]][] = [
   [
     'Update 0.10 — Date Night',
     [
-      ['🕯️', 'Dates are a scene', ['Raise the spark with actions. Romantic dates only.']],
+      ['🕯️', 'Dates are a scene', ['Raise the spark with actions. Romantic dates only.', 'Your date reacts out loud: “Idiot! That was my shin!”']],
       ['🍝', 'Every venue differs', ['Restaurant, movies, gala, concert, park, arcade,', 'beach, picnic, mini-golf, dinner at home.']],
       ['💋', 'Moments', ['Hold hands → kiss → French kiss →', 'your place, or the restroom if it’s love.']],
       ['🏠', 'Your place', ['Invite them over (or text “Come over?”).', 'Calm night in, or the bedroom. Nicer home = better odds.']],
