@@ -11,6 +11,9 @@ import { approach, chipsFor, talk, CHIP_LABEL } from '../src/state/nightlife/tal
 import { INCIDENT_CHOICES, NIGHT_ACTIONS, nightAct } from '../src/state/nightlife/extras';
 import { INTIMACY_AUDIT, canBeIntimate } from '../src/state/systems/intimacy';
 import { ACT_BY_ID } from '../src/state/activities';
+import { tabsFor } from '../src/state/phone/chat';
+import { npcState } from '../src/state/npc/mood';
+import { interactionsFor } from '../src/state/npc/interactions';
 import { legalAge } from '../src/state/rules/us';
 import type { Venue } from '../src/state/nightlife/types';
 
@@ -47,7 +50,7 @@ for (let i = 0; i < 1000; i++) {
         approach(g, idx);
         n.crowd[idx].intox = i % 2 ? 20 : 80;
         n.crowd[idx].p.attraction = 60;
-        while (g.s.night && g.s.night.talking !== null && g.s.night.time > 0 && !leaveOptions(g, g.s.night.crowd[idx]).some((o) => o === 'leave' || o === 'cab')) {
+        while (g.s.night && g.s.night.talking !== null && g.s.night.time > 0 && !leaveOptions(g, g.s.night.crowd[idx]).includes('leave')) {
           const best = chipsFor(g, g.s.night.crowd[idx]).filter((x) => !x.reason && x.chip !== 'leave' && x.chip !== 'shot').sort((a, b) => b.odds - a.odds)[0];
           if (!best) break;
           talk(g, best.chip);
@@ -74,9 +77,9 @@ for (let i = 0; i < 1000; i++) {
 check('1,000 nights ran without crashing', crashes === 0, `${crashes}`);
 check('every crowd member is at least the venue’s minimum age', tooYoung === 0, `${tooYoung}`);
 check('the night never gains time', overBudget === 0);
-check('“leave together” was exercised', LEAVE_AUDIT.length > 0 && leftTogether > 0, `${LEAVE_AUDIT.length} offers, ${leftTogether} left`);
-check('“leave together” is never offered to anyone under 18', LEAVE_AUDIT.every((a) => a.playerAge >= 18 && a.npcAge >= 18));
-check('“leave together” is never offered past the intoxication limit (either person)', LEAVE_AUDIT.every((a) => a.playerIntox < INTOX_LIMIT && a.npcIntox < INTOX_LIMIT));
+check('“their place” was exercised', LEAVE_AUDIT.length > 0 && leftTogether > 0, `${LEAVE_AUDIT.length} nights, ${leftTogether} left`);
+check('“their place” never happens with anyone under 18', LEAVE_AUDIT.every((a) => a.playerAge >= 18 && a.npcAge >= 18));
+check('“their place” never happens past the intoxication limit (either person)', LEAVE_AUDIT.every((a) => a.playerIntox < INTOX_LIMIT && a.npcIntox < INTOX_LIMIT));
 check('no intimacy ever involved anyone under 18', INTIMACY_AUDIT.every((a) => a.playerAge >= 18 && a.partnerAge >= 18));
 
 // ---------- ages by the life's laws
@@ -116,15 +119,8 @@ check('no intimacy ever involved anyone under 18', INTIMACY_AUDIT.every((a) => a
   c.p.attraction = 90;
   c.intox = 10;
   n.talking = 0;
-  const sober = leaveOptions(g, c);
-  c.intox = INTOX_LIMIT;
-  const theyDrunk = leaveOptions(g, c);
-  c.intox = 10;
+  check('adults at Flirty: the option exists', leaveOptions(g, c).includes('leave'));
   n.intox = INTOX_LIMIT + 5;
-  const meDrunk = leaveOptions(g, c);
-  check('sober, mutual, adults: the option exists', sober.includes('leave'));
-  check('they’re too drunk: replaced by cab / numbers / friends', !theyDrunk.includes('leave') && theyDrunk.includes('cab') && theyDrunk.includes('walk'));
-  check('you’re too drunk: same', !meDrunk.includes('leave') && meDrunk.includes('cab'));
   const drunkGate = canBeIntimate(g, c.p);
   n.intox = 10;
   const soberGate = canBeIntimate(g, c.p);
@@ -166,6 +162,82 @@ check('no intimacy ever involved anyone under 18', INTIMACY_AUDIT.every((a) => a
     endNight(ev);
     check('an evening night out doesn’t restore energy (you’re still up)', ev.s.stats.energy === e0);
   }
+}
+
+// ---------- Update 0.9 — from Flirty: back to their place, condom or not
+{
+  const g = mk(27);
+  g.s.sexuality = 'pan';
+  g.setFlag('hadFirstTime');
+  startNight(g, 'bar');
+  const n = g.s.night!;
+  const c = n.crowd[0];
+  c.p.sexuality = 'pan';
+  c.p.attraction = 70;
+  c.intox = 10;
+  n.talking = 0;
+  c.conn = 50;
+  check('Friendly (50) is not enough yet', !leaveOptions(g, c).includes('leave'));
+  c.conn = 60;
+  check('Flirty (60) opens “Go back to their place?”', leaveOptions(g, c).includes('leave'));
+  delete g.s.inventory.condoms;
+  const text = chooseLeave(g, 'leave', 'the bar');
+  const ev = g.currentEvent;
+  check('it goes to their place', text.includes('place') && !g.s.night);
+  // a roommate detour can't happen at their place: the protection choice comes straight up
+  check('…straight to the protection choice', ev?.id === 'protection_choice' && ev.ctx.theirs === 1, ev?.id ?? 'none');
+  const choices = g.choicesFor(ev!);
+  const condom = choices.find((x) => x.choice.label.includes('condom'));
+  const none = choices.find((x) => x.choice.label.includes('No protection'));
+  check('condom is a real option even with an empty bag (they have some)', !!condom && !condom.disabled);
+  check('no protection is the other option', !!none && !none.disabled);
+  const i = choices.indexOf(condom!);
+  const r = g.resolveChoice(i);
+  check('you wake up in their bed', !!r && r.text.includes('their bed'));
+}
+
+// ---------- 0.9: reaching Flirty is all you need; drunk → nothing happens, furious text next morning
+for (const who of ['them', 'you'] as const) {
+  const g = mk(27);
+  g.s.sexuality = 'pan';
+  g.give('phone');
+  startNight(g, 'bar');
+  const n = g.s.night!;
+  const c = n.crowd[0];
+  c.p.sexuality = 'pan';
+  c.p.attraction = 0;
+  c.conn = 60;
+  n.talking = 0;
+  check(`Flirty alone opens the option (no chemistry needed) [${who}]`, leaveOptions(g, c).includes('leave'));
+  if (who === 'them') c.intox = INTOX_LIMIT + 5;
+  else n.intox = INTOX_LIMIT + 5;
+  const before = INTIMACY_AUDIT.length;
+  const text = chooseLeave(g, 'leave', 'the bar');
+  const p = g.personById(c.p.id)!;
+  check(`drunk (${who}): nothing happens`, INTIMACY_AUDIT.length === before && !g.queued('protection_choice') && !g.queued('first_time') && text.includes('Nothing happened'));
+  g.s.turn++;
+  const msg = (g.s.chats[p.id] ?? []).find((m) => m.kind === 'furious');
+  check(`drunk (${who}): they’re furious over text next morning`, !!msg && msg.turn <= g.s.turn && npcState(g, p).mood === 'mad');
+}
+
+// ---------- regression (0.9): someone too drunk to consent can't be flirted with afterwards — text or in person
+{
+  const g = mk(28);
+  g.s.sexuality = 'pan';
+  g.give('phone');
+  startNight(g, 'bar');
+  const n = g.s.night!;
+  const c = n.crowd[0];
+  c.p.sexuality = 'pan';
+  c.p.attraction = 80;
+  c.conn = 90;
+  c.intox = INTOX_LIMIT + 10;
+  n.talking = 0;
+  chooseLeave(g, 'leave', 'the bar');
+  const p = g.personById(c.p.id)!;
+  check('a very drunk person goes nowhere with you', !!p && p.tags.includes('intox:very') && !g.queued('protection_choice'));
+  check('…no flirt tab while they can’t consent', !tabsFor(g, p).includes('flirt'));
+  check('…no romance actions on their profile either', !interactionsFor(g, p).some((r) => r.def.romance && r.def.id !== 'breakup'));
 }
 
 // ---------- spiking is intervention-only; the night ends on schedule

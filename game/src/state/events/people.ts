@@ -293,8 +293,8 @@ export const PEOPLE_EVENTS: EventDef[] = [
     id: 'first_time', title: 'A First Time', icon: '🌙', who: (_g, c) => c.pid, mature: true,
     text: (g, c) => say('You and {name} have never gone this far. You’re nervous. Excited. Both.', who(g, c)),
     choices: [
-      { label: 'Talk about it first', req: (g, c) => (adultsOnly(g, who(g, c)) ? null : 'Not available'), run: (g, c) => { const p = who(g, c)!; bump(p, 'trust', 8); g.setFlag('talkedFirst'); g.queue('protection_choice', { pid: p.id }, true); return 'You talked honestly. It made everything easier.'; } },
-      { label: 'Go with the moment', req: (g, c) => (adultsOnly(g, who(g, c)) ? null : 'Not available'), run: (g, c) => { g.queue('protection_choice', { pid: c.pid }, true); return 'Your heart is pounding.'; } },
+      { label: 'Talk about it first', req: (g, c) => (adultsOnly(g, who(g, c)) ? null : 'Not available'), run: (g, c) => { const p = who(g, c)!; bump(p, 'trust', 8); g.setFlag('talkedFirst'); g.queue('protection_choice', { pid: p.id, theirs: c.theirs ?? 0 }, true); return 'You talked honestly. It made everything easier.'; } },
+      { label: 'Go with the moment', req: (g, c) => (adultsOnly(g, who(g, c)) ? null : 'Not available'), run: (g, c) => { g.queue('protection_choice', { pid: c.pid, theirs: c.theirs ?? 0 }, true); return 'Your heart is pounding.'; } },
       { label: 'Wait until you’re ready', run: (g, c) => { const p = who(g, c); if (p) bump(p, 'trust', 3); return 'You decided to wait. That’s okay.'; } },
     ],
   },

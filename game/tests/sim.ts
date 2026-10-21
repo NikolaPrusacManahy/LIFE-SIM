@@ -18,6 +18,8 @@ import { DRINKS, drinkLock, endNight, orderDrink } from '../src/state/nightlife/
 import { approach, chipsFor as nightChips, current, talk } from '../src/state/nightlife/talk';
 import { chooseLeave, leaveOptions } from '../src/state/nightlife/leave';
 import { INCIDENT_CHOICES, NIGHT_ACTIONS, nightAct, resolveIncident } from '../src/state/nightlife/extras';
+import { actionLock as dateLock, actionsFor, answerOffer, dateAct, doMoment, endDate, momentLock } from '../src/state/datenight/date';
+import type { Moment } from '../src/state/datenight/types';
 
 export interface SimOptions {
   maxTurns?: number;
@@ -60,6 +62,11 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
       const choices = g.choicesFor(ev).map((c, idx) => ({ c, idx })).filter((x) => !x.c.disabled);
       if (!choices.length) throw new Error(`event ${ev.id} has no enabled choice`);
       g.resolveChoice(pick(choices).idx);
+      continue;
+    }
+    // Update 0.10 — on a date: do things, take the moments that open up, then say goodnight
+    if (g.s.date) {
+      playDateStep(g);
       continue;
     }
     // Update 0.8 — a night out: drink, mingle, maybe leave with someone, then head home
@@ -183,4 +190,25 @@ export function playNightStep(g: Game) {
     const acts = NIGHT_ACTIONS.filter((a) => (!a.zone || a.zone === n.zone) && !a.lock?.(g));
     if (acts.length) nightAct(g, pick(acts).id);
   } else endNight(g);
+}
+
+/** Update 0.10 — one random step of a date (exported for the date test). */
+export function playDateStep(g: Game) {
+  const d = g.s.date!;
+  if (d.offer) {
+    answerOffer(g, Math.random() < 0.6);
+    return;
+  }
+  if (d.time <= 0) {
+    endDate(g);
+    return;
+  }
+  const open = (['hands', 'kiss', 'french', 'yours', 'restroom'] as Moment[]).filter((m) => !momentLock(g, m));
+  if (open.length && Math.random() < 0.4) {
+    doMoment(g, pick(open));
+    return;
+  }
+  const acts = actionsFor(g).filter((a) => !dateLock(g, a));
+  if (acts.length) dateAct(g, pick(acts).id);
+  else endDate(g);
 }

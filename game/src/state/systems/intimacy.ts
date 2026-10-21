@@ -108,18 +108,20 @@ export function askNight(g: Game, p: Person): string {
 }
 
 /** Update 0.4 — route a yes through the first-time and roommate flows before the protection choice. */
-export function beginNight(g: Game, p: Person): string {
+export function beginNight(g: Game, p: Person, where: 'mine' | 'theirs' = 'mine'): string {
   if (!canBeIntimate(g, p)) return '';
+  // Update 0.9 — a night out can end at their place
+  const theirs = where === 'theirs' ? 1 : 0;
   if (!g.flag('hadFirstTime')) {
-    g.queue('first_time', { pid: p.id }, true);
+    g.queue('first_time', { pid: p.id, theirs }, true);
     return '';
   }
   const roommate = g.s.people.find((x) => x.labels.includes('roommate') && x.status === 'alive');
-  if (g.s.housing === 'shared' && roommate && g.chance(0.5)) {
+  if (!theirs && g.s.housing === 'shared' && roommate && g.chance(0.5)) {
     g.queue('sexile', { pid: p.id }, true);
     return '';
   }
-  g.queue('protection_choice', { pid: p.id }, true);
+  g.queue('protection_choice', { pid: p.id, theirs }, true);
   return '';
 }
 

@@ -6,7 +6,7 @@ import { isRomanceEligible, say } from '../npc/identity';
 import { bump } from '../npc/interactions';
 import { discover, hasTrait } from '../npc/traits';
 import { MATURE_LINE_AUDIT } from '../npc/lines';
-import { darkCrimeOn, isValidCrimeTarget } from '../crime/consent';
+import { cannotConsent, darkCrimeOn, isValidCrimeTarget } from '../crime/consent';
 import { addDigital } from '../crime/investigation';
 import { itemCount } from '../inventory/items';
 import { hasPhone } from '../systems/phone';
@@ -189,7 +189,8 @@ export function threadState(g: Game, p: Person): ThreadState {
 export function tabsFor(g: Game, p: Person): ChatTab[] {
   const out: ChatTab[] = ['greet', 'talk'];
   if (p.rel >= 40) out.push('deep');
-  if (isRomanceEligible(g, p)) out.push('flirt');
+  // Update 0.9 — nobody who can't consent (very drunk, captive, blackmailed) gets flirted with, not even a selfie
+  if (isRomanceEligible(g, p) && !cannotConsent(g, p)) out.push('flirt');
   out.push('plans');
   if (g.age >= 18 && canBeIntimate(g, p) && physical(p)) out.push('intimate');
   out.push('money', 'support', 'conflict');

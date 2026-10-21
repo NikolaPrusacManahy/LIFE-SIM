@@ -294,6 +294,8 @@ export interface GameState {
   night: import('./nightlife/types').Night | null;
   /** Update 0.8 — free actions you can only do once per time slot (profile actions, a computer sitting) */
   usedThisSlot: { turn: number; ids: string[] };
+  /** Update 0.10 — a date in progress */
+  date: import('./datenight/types').DateScene | null;
   background: Background;
   /** Update 0.5.1 — legal system this life plays under */
   rules: 'us' | 'eu';

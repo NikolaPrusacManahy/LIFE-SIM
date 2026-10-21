@@ -1,10 +1,39 @@
 # HANDOVER.md
 
-## Current patch: Update 0.9 — Free Time
+## Current patch: Update 0.10 — Date Night
+Built from your chat request. The name "Date Night" is my placeholder. All of `npm run verify` passes, and the new test is `test-date.ts` (400 simulated dates).
+- **Romantic dates only:** crush, talking, dating, partner, engaged, spouse, fling or FWB, and someone who could be into you (`isRomanticDate`).
+  - Start one from their profile ("Go on a date", which uses the slot) or from a date plan.
+- **The scene** (`state/datenight/*`, `screens/date/DateScreen.tsx`):
+  - 8 actions per date.
+  - A **spark** bar (0–100) that starts warmer with a romantic partner.
+  - Venue actions plus 5 shared ones. Each has odds from your stats, their romance and mood, and their traits.
+  - Drinks fill a meter (legal drinking age only).
+- **10 venues**, each with its own actions: restaurant, movies, gala (18+, $200), concert, park, arcade, beach (summer), picnic, mini-golf, dinner at home.
+- **Moments by spark:**
+  - 🤝 hold hands at 25 (any couple).
+  - 💋 kiss at 45 and 😘 French kiss at 60. Adults and Mature Content only.
+  - 🌙 back to your place at 70: protection choice (condom or not), then a fade to black.
+  - 🚻 the restroom at 80. Only where there is one, and only if their romance is 60+. A condom works there too ("they have one").
+  - They may suggest your place themselves. "Not tonight" carries no penalty.
+- **Hard rules:**
+  - Everything past holding hands needs `canBeIntimate` (both 18+, Mature Content on, consent possible) and drinks under `INTOX_LIMIT`.
+  - Teen couples can hold hands only.
+  - Audited in `DATE_AUDIT`.
+- **Replaced:** the old instant date outcome (no scene). `DATE_OPTIONS` is now the venue list.
+- **Webhook:** `webhook_patchnotes/update-0.10-date-night.json`.
+
+## Update 0.9 — Free Time
 These are your corrections after 0.8. The name "Free Time" is my placeholder; rename it if you like. All of `npm run verify` passes.
 - **Computer sittings are free:** PC, laptop or library computer, one sitting per time of day (`free: true` on the activity, plus `usedNow` / `markUsed` in `Game.ts`).
 - **Profile actions are free** (your correction): chat, compliment, flirt, ask for money… take no time but are once per time of day per person. Outings still use the slot (marked ⏱): hang out, date, party invite, care, visits, therapy, meet the parents, spending the night, fights, tutoring, crimes. (`USES_SLOT` in `npc/interactions.ts`.)
 - **Nights out into the morning** (your correction): you wake up with full energy, or half if you got drunk. Evening nights out restore nothing.
+- **Night out → their place** (simplified at your request, `nightlife/leave.ts`):
+  - Reaching **Flirty** (connection 60+) is all it takes for "Go back to their place?" to appear. No chemistry or drunk-alternative logic, and no cab or walk options.
+  - **Sober or tipsy:** their place, the protection choice (a condom always works there, or no protection), then you wake up in their bed.
+  - **Either of you drunk** (≥ `INTOX_LIMIT`): nothing happens. They leave, are upset with you, and text you furious the next morning, with replies to apologise.
+  - Still required: both 18+, Mature Content on, and someone who could be into you.
+- **Safety fix:** someone who can't consent (very drunk, captive, blackmailed) no longer gets the flirt tab in chats or romance actions on their profile. Breaking up is still allowed. The life simulator found this.
 - **Spark shows real faces:** profiles carry a look and an id. On a match, the person keeps both, so their portrait is identical in Messages and People.
 - **5 save slots** (`state/save.ts`, `screens/title/SlotPicker.tsx`):
   - Still autosaved after every action.

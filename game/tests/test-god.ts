@@ -86,7 +86,7 @@ captive.status = 'captive';
 check('nobody who cannot consent can be invited', !!haremLock(h, captive) && !interactionsFor(h, captive).some((x) => x.def.id === 'g_harem'));
 let yes = 0;
 let no = 0;
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 2000 && (yes === 0 || no === 0); i++) {
   const x = mk();
   const p = x.addPerson('dating', { age: 25 + (i % 20) });
   if (haremLock(x, p)) continue;

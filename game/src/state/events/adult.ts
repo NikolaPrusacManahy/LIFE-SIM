@@ -10,18 +10,22 @@ import { checkHint, type Ctx, type EventDef } from './types';
 // Every choice re-checks canBeIntimate() because a queued event can go stale.
 
 const who = (g: Game, c: Ctx) => g.personById(c.pid);
+/** Update 0.9 — after a night at their place you wake up in their bed. */
+const wake = (c: Ctx, text: string) =>
+  c.place === 'restroom' ? `${text} You slip back out separately, flushed. Nobody noticed. Probably.` : c.theirs ? `${text} You wake up in their bed, sunlight through unfamiliar curtains.` : text;
 
 export const ADULT_EVENTS: EventDef[] = [
   {
     id: 'protection_choice', title: 'Spending the Night', icon: '🌙', mature: true, who: (_g, c) => c.pid,
-    text: (g, c) => `Before anything happens, you and ${who(g, c)?.name ?? 'they'} talk about protection.`,
+    text: (g, c) => `${c.place === 'restroom' ? 'The restroom door clicks shut behind you. ' : c.theirs ? `Back at ${who(g, c)?.name ?? 'their'}’s place. ` : ''}Before anything happens, you and ${who(g, c)?.name ?? 'they'} talk about protection.`,
     choices: (g, c) => {
       const p = who(g, c);
       const pill = onBirthControl(g) || (p ? hiddenOf(g, p).onPill : false);
       return [
-        { label: '🛡️ Use a condom', hint: `You have ${condoms(g)}`, req: (gg) => (condoms(gg) > 0 ? null : 'Buy condoms at the clinic'), run: (gg) => (canBeIntimate(gg, p) ? encounter(gg, p!, 'condom') : 'The moment passed.') },
-        { label: '📅 Rely on birth control', when: () => pill, hint: 'Low pregnancy risk · no STI protection', run: (gg) => (canBeIntimate(gg, p) ? encounter(gg, p!, 'pill') : 'The moment passed.') },
-        { label: 'No protection', hint: 'High pregnancy & STI risk', run: (gg) => (canBeIntimate(gg, p) ? encounter(gg, p!, 'none') : 'The moment passed.') },
+        // Update 0.9 — at their place they have some in the nightstand
+        { label: '🛡️ Use a condom', hint: (c.theirs || c.place) && !condoms(g) ? 'They have one' : `You have ${condoms(g)}`, req: (gg) => (condoms(gg) > 0 || c.theirs || c.place ? null : 'Buy condoms at the clinic'), run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'condom')) : 'The moment passed.') },
+        { label: '📅 Rely on birth control', when: () => pill, hint: 'Low pregnancy risk · no STI protection', run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'pill')) : 'The moment passed.') },
+        { label: 'No protection', hint: 'High pregnancy & STI risk', run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'none')) : 'The moment passed.') },
         { label: 'Actually, let’s wait', run: (gg) => { if (p) gg.rel(p, 1); return 'You decided to slow down. That’s okay.'; } },
       ];
     },

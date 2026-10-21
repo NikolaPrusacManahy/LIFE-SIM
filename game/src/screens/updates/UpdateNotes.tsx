@@ -4,11 +4,21 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.10 — Date Night',
+    [
+      ['🕯️', 'Dates are a scene', ['Raise the spark with actions. Romantic dates only.']],
+      ['🍝', 'Every venue differs', ['Restaurant, movies, gala, concert, park, arcade,', 'beach, picnic, mini-golf, dinner at home.']],
+      ['💋', 'Moments', ['Hold hands → kiss → French kiss →', 'your place, or the restroom if it’s love.']],
+      ['🛡️', 'Your call', ['Condom or not. Adults, Mature on, not too drunk.']],
+    ],
+  ],
+  [
     'Update 0.9 — Free Time',
     [
       ['⏱️', 'Free actions', ['Computers and most profile actions take no time:', 'once per time of day. Outings still do (⏱).']],
       ['🌅', 'Nights out', ['Partying into the morning? You wake up rested —', 'or at half energy if you got drunk.']],
       ['💘', 'Real faces on Spark', ['Dating profiles show who you’ll actually meet.']],
+      ['🌙', 'Their place', ['Reach Flirty on a night out → go back to their place.', 'Sober or tipsy: condom or not. Drunk: they’re furious next day.']],
       ['💾', '5 save slots', ['Continue any saved life. New lives pick a slot', '(hold to overwrite). Still autosaves.']],
     ],
   ],

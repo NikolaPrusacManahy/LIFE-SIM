@@ -58,6 +58,7 @@ export function blankState(): GameState {
     orders: [],
     night: null,
     usedThisSlot: { turn: -1, ids: [] },
+    date: null,
     groups: [],
     background: 'middle',
     rules: 'us',

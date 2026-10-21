@@ -14,6 +14,7 @@ import { ResultCard } from './ResultCard';
 import { Desktop } from '../desktop/Desktop';
 import { BuildScreen } from '../pc/BuildScreen';
 import { NightScreen } from '../night/NightScreen';
+import { DateScreen } from '../date/DateScreen';
 import { NotificationBanner } from '../phone/NotificationBanner';
 import { IDLE, canShowBanners, canShowEvents, pipelineReducer } from '../../state/pipeline';
 import { pendingBanners } from '../../state/phone/notify';
@@ -122,7 +123,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const dismiss = useCallback(() => dispatch({ type: 'dismiss' }), []);
   const eventsPending = !!eventResult || !!game.currentEvent;
   // Update 0.8 — a computer sitting holds the queue until you shut down
-  const showEvent = eventsPending && canShowEvents(pipe) && !game.s.session && !game.s.night;
+  const showEvent = eventsPending && canShowEvents(pipe) && !game.s.session && !game.s.night && !game.s.date;
   // next banner, only once the result card and all queued events are done
   const nextBanner = banner ?? (canShowBanners(pipe, eventsPending) && hasPhone(game) ? pendingBanners(game)[0]?.id ?? null : null);
   const bannerNote = nextBanner ? game.s.notes.find((n) => n.id === nextBanner) ?? null : null;
@@ -154,6 +155,9 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
       )}
       {game.s.night && pipe.stage === 'idle' && (
         <NightScreen game={game} onChange={() => onResult(game.flush('', '', ''), false)} onEnd={(summary) => onResult(game.flush('Night out', '🌙', summary))} />
+      )}
+      {game.s.date && pipe.stage === 'idle' && (
+        <DateScreen game={game} onChange={() => onResult(game.flush('', '', ''), false)} onEnd={(summary) => onResult(game.flush('Date', '🕯️', summary))} />
       )}
       {build && !showEvent && <BuildScreen game={game} onClose={() => setBuild(false)} onResult={onResult} />}
       {paused && <PauseMenu onResume={() => setPaused(false)} onTitle={onTitle} onRestart={onRestart} />}

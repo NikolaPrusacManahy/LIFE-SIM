@@ -16,7 +16,7 @@ function go(g: Game, c: Ctx): string {
   if (!plan || !p) return 'The plan fell through.';
   plan.status = 'done';
   let text: string;
-  if (plan.kind === 'date') text = interact(g, p.id, 'date', g.canAfford(60) ? 'dinner' : 'walk');
+  if (plan.kind === 'date') text = interact(g, p.id, 'date', g.canAfford(60) ? 'restaurant' : 'park');
   else if (plan.kind === 'talk') {
     text = interact(g, p.id, 'deeptalk');
     bump(p, 'trust', 6);

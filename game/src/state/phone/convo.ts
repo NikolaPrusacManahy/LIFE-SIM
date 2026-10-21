@@ -72,6 +72,12 @@ export const CONTEXT: Record<string, { type: MsgType; replies: CtxReply[] }> = {
     { id: 'neg_busy', label: 'I’ve just been busy', intent: 'cold', run: (_g, p) => bump(p, 'romance', -3) },
     { id: 'neg_read', label: 'Leave on read', intent: 'read', run: (_g, p) => { bump(p, 'romance', -8); bump(p, 'trust', -5); } },
   ] },
+  // Update 0.9 — after trying to take them home drunk
+  furious: { type: 'serious', replies: [
+    { id: 'fu_sorry', label: 'You’re right. I’m really sorry.', intent: 'apology', run: (_g, p) => bump(p, 'trust', 4) },
+    { id: 'fu_drunk', label: 'I was drunk too…', intent: 'cold', run: (_g, p) => bump(p, 'rel', -3) },
+    { id: 'fu_read', label: 'Leave on read', intent: 'read', run: (_g, p) => bump(p, 'rel', -6) },
+  ] },
   standup: { type: 'serious', replies: [
     { id: 'st_sorry', label: 'I’m so sorry, something came up', intent: 'apology', run: (_g, p) => { bump(p, 'rel', 4); } },
     { id: 'st_forgot', label: 'I forgot 😬', intent: 'cold', run: (_g, p) => bump(p, 'rel', -3) },

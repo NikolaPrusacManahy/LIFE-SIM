@@ -19,6 +19,10 @@ import type { CrewRole } from '../crime/types';
 import { haremLock, inviteToHarem } from '../systems/god';
 import { setMad } from './mood';
 import type { ActionResult } from '../Game';
+import { cannotConsent } from '../crime/consent';
+import { VENUES, VENUE_ORDER, venueLock } from '../datenight/venues';
+import { isRomanticDate, startDate } from '../datenight/date';
+import type { DateVenue } from '../datenight/types';
 
 const CAPITAL = ['murder_weapon', 'murder_gun', 'murder_poison', 'murder_sedative', 'murder_staged', 'murder_hire'];
 
@@ -100,17 +104,9 @@ const HANG_OPTIONS = [
   { id: 'study', label: '📚 Study' },
   { id: 'food', label: '🍜 Food ($20)' },
 ];
-const DATE_OPTIONS = (g: Game): InteractionOption[] => [
-  { id: 'dinner', label: '🍝 Dinner ($60)', reason: g.canAfford(60) ? null : 'Need $60' },
-  { id: 'movies', label: '🎬 Movies', reason: itemCount(g, 'movie_tix') || g.canAfford(25) ? null : 'Need tickets or $25' },
-  { id: 'walk', label: '🌳 Park walk' },
-  { id: 'arcade', label: '👾 Arcade ($15)', reason: g.canAfford(15) ? null : 'Need $15' },
-  { id: 'concert', label: '🎤 Concert', reason: itemCount(g, 'concert_tix') ? null : 'Need concert tickets' },
-  { id: 'picnic', label: '🧺 Picnic ($10)' },
-  { id: 'beach', label: '🏖️ Beach', reason: g.isSummer ? null : 'Summer only' },
-  { id: 'minigolf', label: '⛳ Mini-golf ($20)', reason: g.canAfford(20) ? null : 'Need $20' },
-  { id: 'cook', label: '🍳 Cook together ($15)' },
-];
+/** Update 0.10 — every date venue (the date itself is a scene: state/datenight). */
+const DATE_OPTIONS = (g: Game): InteractionOption[] =>
+  VENUE_ORDER.map((v) => ({ id: v, label: `${VENUES[v].icon} ${VENUES[v].name}${VENUES[v].cost ? ` ($${VENUES[v].cost})` : ''}`, reason: venueLock(g, v) }));
 
 export const INTERACTIONS: InteractionDef[] = [
   // ======================= Talk (anyone)
@@ -387,21 +383,10 @@ export const INTERACTIONS: InteractionDef[] = [
     },
   },
   {
-    id: 'date', label: 'Go on a date', icon: '🕯️', group: 'Romance', romance: true, energy: 12, when: (_g, p) => committed(p),
+    // Update 0.10 — romantic dates only; opens the date scene (spark, venue actions, moments)
+    id: 'date', label: 'Go on a date', icon: '🕯️', group: 'Romance', romance: true, energy: 12, when: (g, p) => isRomanticDate(g, p),
     options: DATE_OPTIONS,
-    run: (g, p, opt = 'walk') => {
-      const costs: Record<string, number> = { dinner: 60, arcade: 15, picnic: 10, minigolf: 20, cook: 15 };
-      if (opt === 'movies' && !spendItem(g, 'movie_tix')) g.money(-25);
-      if (opt === 'concert') spendItem(g, 'concert_tix');
-      if (costs[opt]) g.money(-costs[opt]);
-      const big = opt === 'concert' || opt === 'dinner' || opt === 'beach';
-      const ok = !(hasTrait(p, 'homebody') && opt === 'concert') && !(hasTrait(p, 'cheap') && opt === 'dinner' && g.chance(0.3));
-      bump(p, 'romance', ok ? (big ? 12 : 8) * (hasTrait(p, 'romantic') && big ? 1.3 : 1) : 2);
-      bump(p, 'rel', 4);
-      g.stat('mood', 9);
-      g.burst('hearts');
-      return line(g, 'date', p, ok) + noteTraits(g, p, opt === 'cook' || opt === 'dinner' ? 'hang_food' : 'date');
-    },
+    run: (g, p, opt = 'park') => startDate(g, p, (VENUES[opt as DateVenue] ? opt : 'park') as DateVenue) + noteTraits(g, p, 'date'),
   },
   {
     id: 'holdhands', label: 'Hold hands', icon: '🤝', group: 'Romance', romance: true, energy: 1, when: (_g, p) => committed(p),
@@ -751,6 +736,8 @@ export function interactionsFor(g: Game, p: Person): ResolvedInteraction[] {
   for (const def of list) {
     if (def.mature && !canBeIntimate(g, p)) continue;
     if (def.romance && isTeacher(p)) continue;
+    // Update 0.9 — no romance with anyone who can't consent (breaking up is still allowed)
+    if (def.romance && def.id !== 'breakup' && cannotConsent(g, p)) continue;
     if (def.crime && !isValidCrimeTarget(g, p, !!def.dark)) continue;
     if (!def.when(g, p)) continue;
     if (def.romance && def.id !== 'flirt' && !isRomanceEligible(g, p)) continue;
@@ -787,6 +774,7 @@ export function interact(g: Game, pid: string, id: string, opt?: string): string
   if (!p || !def) return '';
   if (def.mature && !canBeIntimate(g, p)) return '';
   if (def.romance && def.id !== 'flirt' && !isRomanceEligible(g, p)) return '';
+  if (def.romance && def.id !== 'breakup' && cannotConsent(g, p)) return '';
   if (def.crime && !isValidCrimeTarget(g, p, !!def.dark)) return '';
   if (def.captive && p.status !== 'captive') return '';
   if (!usesSlot(def)) {

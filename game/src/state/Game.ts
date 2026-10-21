@@ -292,7 +292,7 @@ export class Game {
   }
 
   canAct() {
-    return !this.s.dead && this.s.events.length === 0 && !this.s.underworld.scene && !this.s.session && !this.s.night;
+    return !this.s.dead && this.s.events.length === 0 && !this.s.underworld.scene && !this.s.session && !this.s.night && !this.s.date;
   }
 
   doActivity(id: string): ActionResult | null {
