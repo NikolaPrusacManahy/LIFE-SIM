@@ -1,6 +1,6 @@
 // Update 0.8 — plans and notifications (saved).
 
-export type PlanKind = 'party' | 'movie' | 'food' | 'date' | 'game' | 'talk' | 'hang';
+export type PlanKind = 'party' | 'movie' | 'food' | 'date' | 'game' | 'talk' | 'hang' | 'over';
 export type PlanSource = 'invite' | 'mine' | 'date' | 'surprise' | 'anniversary' | 'birthday' | 'checkin';
 
 export interface Plan {

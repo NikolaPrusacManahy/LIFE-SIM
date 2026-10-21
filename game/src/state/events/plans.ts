@@ -17,6 +17,7 @@ function go(g: Game, c: Ctx): string {
   plan.status = 'done';
   let text: string;
   if (plan.kind === 'date') text = interact(g, p.id, 'date', g.canAfford(60) ? 'restaurant' : 'park');
+  else if (plan.kind === 'over') text = interact(g, p.id, 'date', 'home');
   else if (plan.kind === 'talk') {
     text = interact(g, p.id, 'deeptalk');
     bump(p, 'trust', 6);

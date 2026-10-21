@@ -10,9 +10,9 @@ import { pushNote } from './notify';
 // Update 0.8 — accepted invitations become plans; when the slot comes, the plan plays as a scene.
 
 export const PLAN_LABEL: Record<PlanKind, string> = {
-  party: 'Party', movie: 'Movie night', food: 'Food', date: 'Date', game: 'Game night', talk: 'Serious talk', hang: 'Hang out',
+  party: 'Party', movie: 'Movie night', food: 'Food', date: 'Date', game: 'Game night', talk: 'Serious talk', hang: 'Hang out', over: 'Coming over',
 };
-export const PLAN_ICON: Record<PlanKind, string> = { party: '🎉', movie: '🍿', food: '🍜', date: '🕯️', game: '🎮', talk: '💬', hang: '🛋️' };
+export const PLAN_ICON: Record<PlanKind, string> = { party: '🎉', movie: '🍿', food: '🍜', date: '🕯️', game: '🎮', talk: '💬', hang: '🛋️', over: '🏠' };
 
 /** Phase index a future turn falls on. */
 export const phaseAt = (g: Game, turn: number) => (g.s.phase + (turn - g.s.turn)) % PHASES.length;
@@ -26,17 +26,22 @@ export function nextSlot(g: Game, want: 2 | 3 = 2, after = 1): number {
 export function slotLabel(g: Game, turn: number) {
   const d = turn - g.s.turn;
   const ph = PHASES[phaseAt(g, turn)];
-  if (d <= 0) return 'now';
+  if (d <= 0) return 'right now';
   const sameMonth = Math.floor((g.s.phase + d) / PHASES.length) === 0;
   return `${sameMonth ? (ph === 'evening' || ph === 'night' ? 'tonight' : `this ${ph}`) : `next month, ${ph}`}`;
 }
 
-export function createPlan(g: Game, p: Person, kind: PlanKind, source: PlanSource, turn = nextSlot(g)): Plan {
+/** Update 0.10 — "tonight" means today: now if it's already evening or night, otherwise this evening. */
+export const todaySlot = (g: Game) => (g.s.phase >= 2 ? g.s.turn : nextSlot(g, 2));
+
+export function createPlan(g: Game, p: Person, kind: PlanKind, source: PlanSource, turn = todaySlot(g)): Plan {
   // one plan per slot: a newer plan replaces nothing — it moves to the next free evening
   while (g.s.plans.some((x) => x.status === 'set' && x.turn === turn)) turn = nextSlot(g, 2, turn - g.s.turn + 1);
   const plan: Plan = { id: newId(), pid: p.id, kind, turn, status: 'set', source };
   g.s.plans.push(plan);
   if (g.s.plans.length > 40) g.s.plans.splice(0, g.s.plans.length - 40);
+  // happening right now: the scene starts as soon as you put the phone down
+  if (turn === g.s.turn && !g.queued('plan_scene')) g.queue('plan_scene', { planId: plan.id, pid: p.id }, true);
   return plan;
 }
 

@@ -20,6 +20,22 @@ Built from your chat request. The name "Date Night" is my placeholder. All of `n
   - Everything past holding hands needs `canBeIntimate` (both 18+, Mature Content on, consent possible) and drinks under `INTOX_LIMIT`.
   - Teen couples can hold hands only.
   - Audited in `DATE_AUDIT`.
+- **Dates at your place** (your follow-up):
+  - "🏠 Invite them over" on a romantic profile (uses the slot), or texting a partner "Come over?" (makes a 'Coming over' plan), starts a date at your place.
+  - Home actions: the tour, cook ($15), takeout ($25), couch movie, cuddle, board game, slow dance in the kitchen, open a bottle.
+  - It ends with **🛋️ Calm night in** (romance and trust up) or **🛏️ To the bedroom** (the protection choice). They may ask "Show me the bedroom?".
+  - **Your home matters** (`HOME_BONUS`): parents' house −8%, shared flat −6%, apartment +3%, farmhouse +4%, house +7%, loft +9%, ranch +10%, mansion +14%. This applies to home-date odds and to how often they suggest the bedroom.
+  - Homeless means you can't host.
+- **"Tonight" means today** (`todaySlot` in `phone/plans.ts`):
+  - Accepting an invitation, or making plans by text, in the evening or at night starts the plan in the current slot. The scene opens as soon as you put the phone down.
+  - In the morning or afternoon, the plan is set for this evening.
+  - Invitations lapse after today's slot. "Another time?" still moves it to a later day.
+- **Euros for EU lives** (`ui/currency.ts`). Display only: game rules, prices and saves stay in dollars.
+  - One observer rewrites `$N` in UI text and tooltips to `€` at 1 € = 1.12 $, and restores the dollars when laws switch back to US.
+  - The canvas floating numbers use `cur()`. The save-slot list formats each life in its own currency (`data-cur="fixed"`).
+  - Switching happens when a life loads, when Laws is toggled in Settings, and live in the creator.
+- **Fixed:** the creator's button said "Start at age 14" even with 23 picked.
+- **Intimacy** now also gives romance +15 and attraction +6 every time (`encounter`).
 - **Replaced:** the old instant date outcome (no scene). `DATE_OPTIONS` is now the venue list.
 - **Webhook:** `webhook_patchnotes/update-0.10-date-night.json`.
 

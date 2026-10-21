@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Game } from '../../state/Game';
-import { MOMENT_AT, MOMENT_LABEL, type Moment } from '../../state/datenight/types';
-import { VENUES } from '../../state/datenight/venues';
-import { actionLock, actionsFor, answerOffer, dateAct, doMoment, endDate, momentLock, oddsOf, partner } from '../../state/datenight/date';
+import { HOME_YOURS_LABEL, MOMENT_AT, MOMENT_LABEL, type Moment } from '../../state/datenight/types';
+import { actionLock, actionsFor, answerOffer, calmNight, dateAct, doMoment, endDate, momentLock, oddsOf, partner } from '../../state/datenight/date';
+import { HOUSING } from '../../state/data/locations';
+import { VENUES, homeBonus } from '../../state/datenight/venues';
 import { INTOX_LIMIT } from '../../state/nightlife/types';
 import { PersonChip } from '../../components/PersonChip';
 import { Portrait } from '../../components/Portrait';
@@ -24,6 +25,9 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
   };
   if (!p) return null;
   const over = d.time <= 0;
+  const atHome = d.venue === 'home';
+  const bonus = homeBonus(game);
+  const label = (m: Moment) => (atHome && m === 'yours' ? HOME_YOURS_LABEL : MOMENT_LABEL[m]);
   return (
     <div className={`dts-screen dts-${d.venue}`} data-sfx="none">
       <div className="dts-glow" />
@@ -31,6 +35,8 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
         <b>{v.icon} {v.name}</b>
         <span title="Actions left">⏳ {d.time}/8</span>
         {d.intox > 0 && <span className="dts-meter" title="Drinks">🍷 <i><em style={{ width: `${d.intox}%`, background: d.intox >= INTOX_LIMIT ? '#ff3b4f' : '#ff9d3c' }} /></i></span>}
+        {atHome && <span className="dts-home" title="Your home changes the odds">{HOUSING[game.s.housing].icon} {HOUSING[game.s.housing].name} {bonus >= 0 ? '+' : ''}{Math.round(bonus * 100)}%</span>}
+        {atHome && <button className="btn btn-sm" onClick={() => onEnd(calmNight(game))}>🛋️ Calm night in</button>}
         <button className="btn btn-sm" onClick={() => onEnd(endDate(game))}>{over ? '🌙 Say goodnight' : '🚪 End the date'}</button>
       </div>
 
@@ -43,7 +49,7 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
           <span>✨ Spark</span>
           <div className="dts-bar">
             <i style={{ width: `${d.spark}%` }} />
-            {MOMENTS.map((m) => <em key={m} style={{ left: `${MOMENT_AT[m]}%` }} title={MOMENT_LABEL[m]} />)}
+            {MOMENTS.map((m) => <em key={m} style={{ left: `${MOMENT_AT[m]}%` }} title={label(m)} />)}
           </div>
           <small>{d.spark >= 80 ? 'Sparks flying' : d.spark >= 60 ? 'Electric' : d.spark >= 40 ? 'Going well' : d.spark >= 20 ? 'Warming up' : 'A little awkward'}</small>
         </div>
@@ -53,7 +59,7 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
 
       {d.offer ? (
         <div className="dts-offer">
-          <b>“Want to get out of here? Your place?”</b>
+          <b>{atHome ? '“Show me the bedroom?”' : '“Want to get out of here? Your place?”'}</b>
           <button className="btn btn-primary" onClick={() => say(answerOffer(game, true))}>🌙 Yes</button>
           <button className="btn" onClick={() => say(answerOffer(game, false))}>Not tonight</button>
         </div>
@@ -65,7 +71,7 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
               if (lock === 'No restroom here' || lock === 'Adults only' || lock === 'Done') return null;
               return (
                 <button key={m} className={`dts-moment ${lock ? '' : 'ready'}`} disabled={!!lock} title={lock ?? ''} onClick={() => say(doMoment(game, m))}>
-                  {MOMENT_LABEL[m]}
+                  {label(m)}
                   {lock && <small>{lock}</small>}
                 </button>
               );

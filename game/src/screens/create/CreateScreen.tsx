@@ -9,6 +9,7 @@ import { PRONOUNS, SEXUALITY_LABEL } from '../../state/npc/identity';
 import { useEscape } from '../../hooks/useEscape';
 import { fitHairStyle } from '../../state/npc/generator';
 import { Portrait } from '../../components/Portrait';
+import { setCurrency } from '../../ui/currency';
 
 export interface CreatePreview {
   look: Appearance;
@@ -46,6 +47,8 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
   const [millionaire, setMillionaire] = useState(false);
   const [rules, setRules] = useState<'us' | 'eu'>('us');
   const [god, setGod] = useState(false);
+  // Update 0.10 — prices in the creator follow the laws you pick (EU = euros)
+  useEffect(() => setCurrency(rules), [rules]);
   const [traits, setTraits] = useState<string[]>([]);
   const [look, setLook] = useState<Appearance>(() => randomLook('female'));
   useEscape(() => (step > 0 ? setStep(step - 1) : onBack()));
@@ -223,7 +226,7 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
           {step < STEPS.length - 1 ? (
             <button className="btn btn-primary btn-lg" onClick={() => setStep(step + 1)}>Next →</button>
           ) : (
-            <button className="btn btn-primary btn-lg" onClick={start}>Start at age 14 →</button>
+            <button className="btn btn-primary btn-lg" onClick={start}>Start at age {startAge} →</button>
           )}
         </div>
       </div>

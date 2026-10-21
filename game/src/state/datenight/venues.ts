@@ -1,6 +1,7 @@
 import type { Game } from '../Game';
 import type { DateVenue } from './types';
 import { itemCount } from '../inventory/items';
+import type { HousingId } from '../types';
 
 // Update 0.10 — where a date can happen. Every venue has its own actions on top of the shared ones.
 
@@ -93,13 +94,25 @@ export const VENUES: Record<DateVenue, VenueDef> = {
     A('trick', 'Trick shot', '🎯', 0.45, 14, { stat: 'fitness' }),
     A('letwin', 'Let them win', '🏆', 0.8, 8),
   ] },
-  home: { name: 'Cook dinner at home', icon: '🍳', cost: 15, restroom: false, actions: [
-    A('cook', 'Cook together', '🍳', 0.7, 10, { stat: 'creativity' }),
+  // Update 0.10 — a date at your place (invite them over). Your home makes it better or worse (HOME_BONUS).
+  home: { name: 'Your place', icon: '🏠', cost: 0, restroom: false, lock: (g) => hostLock(g), actions: [
+    A('tour', 'Give them the tour', '🗝️', 0.75, 8),
+    A('cook', 'Cook together ($15)', '🍳', 0.7, 10, { stat: 'creativity', cost: 15 }),
+    A('takeout', 'Order takeout ($25)', '🥡', 0.85, 7, { cost: 25 }),
     A('couch', 'Movie on the couch', '🛋️', 0.8, 10),
+    A('cuddle', 'Cuddle up', '🫂', 0.6, 13),
+    A('boardgame', 'Play a board game', '🎲', 0.7, 9, { stat: 'smarts' }),
     A('kitchen', 'Slow dance in the kitchen', '💃', 0.6, 14),
     A('bottle', 'Open a bottle', '🍷', 0.8, 8, { drink: 16 }),
   ] },
 };
+
+/** Update 0.10 — how much your home helps a date there (odds + chance they suggest the bedroom). */
+export const HOME_BONUS: Record<HousingId, number> = {
+  homeless: 0, parents: -0.08, shared: -0.06, apartment: 0.03, farmhouse: 0.04, house: 0.07, loft: 0.09, ranch: 0.1, mansion: 0.14,
+};
+export const hostLock = (g: Game) => (g.s.housing === 'homeless' ? 'You have no place to invite them to' : null);
+export const homeBonus = (g: Game) => HOME_BONUS[g.s.housing] ?? 0;
 
 export const VENUE_ORDER: DateVenue[] = ['restaurant', 'movie', 'park', 'arcade', 'concert', 'picnic', 'beach', 'minigolf', 'home', 'gala'];
 export const venueLock = (g: Game, v: DateVenue) => VENUES[v].lock?.(g) ?? (g.canAfford(VENUES[v].cost) ? null : `Need $${VENUES[v].cost}`);

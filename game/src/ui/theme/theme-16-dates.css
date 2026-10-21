@@ -31,3 +31,4 @@
 .dts-act:disabled { opacity: 0.45; cursor: not-allowed; }
 .dts-offer { position: relative; align-self: center; display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 18px; background: #fff; color: var(--ink); }
 .dts-offer b { font: 600 15px var(--display); }
+.dts-home { font: 700 12px var(--font); background: rgba(255, 255, 255, 0.14); border-radius: 99px; padding: 3px 10px; }

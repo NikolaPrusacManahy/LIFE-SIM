@@ -23,6 +23,7 @@ import { cannotConsent } from '../crime/consent';
 import { VENUES, VENUE_ORDER, venueLock } from '../datenight/venues';
 import { isRomanticDate, startDate } from '../datenight/date';
 import type { DateVenue } from '../datenight/types';
+import { hostLock } from '../datenight/venues';
 
 const CAPITAL = ['murder_weapon', 'murder_gun', 'murder_poison', 'murder_sedative', 'murder_staged', 'murder_hire'];
 
@@ -381,6 +382,12 @@ export const INTERACTIONS: InteractionDef[] = [
       g.stat('mood', -8);
       return say('{name} said {they} just want{s} to be friends. Ouch.', p) + noteTraits(g, p, 'askout');
     },
+  },
+  {
+    // Update 0.10 — invite them over: a date at your place
+    id: 'invite_over', label: 'Invite them over', icon: '🏠', group: 'Romance', romance: true, energy: 6, when: (g, p) => isRomanticDate(g, p),
+    req: (g) => hostLock(g),
+    run: (g, p) => startDate(g, p, 'home'),
   },
   {
     // Update 0.10 — romantic dates only; opens the date scene (spark, venue actions, moments)
@@ -754,7 +761,7 @@ const MAD_AFTER: Record<string, string> = {
 
 /** Update 0.8 — these take real time (outings, care, crimes). Everything else on a profile is free, once per time slot. */
 export const USES_SLOT = new Set([
-  'hangout', 'date', 'invite', 'care', 'helphome', 'visit', 'therapy', 'meetparents', 'night', 'fight', 'challenge',
+  'hangout', 'date', 'invite_over', 'invite', 'care', 'helphome', 'visit', 'therapy', 'meetparents', 'night', 'fight', 'challenge',
   't_help', 't_extra', 't_club', 'p_ra', 'u_assault', 'u_rob', 'u_kidnap', 'u_kill', 'c_ransom', 'c_away',
 ]);
 export const usesSlot = (def: InteractionDef) => USES_SLOT.has(def.id);

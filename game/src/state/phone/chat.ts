@@ -14,6 +14,8 @@ import { MAX_PER_MONTH, countMessage, effectChip, pushMsg, sentThisMonth } from 
 import { createPlan } from './plans';
 import type { PlanKind } from './types';
 import { clearMad, npcState, setMad } from '../npc/mood';
+import { isRomanticDate } from '../datenight/date';
+import { hostLock } from '../datenight/venues';
 
 // Update 0.5 — real messenger. Update 0.8 — free, capped at 10 messages per contact per month; odds only on real gambles.
 
@@ -122,7 +124,8 @@ export const CHIPS: ChipDef[] = [
   { id: 'studyplan', tab: 'plans', label: 'Study together?', pool: 'plans', when: (g) => !!g.s.education.current, run: (g, p, ok) => { planned(g, p, ok); if (ok) g.stat('smarts', 1); } },
   { id: 'gymplan', tab: 'plans', label: 'Gym together?', pool: 'plans', run: (g, p, ok) => { planned(g, p, ok); if (ok) g.stat('fitness', 1); } },
   { id: 'movieplan', tab: 'plans', label: 'Movie night?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok, 'movie') },
-  { id: 'comeover', tab: 'plans', label: 'Come over?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok) },
+  // Update 0.10 — to someone you're romantic with, this is a date at your place
+  { id: 'comeover', tab: 'plans', label: 'Come over?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok, isRomanticDate(g, p) && !hostLock(g) ? 'over' : 'hang') },
   { id: 'askout', tab: 'plans', label: 'Ask them out', pool: 'askout', when: (g, p) => isRomanceEligible(g, p) && !committed(p), odds: (_g, p) => Math.min(0.95, 0.15 + p.attraction / 120 + p.rel / 300), run: (g, p, ok) => { if (ok) { p.role = 'dating'; bump(p, 'romance', 12); g.burst('hearts'); } else g.stat('mood', -6); } },
   // intimate (18+ both, Mature Content, not cannotConsent, committed/FWB)
   { id: 'comeover18', tab: 'intimate', label: '“Come over… 😏”', pool: 'intimate', odds: (g, p) => base(g, p, 0.45) + p.romance / 200, run: (_g, p, ok) => bump(p, 'romance', ok ? 5 : -1) },

@@ -8,7 +8,7 @@ import { line } from '../npc/lines';
 import { newId } from '../Game';
 import { isRomanceEligible } from '../npc/identity';
 import { expireInvites, pushMsg } from './convo';
-import { nextSlot } from './plans';
+import { todaySlot } from './plans';
 import { pushNote } from './notify';
 import { soberUp } from '../nightlife/night';
 import { legalAge } from '../rules/us';
@@ -30,7 +30,8 @@ export function sendText(g: Game, p: Person, kind: string, text: string, extra: 
   g.s.inbox.unshift({ id, pid: p.id, kind, text, turn: g.s.turn, read: false, replied: false, ...extra });
   // Update 0.5 — also lands in the chat thread. Update 0.8 — typed, with a free reply and an expiry for invitations.
   const body = text.replace(new RegExp(`^${p.name}: `), '').replace(/^"|"$/g, '');
-  const expires = INVITE_KINDS.includes(kind) ? nextSlot(g) : undefined;
+  // invitations are for today: they lapse when the day's evening/night slot passes
+  const expires = INVITE_KINDS.includes(kind) ? todaySlot(g) : undefined;
   pushMsg(g, p.id, { from: p.id, text: body, turn: g.s.turn, branch: [id], kind, free: true, expires });
   pushNote(g, 'text', `${p.name}: ${body.slice(0, 60)}`, p.id, kind === 'birthday' ? '🎂' : '💬');
   if (g.s.inbox.length > 80) g.s.inbox.length = 80;

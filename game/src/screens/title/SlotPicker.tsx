@@ -2,6 +2,7 @@ import { Modal } from '../../components/Modal';
 import { HoldButton } from '../../components/HoldButton';
 import { Portrait } from '../../components/Portrait';
 import { listSlots } from '../../state/save';
+import { moneyFor } from '../../ui/currency';
 
 /**
  * Update 0.9 — five save slots. "continue" lists your saved lives; "new" picks where the new life goes
@@ -28,9 +29,9 @@ export function SlotPicker({ mode, onPick, onClose }: { mode: 'continue' | 'new'
               <Portrait look={state.look} age={age} size={46} seed="me" mood={state.stats.mood} />
               <span className="slt-mid">
                 <b>{state.name} {state.familyName}{state.god ? ' ⚡' : ''}</b>
-                <small>
+                <small data-cur="fixed">
                   {state.dead ? `💀 Died at ${state.dead.age}` : `Age ${age}`} · {date}
-                  {state.generation > 1 ? ` · Gen ${state.generation}` : ''} · ${Math.round(state.money).toLocaleString()}
+                  {state.generation > 1 ? ` · Gen ${state.generation}` : ''} · {moneyFor(state.money, state.rules)}
                 </small>
               </span>
             </>

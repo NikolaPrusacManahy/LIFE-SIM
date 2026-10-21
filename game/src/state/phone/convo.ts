@@ -8,7 +8,7 @@ import { hasTrait } from '../npc/traits';
 import { say } from '../npc/identity';
 import { npcState, setMad, clearMad, type NpcState } from '../npc/mood';
 import { canBeIntimate, askNight } from '../systems/intimacy';
-import { createPlan, nextSlot, slotLabel, PLAN_LABEL } from './plans';
+import { createPlan, nextSlot, slotLabel, todaySlot, PLAN_LABEL } from './plans';
 
 // Update 0.8 — conversations as threads of turns. Every NPC message has a kind; the composer offers
 // contextual replies to the latest unanswered one. Each reply → your bubble → their reaction bubble with an effect chip.
@@ -302,7 +302,7 @@ export function answer(g: Game, pid: string, msgId: string, replyId: string): An
   } else if (r.intent === 'accept') {
     r.run?.(g, p, true);
     const kind: PlanKind = (m.kind === 'invite' && (g.s.inbox.find((x) => m.branch?.includes(x.id))?.ctx?.plan as PlanKind)) || KIND_PLAN[m.kind ?? ''] || 'hang';
-    const plan = createPlan(g, p, kind, m.kind === 'invite' ? 'invite' : m.kind === 'checkin' ? 'checkin' : m.kind === 'surprise' ? 'surprise' : 'date', m.expires ?? nextSlot(g));
+    const plan = createPlan(g, p, kind, m.kind === 'invite' ? 'invite' : m.kind === 'checkin' ? 'checkin' : m.kind === 'surprise' ? 'surprise' : 'date', todaySlot(g));
     line = pick(REACT.accept).replace('{slot}', slotLabel(g, plan.turn));
     note = `📅 Plan: ${PLAN_LABEL[plan.kind]} with ${p.name}, ${slotLabel(g, plan.turn)}`;
   } else if (r.intent === 'decline') {

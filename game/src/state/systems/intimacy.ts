@@ -131,6 +131,9 @@ export function encounter(g: Game, p: Person, protection: 'condom' | 'pill' | 'n
   const h = hiddenOf(g, p);
   g.stat('mood', 12);
   g.rel(p, 8);
+  // Update 0.10 — intimacy brings you much closer
+  p.romance = Math.min(100, p.romance + 15);
+  p.attraction = Math.min(100, p.attraction + 6);
   g.burst('hearts');
   g.inc('encounters');
   // a few drinks in, protection gets forgotten

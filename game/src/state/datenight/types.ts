@@ -21,6 +21,8 @@ export interface DateScene {
 export const DATE_ACTIONS = 8;
 /** Spark needed for each moment. */
 export const MOMENT_AT: Record<Moment, number> = { hands: 25, kiss: 45, french: 60, yours: 70, restroom: 80 };
+/** At your place, "back to your place" becomes the bedroom. */
+export const HOME_YOURS_LABEL = '🛏️ To the bedroom';
 export const MOMENT_LABEL: Record<Moment, string> = {
   hands: '🤝 Hold hands', kiss: '💋 Kiss', french: '😘 French kiss', yours: '🌙 Back to your place?', restroom: '🚻 Sneak off to the restroom',
 };

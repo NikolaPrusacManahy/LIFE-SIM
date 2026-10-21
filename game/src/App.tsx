@@ -14,6 +14,7 @@ import { PlayScreen } from './screens/play/PlayScreen';
 import { AgeConfirm } from './screens/title/AgeConfirm';
 import { settings } from './state/settings';
 import { installAudio } from './ui/audio';
+import { installCurrency, setCurrency } from './ui/currency';
 
 type Screen = 'title' | 'create' | 'play';
 
@@ -28,6 +29,8 @@ export function App() {
   const [ageAsked, setAgeAsked] = useState(settings.ageConfirmed);
   useGame(game);
   useEffect(() => installAudio(), []);
+  // Update 0.10 — euros for EU lives (display only)
+  useEffect(() => installCurrency(), []);
 
   // Update 0.9 — which of the 5 save slots this life writes to (autosave)
   const slot = useRef(0);
@@ -36,6 +39,7 @@ export function App() {
   const begin = useCallback((g: Game) => {
     g.onSave = (gg) => saveGame(gg.s, slot.current);
     g.save();
+    setCurrency(g.s.rules);
     setGame(g);
     setTab(currentObligations(g)[0]?.loc ?? g.s.location ?? 'home');
     setScreen('play');

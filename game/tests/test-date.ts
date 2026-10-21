@@ -5,8 +5,9 @@ import { applySettings } from '../src/state/settings';
 import { createLife, randomLook } from '../src/state/newGame';
 import type { Game } from '../src/state/Game';
 import type { Person } from '../src/state/types';
-import { DATE_AUDIT, actionLock, actionsFor, dateAct, doMoment, endDate, isRomanticDate, momentLock, startDate, answerOffer } from '../src/state/datenight/date';
-import { VENUES, VENUE_ORDER } from '../src/state/datenight/venues';
+import { DATE_AUDIT, actionLock, actionsFor, calmNight, oddsOf, dateAct, doMoment, endDate, isRomanticDate, momentLock, startDate, answerOffer } from '../src/state/datenight/date';
+import { HOME_BONUS, VENUES, VENUE_ORDER } from '../src/state/datenight/venues';
+import { sendChip } from '../src/state/phone/chat';
 import { INTOX_LIMIT } from '../src/state/nightlife/types';
 import { INTIMACY_AUDIT } from '../src/state/systems/intimacy';
 import { doInteraction, interactionsFor } from '../src/state/npc/interactions';
@@ -109,6 +110,69 @@ const partnerOf = (g: Game, role: Person['role'] = 'partner', age = 27) => {
     }
   }
   check('partners sometimes suggest going back to yours', offers > 0);
+}
+
+// ---------- a date at your place: invite them over / "Come over?" → home activities → calm night or the bedroom
+{
+  const g = mk();
+  g.s.housing = 'apartment';
+  const p = partnerOf(g);
+  const t0 = g.s.turn;
+  doInteraction(g, p.id, 'invite_over');
+  check('“Invite them over” starts a date at your place (uses the slot)', g.s.date?.venue === 'home' && g.s.turn === t0 + 1);
+  check('home has logical home things to do', ['tour', 'cook', 'takeout', 'couch', 'cuddle', 'boardgame', 'kitchen'].every((id) => actionsFor(g).some((a) => a.id === id)));
+  const r0 = p.romance;
+  const text = calmNight(g);
+  check('a calm night in ends the date cozily (romance up, no intimacy)', !g.s.date && text.includes('calm night') && p.romance > r0 && !g.queued('protection_choice') && !g.queued('sexile') && !g.queued('first_time'));
+  const h = mk();
+  h.s.housing = 'house';
+  const q = partnerOf(h);
+  startDate(h, q, 'home');
+  h.s.date!.spark = 75;
+  doMoment(h, 'yours');
+  check('…or to the bedroom → condom or not', ['protection_choice', 'sexile'].includes(h.currentEvent?.id ?? ''));
+  const r1 = q.romance;
+  const before = INTIMACY_AUDIT.length;
+  while (h.currentEvent) {
+    const ch = h.choicesFor(h.currentEvent);
+    const pickI = ch.findIndex((c) => !c.disabled && /condom|protection/i.test(c.choice.label));
+    h.resolveChoice(pickI >= 0 ? pickI : Math.max(0, ch.findIndex((c) => !c.disabled)));
+  }
+  check('intimacy raises romance a lot (+15)', INTIMACY_AUDIT.length === before || q.romance - r1 >= 15, `${r1} → ${q.romance}`);
+  // "Come over?" over text to a partner = a plan for a date at your place
+  const c = mk();
+  c.give('phone');
+  c.s.housing = 'apartment';
+  const z = partnerOf(c);
+  z.hasNumber = true;
+  z.theyHaveNumber = true;
+  let made = false;
+  for (let i = 0; i < 30 && !made; i++) {
+    c.s.clock++;
+    sendChip(c, z.id, 'comeover');
+    made = c.s.plans.some((x) => x.kind === 'over');
+  }
+  check('texting a partner “Come over?” makes a date-at-your-place plan', made);
+  const homeless = mk();
+  homeless.s.housing = 'homeless';
+  check('no home, no inviting anyone over', interactionsFor(homeless, partnerOf(homeless)).find((r) => r.def.id === 'invite_over')?.ok === false);
+}
+
+// ---------- a better home makes a date there go better (same person, same date — only the home changes)
+{
+  const g = mk();
+  const a = partnerOf(g);
+  a.romance = 30;
+  a.mood = 50;
+  startDate(g, a, 'home');
+  const act = actionsFor(g).find((x) => x.id === 'cuddle')!;
+  g.s.housing = 'shared';
+  const lo = oddsOf(g, act);
+  g.s.housing = 'mansion';
+  const hi = oddsOf(g, act);
+  check('shared flat < mansion odds (by 20 points)', Math.round((hi - lo) * 100) === 20, `${Math.round(lo * 100)}% vs ${Math.round(hi * 100)}%`);
+  check('home bonus ladder: shared < apartment < house < mansion', HOME_BONUS.shared < HOME_BONUS.apartment && HOME_BONUS.apartment < HOME_BONUS.house && HOME_BONUS.house < HOME_BONUS.mansion);
+  endDate(g);
 }
 
 // ---------- hard rules

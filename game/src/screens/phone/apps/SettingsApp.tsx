@@ -5,6 +5,7 @@ import { saveSettings } from '../../../ui/settingsStore';
 import type { AppProps } from './types';
 import { syncMusic } from '../../../ui/audio';
 import { rulesFor } from '../../../state/rules/us';
+import { setCurrency } from '../../../ui/currency';
 
 export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
   const [mature, setMature] = useState(settings.mature);
@@ -18,6 +19,7 @@ export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
   const toggleLaws = () => {
     game.s.rules = laws === 'us' ? 'eu' : 'us';
     setLaws(game.s.rules);
+    setCurrency(game.s.rules);
     game.save();
   };
   const [music, setMusic] = useState(settings.music);
@@ -44,7 +46,7 @@ export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
       <button className="app-box set-row" onClick={toggleLaws}>
         <span>
           <b>Laws: {laws === 'eu' ? '🇪🇺 European Union' : '🇺🇸 United States'}</b>
-          <small>{laws === 'eu' ? 'Drink, smoke, gamble at 18. Drive at 18. Cheap college.' : 'Drink at 21. Drive at 16. Costly college.'} Tap to switch.</small>
+          <small>{laws === 'eu' ? 'Drink, smoke, gamble at 18. Drive at 18. Cheap college. Euros.' : 'Drink at 21. Drive at 16. Costly college. Dollars.'} Tap to switch.</small>
         </span>
         <i className={`set-switch ${laws === 'eu' ? 'on' : ''}`} />
       </button>

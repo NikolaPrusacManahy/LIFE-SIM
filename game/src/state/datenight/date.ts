@@ -10,6 +10,7 @@ import { bump } from '../npc/interactions';
 import { canBeIntimate, beginNight } from '../systems/intimacy';
 import { legalAge } from '../rules/us';
 import { itemCount, spendItem } from '../inventory/items';
+import { homeBonus } from './venues';
 
 // Update 0.10 — dates as a scene. Romantic dates only. Every action moves the spark; moments unlock as it rises.
 // HARD RULES: hand-holding is fine for any couple; kisses and intimacy need canBeIntimate (both 18+, Mature on,
@@ -58,6 +59,7 @@ export function oddsOf(g: Game, a: DateAction): number {
   if (hasTrait(p, 'funny') && a.id === 'joke') o += 0.15;
   if (hasTrait(p, 'cheap') && a.cost) o -= 0.2;
   if (d.intox > 50) o -= (d.intox - 50) / 150;
+  if (d.venue === 'home') o += homeBonus(g);
   return Math.max(0.05, Math.min(0.95, o));
 }
 
@@ -80,9 +82,9 @@ export function dateAct(g: Game, id: string): string {
   const line = ok ? say(g.pick([`${a.icon} {name} lights up.`, `${a.icon} {name} can’t stop smiling.`, `${a.icon} That went perfectly.`]), p, g.s.name) : say(g.pick([`${a.icon} It fell a little flat.`, `${a.icon} {name} smiles politely.`, `${a.icon} Awkward pause.`]), p, g.s.name);
   tick(g, line);
   // sometimes they're the one who suggests going back to yours
-  if (!d.offer && d.spark >= MOMENT_AT.yours && momentLock(g, 'yours') === null && g.chance(0.25)) {
+  if (!d.offer && d.spark >= MOMENT_AT.yours && momentLock(g, 'yours') === null && g.chance(0.25 + (d.venue === 'home' ? homeBonus(g) * 2 : 0))) {
     d.offer = true;
-    return `${line} ${say('{name} leans in: “Want to get out of here? Your place?”', p, g.s.name)}`;
+    return `${line} ${say(d.venue === 'home' ? '{name} takes your hand: “Show me the bedroom?”' : '{name} leans in: “Want to get out of here? Your place?”', p, g.s.name)}`;
   }
   return line;
 }
@@ -134,7 +136,7 @@ export function doMoment(g: Game, m: Moment): string {
     g.queue('protection_choice', { pid: p.id, place: 'restroom' }, true);
     return say('You catch {name}’s eye and nod toward the restroom…', p, g.s.name);
   }
-  return `${say('You head back to your place together.', p, g.s.name)} ${beginNight(g, p, 'mine')}`.trim();
+  return `${say(d.venue === 'home' ? 'You lead {name} to the bedroom.' : 'You head back to your place together.', p, g.s.name)} ${beginNight(g, p, 'mine')}`.trim();
 }
 
 /** Their "your place?" — yes goes home; no is always fine. */
@@ -145,6 +147,18 @@ export function answerOffer(g: Game, yes: boolean): string {
   const p = partner(g);
   tick(g, p ? say('“Another time,” you say. {name} nods — no pressure.', p, g.s.name) : '');
   return d.log[d.log.length - 1];
+}
+
+/** Update 0.10 — at your place: end with a calm, cozy night (a little extra romance, no intimacy). */
+export function calmNight(g: Game): string {
+  const d = g.s.date;
+  const p = partner(g);
+  if (!d || !p || d.venue !== 'home') return '';
+  bump(p, 'romance', 4 + Math.round(d.spark / 20));
+  bump(p, 'trust', 3);
+  g.stat('mood', 4);
+  const text = endDate(g);
+  return `${say('🛋️ A calm night in. {name} fell asleep on your shoulder halfway through the movie.', p, g.s.name)} ${text}`;
 }
 
 /** The date is over: how well it went shows in the relationship. */

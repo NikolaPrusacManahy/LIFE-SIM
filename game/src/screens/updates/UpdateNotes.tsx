@@ -9,7 +9,10 @@ const UPDATES: [string, Card[]][] = [
       ['🕯️', 'Dates are a scene', ['Raise the spark with actions. Romantic dates only.']],
       ['🍝', 'Every venue differs', ['Restaurant, movies, gala, concert, park, arcade,', 'beach, picnic, mini-golf, dinner at home.']],
       ['💋', 'Moments', ['Hold hands → kiss → French kiss →', 'your place, or the restroom if it’s love.']],
-      ['🛡️', 'Your call', ['Condom or not. Adults, Mature on, not too drunk.']],
+      ['🏠', 'Your place', ['Invite them over (or text “Come over?”).', 'Calm night in, or the bedroom. Nicer home = better odds.']],
+      ['💶', 'Euros', ['EU lives show prices in € (1 € = 1.12 $).']],
+      ['⏰', 'Tonight means tonight', ['Say yes in the evening or at night: it starts now.', 'In the morning: this evening, same day.']],
+      ['🛡️', 'Your call', ['Condom or not. Intimacy: big romance boost.', 'Adults, Mature on, not too drunk.']],
     ],
   ],
   [

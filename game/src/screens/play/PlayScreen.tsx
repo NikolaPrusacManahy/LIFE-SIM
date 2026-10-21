@@ -28,6 +28,7 @@ import { PeopleScreen } from '../people/PeopleScreen';
 import { EvidenceScreen } from '../crime/EvidenceScreen';
 import { NewsTicker, PursuitHud } from '../crime/PursuitHud';
 import { sfxForText } from '../../ui/audio';
+import { cur } from '../../ui/currency';
 
 const PANEL_APP: Record<Exclude<PanelId, 'pcbuild'>, AppId> = { jobs: 'jobs', school: 'school', shop: 'shop', housing: 'homes', bank: 'bank', blackmarket: 'blackmarket', crime: 'crime' };
 
@@ -65,7 +66,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const play = useCallback(
     (r: ActionResult) => {
       stage.current?.play(r.fx);
-      stage.current?.floatDeltas(r.deltas, (k, v) => game.describeDelta(k, v));
+      stage.current?.floatDeltas(r.deltas, (k, v) => cur(game.describeDelta(k, v)));
     },
     [game, stage],
   );

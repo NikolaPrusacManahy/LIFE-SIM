@@ -86,6 +86,33 @@ check('every contextual reply makes your bubble and their reaction', missingBubb
   check('unanswered invitations expire with a message', last(g3, r.id).kind === 'expired' && !pendingMessage(g3, r.id));
 }
 
+// ---------- 0.10: "tonight" means today — at night it starts right away; in the morning it's this evening
+{
+  const g = mk();
+  g.s.phase = 3;
+  const p = friend(g);
+  sendText(g, p, 'invite', `${p.name}: "movie tonight?"`);
+  answer(g, p.id, pendingMessage(g, p.id)!.id, 'inv_yes');
+  const plan = g.s.plans[0];
+  check('accepted at Night: the plan is right now (same slot)', plan.turn === g.s.turn && g.currentEvent?.id === 'plan_scene');
+  const t0 = g.s.turn;
+  g.resolveChoice(0);
+  check('…and going uses this slot', plan.status === 'done' && g.s.turn === t0 + 1);
+  const m = mk();
+  m.s.phase = 0;
+  const q = friend(m);
+  const clock = m.s.clock;
+  sendText(m, q, 'invite', `${q.name}: "come over later?"`);
+  answer(m, q.id, pendingMessage(m, q.id)!.id, 'inv_yes');
+  const pl = m.s.plans[0];
+  check('accepted in the Morning: it’s this evening, same day', pl.turn === m.s.turn + 2 && Math.floor((m.s.phase + 2) / 4) === 0 && m.s.clock === clock && !m.currentEvent);
+  const n = mk();
+  n.s.phase = 2;
+  const r = friend(n);
+  sendChip(n, r.id, 'hangplan');
+  check('your own “Hang out?” in the evening also starts right away (if they say yes)', n.s.plans.length === 0 || (n.s.plans[0].turn === n.s.turn && n.queued('plan_scene')));
+}
+
 // ---------- plans play as a scene in their slot
 {
   const g = mk();
