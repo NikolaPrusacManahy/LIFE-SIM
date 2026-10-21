@@ -10,6 +10,7 @@ import { canBeIntimate, beginNight } from '../systems/intimacy';
 import { fmt } from '../systems/finance';
 import { settings } from '../settings';
 import { checkHint, inHS, type Ctx, type EventDef } from './types';
+import { rejectAdmirer } from '../systems/stalker';
 
 // Update 0.4 — encounters, relationship chains, teachers, searches, identity, and 18+ college events.
 
@@ -17,6 +18,12 @@ const who = (g: Game, c: Ctx) => g.personById(c.pid);
 const run = (id: string, g: Game, p: Person, opt?: string) => cap(INTERACTION_BY_ID[id].run(g, p, opt));
 const forget = (g: Game, p: Person) => {
   if (p.tags.includes('stranger')) g.s.people = g.s.people.filter((x) => x.id !== p.id);
+};
+/** Update 0.12 — a rejection: most walk away; a yandere (or a new one) remembers. */
+const rejectLine = (g: Game, p: Person, line: string) => {
+  if (rejectAdmirer(g, p)) return say(`${line} {They} stop{s} smiling. {They} stare{s} at you until you’re out of sight.`, p);
+  forget(g, p);
+  return say(`${line} {They} nod{s} and walk{s} away.`, p);
 };
 const met = (p: Person) => {
   p.tags = p.tags.filter((t) => t !== 'stranger');
@@ -58,7 +65,9 @@ export const PEOPLE_EVENTS: EventDef[] = [
         { label: '🙂 Gently say no', when: () => c.kind === 'doctor_love', run: (gg) => { met(p); bump(p, 'romance', -20); p.tags = p.tags.filter((t) => t !== 'loveAtFirstSight'); gg.stat('mood', 2); return say('{name} blushes. “Of course. Sorry — that was unprofessional.” Still flattering.', p); } },
         { label: '😘 Flirt', when: () => isRomanceEligible(g, p), hint: `Looks/Charm · ${Math.round(Math.min(0.95, socialOdds(g, p, 'charm', 0.35) + (s.looks - 50) / 200) * 100)}%`, run: (gg) => { met(p); return run('flirt', gg, p); } },
         { label: '📱 Ask for their number', run: (gg) => { met(p); return run('number', gg, p); } },
-        { label: 'Ignore', run: (gg) => { forget(gg, p); return 'You kept walking.'; } },
+        // Update 0.12 — rejecting (or ignoring) someone who's into you can turn them yandere
+        { label: '🙅 Reject them', when: () => c.kind === 'admirer' || c.kind === 'yandere', run: (gg) => rejectLine(gg, p, 'You tell {name} you’re not interested.') },
+        { label: 'Ignore', run: (gg) => (c.kind === 'admirer' || c.kind === 'yandere' ? rejectLine(gg, p, 'You look away. {name} stands there a moment, then leaves.') : (forget(gg, p), 'You kept walking.')) },
       ];
     },
   },

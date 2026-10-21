@@ -41,10 +41,12 @@ interface Props {
   onTitle: () => void;
   onRestart: () => void;
   onChild: (id: string) => void;
+  /** Update 0.12 — tells the stage when a story card (not its result) is open */
+  onEventOpen?: (open: boolean) => void;
 }
 
 /** Façade for the main game screen: routes input to the engine and results to the stage. */
-export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChild }: Props) {
+export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChild, onEventOpen }: Props) {
   // Update 0.8 — strict order: result card → queued events → banners
   const [pipe, dispatch] = useReducer(pipelineReducer, IDLE);
   const [banner, setBanner] = useState<string | null>(null);
@@ -134,6 +136,8 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const showEvent = eventsPending && canShowEvents(pipe) && !game.s.session && !game.s.night && !game.s.date;
   // Update 0.10 — a story card, date, night out or computer sitting takes over: put the phone / panels away
   const takeover = showEvent || !!game.s.date || !!game.s.night || !!game.s.session;
+  const cardOpen = showEvent && !eventResult;
+  useEffect(() => onEventOpen?.(cardOpen), [cardOpen, onEventOpen]);
   useEffect(() => {
     if (!takeover) return;
     setDevice(null);

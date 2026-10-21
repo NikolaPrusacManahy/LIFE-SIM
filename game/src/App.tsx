@@ -69,10 +69,12 @@ export function App() {
   };
 
   const onPreview = useCallback((p: CreatePreview) => setPreview(p), []);
+  // Update 0.12 — is a story card open right now? (the stage shows that card's person only then)
+  const [eventOpen, setEventOpen] = useState(false);
 
   // Game state is mutable, so the stage view is simply recomputed every render.
   let view: StageView = TITLE_VIEW;
-  if (screen === 'play' && game) view = stageViewFor(game, tab);
+  if (screen === 'play' && game) view = stageViewFor(game, tab, eventOpen);
   else if (screen === 'create' && preview) {
     view = {
       region: preview.hometown,
@@ -93,7 +95,7 @@ export function App() {
         {!ageAsked && <AgeConfirm onDone={() => setAgeAsked(true)} />}
         {screen === 'create' && <CreateScreen onBack={() => setScreen('title')} onCreate={begin} onPreview={onPreview} />}
         {screen === 'play' && game && (
-          <PlayScreen game={game} stage={stage} tab={tab} setTab={setTab} onTitle={() => setScreen('title')} onRestart={restart} onChild={onChild} />
+          <PlayScreen game={game} stage={stage} tab={tab} setTab={setTab} onEventOpen={setEventOpen} onTitle={() => setScreen('title')} onRestart={restart} onChild={onChild} />
         )}
       </div>
     </div>

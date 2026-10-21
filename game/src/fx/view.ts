@@ -33,11 +33,12 @@ function npcLook(g: Game): AvatarLook | null {
   return { ...p.look, gender: p.gender, age: g.ageOf(p), mood: p.mood, outfit };
 }
 
-/** Translate game state + the browsed location into what the Pixi stage should show. */
-export function stageViewFor(g: Game, locId: string): StageView {
+/** Translate game state + the browsed location into what the Pixi stage should show.
+ *  Update 0.12 — `eventOpen`: the event person only stands beside you while their card is open (not behind a result card). */
+export function stageViewFor(g: Game, locId: string, eventOpen = true): StageView {
   const loc = LOC_BY_ID[locId] ?? LOC_BY_ID.home;
   return {
-    npc: npcLook(g),
+    npc: eventOpen ? npcLook(g) : null,
     prison: g.jailed,
     ruins: g.s.region === 'city' && g.flag('ruinsUntil') > g.s.clock,
     region: g.s.region,

@@ -1,6 +1,7 @@
 import type { Game } from '../Game';
 import type { Person } from '../types';
-import { YANDERE_HOLD, oppositeOf } from '../npc/persona';
+import { YANDERE_HOLD, oppositeOf, personaOk, setPersona } from '../npc/persona';
+import { settings } from '../settings';
 import { darkCrimeOn } from '../crime/consent';
 import { newId } from '../Game';
 import { fmt } from './finance';
@@ -28,10 +29,11 @@ export const ANON_REPLIES_PER_MONTH = 3;
 export const stalker = (g: Game) => g.s.stalker;
 export const stalkerPerson = (g: Game) => (g.s.stalker ? g.personById(g.s.stalker.pid) : null);
 
-/** A yandere who wants you but doesn't have you (yet). */
+/** A yandere who wants you but doesn't have you (yet). One you rejected comes first. */
 export function stalkCandidate(g: Game): Person | null {
   if (g.age < 18) return null;
-  return g.s.people.find((p) => p.persona === 'yandere' && p.alive && p.status === 'alive' && g.ageOf(p) >= 18 && p.gender === genderFor(g, p) && !YANDERE_HOLD.includes(p.role) && p.attraction >= 60) ?? null;
+  const ok = (p: Person) => p.persona === 'yandere' && p.alive && p.status === 'alive' && g.ageOf(p) >= 18 && p.gender === genderFor(g, p) && !YANDERE_HOLD.includes(p.role);
+  return g.s.people.find((p) => ok(p) && p.tags.includes('rejected')) ?? g.s.people.find((p) => p.persona === 'yandere' && p.alive && p.status === 'alive' && g.ageOf(p) >= 18 && p.gender === genderFor(g, p) && !YANDERE_HOLD.includes(p.role) && p.attraction >= 60) ?? null;
 }
 const genderFor = (g: Game, p: Person) => (g.s.gender === 'nonbinary' ? p.gender : oppositeOf(g));
 
@@ -45,7 +47,7 @@ const push = (g: Game, from: 'anon' | 'me', text: string, photo?: string) => {
 export function startStalking(g: Game, p: Person): boolean {
   if (g.s.stalker || g.age < 18 || g.ageOf(p) < 18 || p.persona !== 'yandere') return false;
   g.s.stalker = { pid: p.id, stage: 0, msgs: [], month: g.s.clock, sent: 0, read: false };
-  push(g, 'anon', 'hi ♡ you don’t know me. but I know you.');
+  push(g, 'anon', p.tags.includes('rejected') ? g.pick(['you walked away from me. nobody walks away from me ♡', 'you said no. you didn’t mean it. I’ll show you ♡']) : 'hi ♡ you don’t know me. but I know you.');
   g.log('📵 An unknown number texted you.', 'bad');
   return true;
 }
@@ -59,6 +61,14 @@ export function secretsAbout(g: Game): string[] {
   out.push(`you have ${fmt(g.s.money)} in the bank. I could take care of you, you know ♡`);
   const ex = g.s.people.find((p) => p.role === 'ex');
   if (ex) out.push(`${ex.name} never deserved you. I made sure of that ♡`);
+  // Update 0.12 — the obsession (any yandere, rejected or not)
+  out.push('I kept a few strands of your hair. they’re in a jar next to my bed ♡ I say goodnight to them.');
+  out.push('your toothbrush went missing, right? sorry ♡ I use it every night. it’s like kissing you.');
+  out.push('I sleep in the shirt you lost at the gym. it still smells like you ♡');
+  if (settings.mature) {
+    out.push('I think about you every time I touch myself ♡ every single time.');
+    out.push('last night I whispered your name when I… you know ♡ I wish you’d heard.');
+  }
   const partner = g.partner;
   if (partner) out.push(`${partner.name} doesn’t look at you the way I do.`);
   if (g.flag('drunkTurn')) out.push('you were so cute drunk last time. you should be more careful who sees ♡');
@@ -70,7 +80,8 @@ export function stalkerMonth(g: Game) {
   const s = g.s.stalker;
   if (!s) {
     const c = stalkCandidate(g);
-    if (c && g.chance(0.08)) startStalking(g, c);
+    // a rejected yandere starts the very next month
+    if (c && (c.tags.includes('rejected') || g.chance(0.08))) startStalking(g, c);
     return;
   }
   const p = stalkerPerson(g);
@@ -82,9 +93,23 @@ export function stalkerMonth(g: Game) {
   s.sent = 0;
   s.stage++;
   const lines = secretsAbout(g);
-  push(g, 'anon', g.pick(lines), g.chance(0.6) ? g.pick(['📷 A photo of you, taken from across the street', '📷 You, asleep. Taken through your window', '📷 You at work, from behind a car', '📷 You, smiling at someone else. Their face is scratched out']) : undefined);
+  push(g, 'anon', g.pick(lines), g.chance(0.6) ? g.pick(['📷 A photo of you, taken from across the street', '📷 You, asleep. Taken through your window', '📷 You at work, from behind a car', '📷 You, smiling at someone else. Their face is scratched out', '📷 A jar of hair. The label has your name on it', '📷 Your toothbrush, in someone else’s bathroom']) : undefined);
   if (s.stage >= 2) push(g, 'anon', g.pick(['soon ♡', 'we’re meant to be. you’ll see.', 'I’m closer than you think.']));
   if (s.stage >= STALK_REVEAL && !g.queued('stalker_reveal')) g.queue('stalker_reveal', { pid: p.id });
+}
+
+/** Update 0.12 — you rejected (or ignored) someone who's into you. A yandere stays and starts texting next month;
+ *  a normal admirer has a 50% chance to turn yandere over it (adults of the opposite sex only). */
+export const REJECT_TURN = 0.5;
+export function rejectAdmirer(g: Game, p: Person): boolean {
+  const turns = p.persona !== 'yandere' && personaOk(g, 'yandere', g.ageOf(p), p.gender) && g.chance(REJECT_TURN);
+  if (p.persona !== 'yandere' && !turns) return false;
+  setPersona(p, 'yandere');
+  p.attraction = Math.max(p.attraction, 90);
+  p.tags = p.tags.filter((t) => t !== 'stranger');
+  if (!p.tags.includes('rejected')) p.tags.push('rejected');
+  p.memory.unshift({ clock: g.s.clock, text: 'You rejected them', tone: 'bad' });
+  return true;
 }
 
 export type AnonReply = 'who' | 'leave' | 'block' | 'police' | 'move' | 'listen';

@@ -10,7 +10,7 @@ const UPDATES: [string, Card[]][] = [
       ['💗', 'Yanderes', ['Stunning. Devoted. Text someone of their sex too much', 'and that person is gone. Nobody is ever caught.']],
       ['📵', 'The unknown number', ['Photos of you. Things only you know.', 'Block, report, move — or give in. Refusing them ends badly.']],
       ['🙈', 'Shy confessions', ['They say it… and faint. Yes: 2 months in hospital.', 'No: heartbroken for a while.']],
-      ['👀', 'Admirers', ['People who are into you walk up: library, clubs,', 'bars, the park, work, college.']],
+      ['👀', 'Admirers', ['People who are into you walk up: library, clubs, bars, park, work, college.', 'Reject or ignore one: 50% they turn yandere. A yandere starts texting next month.']],
       ['🌙', 'End of the date', ['How it went decides what you can ask:', 'second date (40), friends with benefits (60), one night (70).']],
       ['🥳', 'House parties', ['College parties are a night out now:', 'kitchen, living room, backyard, upstairs.']],
       ['🎓', 'Faster college', ['Degrees take half as long.', 'Fix: Stats on steroids — health & energy only via max.']],
