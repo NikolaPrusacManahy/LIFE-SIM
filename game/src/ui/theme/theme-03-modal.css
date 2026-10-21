@@ -1,0 +1,29 @@
+/* Update 0.2 — modal shell, story events, pause, kiosk */
+.mdl-backdrop { position: absolute; inset: 0; background: rgba(20, 12, 40, 0.42); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 20; }
+.mdl-card { position: relative; width: 520px; max-height: calc(100 * var(--dvh) - 120px); overflow-y: auto; background: var(--card-solid); border-radius: 28px; padding: 26px 28px; box-shadow: 0 30px 80px rgba(20, 10, 50, 0.4); }
+.mdl-wide { width: 960px; }
+.mdl-x { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: #ffe8ef; color: var(--pink); font-size: 13px; font-weight: 800; cursor: pointer; }
+.mdl-x:hover { background: #ffd6e2; }
+
+.evt-card { text-align: center; }
+.evt-icon { width: 76px; height: 76px; margin: 0 auto 10px; border-radius: 24px; display: grid; place-items: center; font-size: 40px; background: linear-gradient(135deg, #fff0f5, #f1ecff); box-shadow: inset 0 0 0 2px #fff; }
+.evt-title { font: 600 25px var(--display); margin: 0 0 8px; }
+.evt-text { font: 600 15.5px var(--font); line-height: 1.55; color: var(--ink-dim); margin: 0 0 18px; }
+.evt-choices { display: flex; flex-direction: column; gap: 8px; }
+.evt-choice { text-align: left; padding: 13px 16px; border-radius: 16px; border: 0; background: var(--card-soft); color: var(--ink); font: 600 16px var(--display); cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative; transition: background 0.15s, transform 0.12s; }
+.evt-choice::after { content: '›'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); font-size: 22px; }
+.evt-choice:hover:not(:disabled) { background: #fff0f5; transform: translateX(3px); box-shadow: inset 0 0 0 1.5px #ffd1df; }
+.evt-choice:hover:not(:disabled)::after { color: var(--pink); }
+.evt-choice:disabled { opacity: 0.45; cursor: not-allowed; }
+.evt-choice small { font: 700 12px var(--font); color: var(--ink-faint); }
+.evt-card .dlt-row { justify-content: center; margin-bottom: 18px; }
+.evt-continue { min-width: 200px; }
+
+.pse-card { text-align: center; width: 380px; }
+.pse-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+
+.ksk-card { width: 560px; display: flex; flex-direction: column; padding: 22px 22px 18px; }
+.ksk-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.ksk-head b { font: 600 22px var(--display); }
+.ksk-icon { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; font-size: 23px; background: linear-gradient(135deg, #fff0f5, #f1ecff); }
+.ksk-body { overflow-y: auto; }

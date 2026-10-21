@@ -1,0 +1,22 @@
+import { createLife, randomLook } from '../src/state/newGame';
+import { monthlyFinances, buyAsset } from '../src/state/systems/finance';
+import { check, done } from './harness';
+
+const g = createLife({ name: 'Mo', familyName: 'Ney', gender: 'male', background: 'poor', hometown: 'city', traits: [], look: randomLook() });
+g.s.bornAt -= 6 * 12;
+g.s.housing = 'apartment';
+g.s.money = 0;
+g.s.events = [];
+for (let i = 0; i < 3; i++) monthlyFinances(g);
+check('unpaid rent never makes money negative', g.s.money === 0);
+check('shortfall goes to debt', g.s.debt > 0);
+check('three missed rents queue eviction', g.s.events.some((e) => e.id === 'evicted'));
+g.s.money = 10000;
+check('Update 0.3: no license, no car', buyAsset(g, 'car') === 'Need a driver’s license' && !g.has('car'));
+g.setFlag('license');
+g.s.money = 1000;
+check('cannot buy what you cannot afford', buyAsset(g, 'car') === 'Not enough money.' && !g.has('car'));
+g.s.money = 10000;
+buyAsset(g, 'car');
+check('buying deducts price', g.has('car') && g.s.money === 3500, `${g.s.money}`);
+done();

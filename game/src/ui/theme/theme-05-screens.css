@@ -1,0 +1,47 @@
+/* Update 0.2 — title, character creation, death (clean cards) */
+.ttl-screen { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: radial-gradient(ellipse at center, rgba(18, 10, 40, 0) 30%, rgba(18, 10, 40, 0.55)); }
+.ttl-logo { font: 700 112px var(--display); letter-spacing: 4px; margin: 0; color: #fff; text-shadow: 0 6px 0 #ff5c8a, 0 14px 40px rgba(255, 92, 138, 0.55); }
+.ttl-logo span { color: #ffd1df; }
+.ttl-tag { font: 700 19px var(--font); color: #fff; opacity: 0.9; margin: 4px 0 18px; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); }
+.ttl-buttons { display: flex; gap: 12px; }
+.ttl-buttons .btn:not(.btn-primary) { background: var(--card); box-shadow: var(--shadow); }
+.ttl-foot { position: absolute; bottom: 18px; font: 700 12.5px var(--font); color: rgba(255, 255, 255, 0.75); }
+
+.crt-screen { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 32px; pointer-events: none; }
+.crt-panel { pointer-events: auto; width: 640px; max-height: calc(100 * var(--dvh) - 48px); overflow-y: auto; padding: 24px 26px; }
+.crt-title { font: 600 28px var(--display); margin: 0 0 12px; }
+.crt-row { display: flex; gap: 10px; align-items: flex-end; }
+.crt-field { display: flex; flex-direction: column; gap: 5px; flex: 1; font: 800 11px var(--font); letter-spacing: 1px; text-transform: uppercase; color: var(--pink); }
+.crt-field input { font: 600 17px var(--display); color: var(--ink); background: var(--card-soft); border: 1.5px solid transparent; border-radius: 14px; padding: 10px 14px; outline: none; user-select: text; text-transform: none; letter-spacing: 0; }
+.crt-field input:focus { border-color: #ffbfd2; background: #fff; }
+.crt-dice { font-size: 18px; }
+.crt-section { font: 800 11px var(--font); letter-spacing: 1.3px; text-transform: uppercase; color: var(--pink); margin: 16px 0 7px; }
+.crt-section em { font-style: normal; color: var(--ink-faint); }
+.crt-seg { display: flex; gap: 8px; }
+.crt-opt { flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 10px 13px; border-radius: 16px; border: 0; background: var(--card-soft); color: var(--ink); font: 600 15px var(--display); cursor: pointer; text-align: left; transition: background 0.15s; }
+.crt-opt small { font: 600 11.5px var(--font); color: var(--ink-faint); }
+.crt-opt:hover { background: #efebf7; }
+.crt-opt.on { background: #fff0f5; box-shadow: inset 0 0 0 2px #ffbfd2; }
+.crt-looks { align-items: center; gap: 16px; }
+.crt-swatches { display: flex; gap: 6px; }
+.crt-sw { width: 26px; height: 26px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.06); }
+.crt-sw.on { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--pink); }
+.crt-traits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.crt-trait { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 9px 11px; border-radius: 15px; border: 0; background: var(--card-soft); color: var(--ink); cursor: pointer; }
+.crt-trait b { font: 600 13.5px var(--display); }
+.crt-trait small { font: 600 11px var(--font); color: var(--ink-faint); line-height: 1.3; }
+.crt-trait.on { background: #fff6dc; box-shadow: inset 0 0 0 2px #ffd98a; }
+.crt-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+
+.dth-screen { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20, 12, 40, 0.5); backdrop-filter: blur(6px); }
+.dth-card { width: 620px; max-height: calc(100 * var(--dvh) - 80px); overflow-y: auto; padding: 28px 32px; text-align: center; }
+.dth-stone { font-size: 58px; }
+.dth-card h2 { font: 600 32px var(--display); margin: 4px 0; }
+.dth-years { font: 700 14px var(--font); color: var(--ink-dim); margin: 0; }
+.dth-cause { font: 600 14px var(--font); font-style: italic; color: var(--ink-faint); margin: 6px 0 14px; }
+.dth-stats { display: flex; justify-content: center; gap: 16px; font: 700 13px var(--font); color: var(--ink-dim); }
+.dth-stats b { color: var(--ink); }
+.dth-line { font: 600 13px var(--font); color: var(--ink-dim); }
+.dth-miles { text-align: left; font: 600 12.5px var(--font); color: var(--ink-dim); display: flex; flex-direction: column; gap: 4px; margin: 14px 0; padding: 12px 16px; border-radius: 18px; background: var(--card-soft); }
+.dth-ach { font-size: 22px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.dth-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; align-items: center; }

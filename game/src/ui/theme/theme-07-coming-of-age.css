@@ -1,0 +1,40 @@
+/* Update 0.3 — age confirm, settings switch, dating app, diary filters, month summary */
+.age-card { text-align: center; width: 460px; }
+
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 0; cursor: pointer; text-align: left; color: var(--ink); }
+.set-row:disabled { opacity: 0.55; cursor: not-allowed; }
+.set-row span { display: flex; flex-direction: column; }
+.set-row b { font: 600 15px var(--display); }
+.set-row small { font: 600 11.5px var(--font); color: var(--ink-faint); }
+.set-switch { flex-shrink: 0; width: 46px; height: 26px; border-radius: 99px; background: #ddd7e8; position: relative; transition: background 0.2s; }
+.set-switch::after { content: ''; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); transition: left 0.2s; }
+.set-switch.on { background: var(--pink); }
+.set-switch.on::after { left: 23px; }
+
+.dat-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 26px 18px; border-radius: 26px; background: linear-gradient(160deg, #fff, #ffeef5); box-shadow: 0 14px 30px rgba(255, 79, 139, 0.2); text-align: center; }
+.dat-face { width: 110px; height: 110px; border-radius: 50%; display: grid; place-items: center; font-size: 56px; background: linear-gradient(135deg, #ffd1e2, #e8dcff); margin-bottom: 8px; }
+.dat-card b { font: 600 24px var(--display); }
+.dat-card small { font: 700 12px var(--font); color: var(--ink-faint); }
+.dat-card p { font: 600 14px var(--font); color: var(--ink-dim); margin: 8px 0 0; }
+.dat-buttons { display: flex; justify-content: center; gap: 24px; }
+.dat-buttons button { width: 66px; height: 66px; border-radius: 50%; border: 0; font-size: 26px; cursor: pointer; box-shadow: 0 10px 20px rgba(40, 20, 80, 0.15); transition: transform 0.12s; }
+.dat-buttons button:hover:not(:disabled) { transform: scale(1.08); }
+.dat-buttons button:disabled { opacity: 0.4; cursor: not-allowed; }
+.dat-pass { background: #fff; color: #9a9db3; }
+.dat-like { background: linear-gradient(135deg, #ff9ec4, #ff4f8b); color: #fff; }
+
+.dia-seg { flex-wrap: wrap; }
+.dia-seg button { flex: 1 0 30%; }
+
+.mon-card { width: 500px; text-align: center; }
+.mon-card .dlt-row { justify-content: center; margin: 10px 0; }
+.mon-money { display: flex; flex-direction: column; align-items: center; padding: 12px; border-radius: 18px; margin: 6px 0; }
+.mon-money.up { background: #fff6dc; }
+.mon-money.down { background: #ffe8ec; }
+.mon-money small { font: 800 10.5px var(--font); letter-spacing: 1.2px; color: var(--ink-faint); text-transform: uppercase; }
+.mon-money b { font: 600 30px var(--display); }
+.mon-money.up b { color: #b77400; }
+.mon-money.down b { color: #d6455f; }
+.mon-money span { font: 700 12px var(--font); color: var(--ink-dim); }
+.mon-list { text-align: left; display: flex; flex-direction: column; gap: 5px; margin: 10px 0; padding: 10px 14px; border-radius: 16px; background: var(--card-soft); font: 600 12.5px var(--font); color: var(--ink-dim); }
+.mon-warn { background: #fff1f3; color: #b0334a; }
