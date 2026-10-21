@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useReducer, useState, type RefObject } from 'react';
 import type { ActionResult, Game } from '../../state/Game';
 import type { ActivityDef, PanelId } from '../../state/activities';
 import { visibleLocations } from '../../state/systems/world';
@@ -10,7 +10,13 @@ import { TopPills } from './hud/TopPills';
 import { PlacesCard } from './hud/PlacesCard';
 import { ActionsCard } from './hud/ActionsCard';
 import { EventModal } from './EventModal';
-import { ActionToast } from './ActionToast';
+import { ResultCard } from './ResultCard';
+import { Desktop } from '../desktop/Desktop';
+import { BuildScreen } from '../pc/BuildScreen';
+import { NightScreen } from '../night/NightScreen';
+import { NotificationBanner } from '../phone/NotificationBanner';
+import { IDLE, canShowBanners, canShowEvents, pipelineReducer } from '../../state/pipeline';
+import { pendingBanners } from '../../state/phone/notify';
 import { PhoneDevice } from '../phone/PhoneDevice';
 import { KioskCard } from '../phone/KioskCard';
 import type { AppId } from '../phone/apps';
@@ -20,10 +26,9 @@ import { MonthSummary, type MonthReport } from './MonthSummary';
 import { PeopleScreen } from '../people/PeopleScreen';
 import { EvidenceScreen } from '../crime/EvidenceScreen';
 import { NewsTicker, PursuitHud } from '../crime/PursuitHud';
-import { unreadCount } from '../../state/phone/texts';
-import { sfx, sfxForText } from '../../ui/audio';
+import { sfxForText } from '../../ui/audio';
 
-const PANEL_APP: Record<PanelId, AppId> = { jobs: 'jobs', school: 'school', shop: 'shop', housing: 'homes', bank: 'bank', blackmarket: 'blackmarket', crime: 'crime' };
+const PANEL_APP: Record<Exclude<PanelId, 'pcbuild'>, AppId> = { jobs: 'jobs', school: 'school', shop: 'shop', housing: 'homes', bank: 'bank', blackmarket: 'blackmarket', crime: 'crime' };
 
 interface Props {
   game: Game;
@@ -37,23 +42,18 @@ interface Props {
 
 /** Façade for the main game screen: routes input to the engine and results to the stage. */
 export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChild }: Props) {
-  const [toast, setToast] = useState<ActionResult | null>(null);
+  // Update 0.8 — strict order: result card → queued events → banners
+  const [pipe, dispatch] = useReducer(pipelineReducer, IDLE);
+  const [banner, setBanner] = useState<string | null>(null);
   const [eventResult, setEventResult] = useState<ActionResult | null>(null);
-  const [device, setDevice] = useState<{ app: AppId | null } | null>(null);
+  const [device, setDevice] = useState<{ app: AppId | null; thread?: string } | null>(null);
   const [kiosk, setKiosk] = useState<{ app: AppId; title: string; icon: string } | null>(null);
   const [paused, setPaused] = useState(false);
   const [report, setReport] = useState<MonthReport | null>(null);
   const [people, setPeople] = useState<{ pid: string | null } | null>(null);
+  const [build, setBuild] = useState(false);
 
   useEscape(() => setPaused((p) => !p));
-
-  // Update 0.5.1 — ping when a new text lands
-  const unread = hasPhone(game) ? unreadCount(game) : 0;
-  const lastUnread = useRef(unread);
-  useEffect(() => {
-    if (unread > lastUnread.current) sfx('notify');
-    lastUnread.current = unread;
-  }, [unread]);
 
   // fall back to the first place if the browsed one disappears (graduated, quit job, moved)
   const locs = visibleLocations(game);
@@ -70,12 +70,13 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   );
 
   const act = (def: ActivityDef) => {
+    if (def.panel === 'pcbuild') return setBuild(true);
     if (def.panel) return setKiosk({ app: PANEL_APP[def.panel], title: def.name, icon: def.icon });
     const r = game.doActivity(def.id);
     if (r) {
       sfxForText(r.text);
       play(r);
-      setToast(r);
+      dispatch({ type: 'result', result: r });
     }
   };
 
@@ -91,7 +92,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
     }
     play(merged);
     if (merged.monthPassed) setReport({ label, deltas: merged.deltas, entries: game.s.log.filter((l) => l.turn >= startTurn) });
-    else setToast(merged);
+    else dispatch({ type: 'result', result: merged });
   };
 
   const choose = (i: number) => {
@@ -102,19 +103,33 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
     }
   };
 
-  const onResult = (r: ActionResult) => {
+  /** `card` = false for instant phone actions (the app shows its own inline message). */
+  const onResult = (r: ActionResult, card = true) => {
     sfxForText(r.text);
     play(r);
-    if (r.title) setToast(r);
+    if (r.title && card) dispatch({ type: 'result', result: r });
+  };
+  const openChat = (pid: string) => {
+    setPeople(null);
+    setDevice({ app: 'people', thread: pid });
   };
   const openPeople = (pid?: string) => {
     setDevice(null);
     setPeople({ pid: pid ?? null });
   };
-  const host = { game, onResult, onTitle, onRestart, openPeople };
+  const host = { game, onResult, onTitle, onRestart, openPeople, openChat };
 
-  const hideToast = useCallback(() => setToast(null), []);
-  const showEvent = !!eventResult || !!game.currentEvent;
+  const dismiss = useCallback(() => dispatch({ type: 'dismiss' }), []);
+  const eventsPending = !!eventResult || !!game.currentEvent;
+  // Update 0.8 — a computer sitting holds the queue until you shut down
+  const showEvent = eventsPending && canShowEvents(pipe) && !game.s.session && !game.s.night;
+  // next banner, only once the result card and all queued events are done
+  const nextBanner = banner ?? (canShowBanners(pipe, eventsPending) && hasPhone(game) ? pendingBanners(game)[0]?.id ?? null : null);
+  const bannerNote = nextBanner ? game.s.notes.find((n) => n.id === nextBanner) ?? null : null;
+  useEffect(() => {
+    if (nextBanner && nextBanner !== banner) setBanner(nextBanner);
+  }, [nextBanner, banner]);
+  const bannerDone = useCallback(() => setBanner(null), []);
   const scene = !!game.s.underworld.scene && !showEvent;
   if (game.s.dead && !showEvent) return <DeathScreen game={game} onChild={onChild} onNewLife={onRestart} />;
 
@@ -126,13 +141,21 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
       <TopPills game={game} onDevice={() => setDevice({ app: null })} onPeople={() => openPeople()} onAutopilot={autopilot} onPause={() => setPaused(true)} />
       <PlacesCard game={game} tab={tab} setTab={setTab} />
       <ActionsCard game={game} tab={tab} onAct={act} onGo={setTab} onStory={() => setDevice({ app: 'diary' })} />
-      {toast && !showEvent && <ActionToast key={toast.title + game.s.turn} game={game} result={toast} onDone={hideToast} />}
+      {pipe.stage === 'result' && pipe.result && <ResultCard key={`${pipe.result.title}-${game.s.turn}`} game={game} result={pipe.result} onDone={dismiss} />}
+      {bannerNote && !showEvent && pipe.stage === 'idle' && <NotificationBanner key={bannerNote.id} game={game} note={bannerNote} onOpen={openChat} onDone={bannerDone} />}
       {showEvent && <EventModal game={game} result={eventResult} onChoose={choose} onContinue={() => setEventResult(null)} />}
-      {device && !showEvent && <PhoneDevice {...host} mode={hasPhone(game) ? 'phone' : 'journal'} initial={device.app} onClose={() => setDevice(null)} />}
+      {device && !showEvent && <PhoneDevice {...host} mode={hasPhone(game) ? 'phone' : 'journal'} initial={device.app} thread={device.thread} onClose={() => setDevice(null)} />}
       {kiosk && !showEvent && <KioskCard {...host} app={kiosk.app} title={kiosk.title} icon={kiosk.icon} onClose={() => setKiosk(null)} />}
       {scene && <EvidenceScreen game={game} onResult={onResult} />}
-      {people && !showEvent && <PeopleScreen game={game} initial={people.pid} onClose={() => setPeople(null)} onResult={onResult} />}
+      {people && !showEvent && <PeopleScreen game={game} initial={people.pid} onClose={() => setPeople(null)} onResult={onResult} onOpenChat={hasPhone(game) ? openChat : undefined} />}
       {report && !showEvent && <MonthSummary game={game} report={report} onClose={() => setReport(null)} />}
+      {game.s.session && pipe.stage === 'idle' && (
+        <Desktop game={game} host={{ ...host, onClose: () => undefined }} onShutdown={(summary) => onResult(game.flush('Computer session', '🖥️', summary))} />
+      )}
+      {game.s.night && pipe.stage === 'idle' && (
+        <NightScreen game={game} onChange={() => onResult(game.flush('', '', ''), false)} onEnd={(summary) => onResult(game.flush('Night out', '🌙', summary))} />
+      )}
+      {build && !showEvent && <BuildScreen game={game} onClose={() => setBuild(false)} onResult={onResult} />}
       {paused && <PauseMenu onResume={() => setPaused(false)} onTitle={onTitle} onRestart={onRestart} />}
     </div>
   );

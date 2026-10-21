@@ -4,6 +4,35 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.9 — Free Time',
+    [
+      ['⏱️', 'Free actions', ['Computers and most profile actions take no time:', 'once per time of day. Outings still do (⏱).']],
+      ['🌅', 'Nights out', ['Partying into the morning? You wake up rested —', 'or at half energy if you got drunk.']],
+      ['💘', 'Real faces on Spark', ['Dating profiles show who you’ll actually meet.']],
+      ['💾', '5 save slots', ['Continue any saved life. New lives pick a slot', '(hold to overwrite). Still autosaves.']],
+    ],
+  ],
+  [
+    'Update 0.8 — Connected',
+    [
+      ['💬', 'Real conversations', ['Reply to what they actually said.', 'Your bubble, their reaction, effects inline.']],
+      ['📅', 'Plans', ['Accept an invite → it happens in that slot.', 'Partners ask you out. Standing people up hurts.']],
+      ['🧾', 'One thing at a time', ['Every action ends on a result card.', 'Events and texts wait until you’re done.']],
+      ['🔔', 'Notifications', ['Number badges, banners, a notification centre.', '10 texts per person per month.']],
+      ['🖥️', 'Computers', ['Doors desktop: JobHunt, ViewTube, Twitchy, Chirp,', 'Nile, Discorb, 7 mini-games and more.']],
+      ['🔧', 'Build a PC', ['Fictional parts, real compatibility.', 'Forget the thermal paste at your peril.']],
+      ['🪩', 'Nights out', ['Walk up to people, chat, dance, drink, darts.', 'Too drunk = cab home, not your place.']],
+    ],
+  ],
+  [
+    'Update 0.7 — New Faces',
+    [
+      ['🧑‍🎨', 'New portraits', ['Avataaars faces everywhere: chats, contacts,', 'events, the news. Built from your look.']],
+      ['😊', 'Moods show', ['Happy people smile, sad people look it.']],
+      ['♀️', 'Women look like women', ['Every hairstyle and outfit fits the body.', 'Heirs keep their own body, not the parent’s.']],
+    ],
+  ],
+  [
     'Update 0.6 — Ascension',
     [
       ['⚡', 'Born a god', ['New creator option. Immortal, untouchable,', 'every stat and your wallet maxed. The world still reacts.']],

@@ -30,7 +30,7 @@ export function WebView({ game, onPick }: { game: Game; onPick: (id: string) => 
       </svg>
       {pos.map(({ p, x, y }) => (
         <button key={p.id} className="web-node" style={{ left: x - 22, top: y - 22 }} onClick={() => onPick(p.id)} title={`${p.name} · ${contactGroup(p)}`}>
-          <Portrait look={p.look} age={game.ageOf(p)} size={44} />
+          <Portrait look={p.look} age={game.ageOf(p)} size={44} seed={p.id} />
           <small>{p.name}</small>
         </button>
       ))}

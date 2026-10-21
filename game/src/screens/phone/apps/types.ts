@@ -10,9 +10,12 @@ export interface AppProps {
   onRestart: () => void;
   /** Update 0.4 — open the People screen (optionally on someone) */
   openPeople?: (pid?: string) => void;
+  /** Update 0.8 — open this chat thread straight away */
+  initialThread?: string;
+  openChat?: (pid: string) => void;
 }
 
-export type AppId = 'god' | 'people' | 'dating' | 'bag' | 'crime' | 'blackmarket' | 'jobs' | 'school' | 'shop' | 'homes' | 'bank' | 'stats' | 'diary' | 'trophies' | 'settings';
+export type AppId = 'god' | 'notes' | 'people' | 'dating' | 'bag' | 'crime' | 'blackmarket' | 'jobs' | 'school' | 'shop' | 'homes' | 'bank' | 'stats' | 'diary' | 'trophies' | 'settings';
 
 export interface AppMeta {
   name: string;
@@ -24,6 +27,7 @@ export interface AppMeta {
 }
 
 export const APPS: Record<AppId, AppMeta> = {
+  notes: { name: 'Notifications', icon: '🔔', color: ['#ffd36b', '#ff9d3c'], phoneOnly: true },
   god: { name: 'Become God', icon: '⚡', color: ['#ffe58a', '#ff9d3c'], phoneOnly: false },
   people: { name: 'Messages', icon: '💬', color: ['#ff8fb1', '#ff5c8a'], phoneOnly: false },
   dating: { name: 'Spark', icon: '💘', color: ['#ff9ec4', '#ff4f8b'], phoneOnly: true },
@@ -41,4 +45,4 @@ export const APPS: Record<AppId, AppMeta> = {
   settings: { name: 'Settings', icon: '⚙️', color: ['#c9cbd8', '#9a9db3'], phoneOnly: false },
 };
 
-export const APP_ORDER: AppId[] = ['god', 'people', 'dating', 'crime', 'bag', 'jobs', 'school', 'shop', 'homes', 'bank', 'stats', 'diary', 'trophies', 'settings'];
+export const APP_ORDER: AppId[] = ['god', 'people', 'notes', 'dating', 'crime', 'bag', 'jobs', 'school', 'shop', 'homes', 'bank', 'stats', 'diary', 'trophies', 'settings'];

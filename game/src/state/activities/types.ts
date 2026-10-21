@@ -5,7 +5,7 @@ import type { GateKey } from '../rules/us';
 export type ActCategory =
   | 'rest' | 'study' | 'work' | 'social' | 'fitness' | 'fun' | 'money' | 'travel' | 'romance' | 'health' | 'faith' | 'panel' | 'crime';
 
-export type PanelId = 'jobs' | 'school' | 'shop' | 'housing' | 'bank' | 'blackmarket' | 'crime';
+export type PanelId = 'jobs' | 'school' | 'shop' | 'housing' | 'bank' | 'blackmarket' | 'crime' | 'pcbuild';
 
 export interface ActivityDef {
   id: string;
@@ -14,6 +14,8 @@ export interface ActivityDef {
   icon: string;
   desc: string;
   cat: ActCategory;
+  /** Update 0.8 — takes no time slot */
+  free?: boolean;
   /** energy spent; restoring activities use 0 and add energy in run() */
   energy: number;
   cost?: number | ((g: Game) => number);

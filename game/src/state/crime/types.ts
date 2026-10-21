@@ -125,6 +125,16 @@ export interface ChatMsg {
   burner?: boolean;
   /** pending reply chips offered after this message */
   branch?: string[];
+  /** Update 0.8 — what kind of NPC message this is (drives contextual reply chips) */
+  kind?: string;
+  /** Update 0.8 — the player has answered this NPC message */
+  answered?: boolean;
+  /** Update 0.8 — inline effect chip under a reaction ("❤ +3 · Trust +2") */
+  effects?: string;
+  /** Update 0.8 — invitations expire at this turn */
+  expires?: number;
+  /** Update 0.8 — answering this doesn't count toward the monthly limit */
+  free?: boolean;
 }
 
 export interface GroupChat {

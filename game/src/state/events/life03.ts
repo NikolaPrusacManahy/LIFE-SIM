@@ -282,7 +282,7 @@ export const LIFE03_EVENTS: EventDef[] = [
   // ================= system follow-ups
   {
     id: 'craving', title: (_g, c) => `${HABIT_LABEL[c.habit as Habit]} Craving`, icon: '🌀',
-    text: (_g, c) => ({ alcohol: 'You need a drink. Badly.', nicotine: 'Your hands want a cigarette.', gambling: 'The casino lights keep flashing in your head.' } as Record<string, string>)[c.habit],
+    text: (_g, c) => ({ alcohol: 'You need a drink. Badly.', nicotine: 'Your hands want a cigarette.', gambling: 'The casino lights keep flashing in your head.', gaming: 'Just one more match. Just one more.', adult: 'It’s late. You know which tab you want to open.' } as Record<string, string>)[c.habit],
     choices: (g, c) => [
       { label: 'Give in', run: (gg) => { consume(gg, c.habit, 6); gg.stat('mood', 5); gg.money(-Math.min(gg.s.money, c.habit === 'gambling' ? 400 : 40)); return 'Relief. Then guilt.'; } },
       { label: 'Resist', run: (gg) => { gg.setFlag(`addict:${c.habit}`, Math.max(0, gg.flag(`addict:${c.habit}`) - 5)); gg.stat('mood', -6); return 'White knuckles. You made it through.'; } },

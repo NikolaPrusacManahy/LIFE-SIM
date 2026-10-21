@@ -10,6 +10,7 @@ import { SERVICE_ACTS } from './services';
 import { JAIL_ACTS } from './jail';
 import { CASINO_ACTS } from './casino';
 import { UNDERWORLD_ACTS } from './underworld';
+import { COMPUTER_ACTS } from './computers';
 
 export type { ActivityDef, ActCategory, PanelId } from './types';
 
@@ -25,6 +26,7 @@ export const ACTIVITIES: ActivityDef[] = [
   ...JAIL_ACTS,
   ...CASINO_ACTS,
   ...UNDERWORLD_ACTS,
+  ...COMPUTER_ACTS,
 ];
 
 export const ACT_BY_ID: Record<string, ActivityDef> = Object.fromEntries(ACTIVITIES.map((a) => [a.id, a]));

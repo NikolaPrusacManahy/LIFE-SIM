@@ -37,6 +37,11 @@ fx/StageCanvas ──▶ fx/stage/Stage (PixiJS, presentation only; never reads 
 | `crime/justice.ts` · `pursuit.ts` | Court (lawyers, plea, convict/acquit) · fugitive mode (`startPursuit`, net spreads each slot, flee, settle, surrender). |
 | `crime/properties.ts` · `drugs.ts` · `captives.ts` · `guilt.ts` | Properties + raids · business, territory, crew, laundering · captives + blackmail (`DEMANDS`, never sexual) · guilt meter. |
 | `crime/month.ts` | `underworldMonth()` — called from `systems/monthly.ts`. |
+| `phone/convo.ts` · `notify.ts` · `plans.ts` | Update 0.8: NPC message kinds → contextual replies (`CONTEXT`), `answer()` (your bubble + their reaction + effect chip), monthly limit, invite expiry · badges = unread threads, banners, notes · plans + `plan_scene`. |
+| `npc/mood.ts` | Upset / busy state behind replies (`setMad`, `npcState`). |
+| `pipeline.ts` | Pure reducer: result card → events → banners. `PlayScreen` uses it; sessions and nights hold the queue. |
+| `pc/*` · `web/*` · `games/*` | Update 0.8 computers: parts, compatibility, assembly, sessions · sites + gates (`siteVisible` / `siteLock`), Nile / Onion orders, Discorb (verification), monthly web · mini-game rules. |
+| `nightlife/*` | Update 0.8 nights out: venue types and ages (`legalAge`), crowd, talk mini-game, leave-together gate (`INTOX_LIMIT`), extras and incidents. |
 | `phone/chat.ts` | Update 0.5 messenger: `tabsFor` / `chipsFor` (18+ gates), `sendChip`, groups (`ensureGroups`, `groupChips` = no photos/mature), `CHAT_MATURE_AUDIT`. |
 
 ## Contracts
@@ -48,6 +53,8 @@ fx/StageCanvas ──▶ fx/stage/Stage (PixiJS, presentation only; never reads 
 - **Saves:** auto-save after every result via `game.onSave`. New fields → `blankState()`.
 - **An open crime scene blocks inputs** (`canAct()` is false while `underworld.scene` is set). The Evidence screen ends it with `finishScene()`; the sim does the same.
 - **Every crime target goes through `isValidCrimeTarget()` and `auditTarget()`.** Every intimacy path goes through `canBeIntimate()`, which includes `!cannotConsent()`.
+- **Overlays hold the queue:** `canAct()` is false during a computer session (`s.session`) or a night out (`s.night`); `PlayScreen` shows no events until they end.
+- **Every mature path checks `canBeIntimate()`**, which now also requires the player under `INTOX_LIMIT`, online contacts verified, and no `noRomance` tag.
 - **Queued events can go stale.** Choices must not assume `education.current`, `job` etc. still exist; guard them.
 
 ## fx/stage/

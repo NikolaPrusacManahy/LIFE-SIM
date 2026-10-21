@@ -2,6 +2,7 @@ import { GOD_WEALTH, Game } from './Game';
 import type { Appearance, Background, GameState, Gender, Person, Pronouns, Region, Sexuality, StatKey } from './types';
 import { pronounsFor } from './npc/identity';
 import { blankUnderworld } from './crime/types';
+import { blankPc, blankWeb } from './pc/types';
 import { ensureStaff } from './npc/school';
 import { TRAIT_BY_ID } from './data/traits';
 import { firstName, lastName } from './data/names';
@@ -49,6 +50,14 @@ export function blankState(): GameState {
     schedule: [],
     underworld: blankUnderworld(),
     chats: {},
+    plans: [],
+    notes: [],
+    pc: blankPc(),
+    web: blankWeb(),
+    session: null,
+    orders: [],
+    night: null,
+    usedThisSlot: { turn: -1, ids: [] },
     groups: [],
     background: 'middle',
     rules: 'us',
@@ -162,7 +171,8 @@ export function continueAsChild(old: GameState, childId: string): Game | null {
   s.background = estate > 500000 ? 'rich' : estate > 30000 ? 'middle' : 'poor';
   s.hometown = old.region;
   s.region = old.region;
-  s.look = { ...old.look, hairStyle: rnd(0, 3) };
+  // Update 0.7 — the heir keeps their own look (it used to copy the parent's body)
+  s.look = kid.look ? { ...kid.look } : randomAvatar(kid.gender);
   s.clock = old.clock;
   s.startYear = old.startYear;
   s.bornAt = kid.bornMonths;

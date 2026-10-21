@@ -4,9 +4,8 @@ import { HOUSING } from '../../../state/data/locations';
 import { TRAIT_BY_ID } from '../../../state/data/traits';
 import { gpa, gradeLabel } from '../../../state/systems/education';
 import { fmt } from '../../../state/systems/finance';
-import { SKIN } from '../../../fx/stage/avatar';
-import { hexCss } from '../../../fx/stage/palette';
 import { STAT_ROWS } from '../../phone/apps/StatsApp';
+import { Portrait } from '../../../components/Portrait';
 
 /** Update 0.3 — left column: identity + every stat at a glance. */
 export function StatsCard({ game }: { game: Game }) {
@@ -17,7 +16,7 @@ export function StatsCard({ game }: { game: Game }) {
   return (
     <section className="hud-card stc-card">
       <div className="me-top">
-        <div className="me-avatar" style={{ background: `linear-gradient(135deg, ${hexCss(SKIN[s.look.skin % SKIN.length])}, #ff8fb1)` }}>{s.name[0]}</div>
+        <div className="me-avatar"><Portrait look={s.look} age={game.age} size={48} seed="me" mood={s.stats.mood} /></div>
         <div className="me-id">
           <b>{s.name} {s.familyName}{s.generation > 1 && <em> · Gen {s.generation}</em>}</b>
           <small>Age {game.age} · {HOUSING[s.housing].name}</small>

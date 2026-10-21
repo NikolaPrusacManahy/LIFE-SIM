@@ -3,6 +3,7 @@ import { LOC_BY_ID } from '../state/data/locations';
 import type { StageView } from './stage/Stage';
 import type { AvatarLook, Outfit } from './stage/avatar';
 import type { WeatherKind } from './stage/weather';
+import { weatherAt } from '../state/systems/weather';
 
 const OUTFIT_BY_CAREER: Record<string, Outfit> = {
   doctor: 'coat', nurse: 'coat', scientist: 'coat', professor: 'suit',
@@ -20,11 +21,7 @@ export function outfitFor(g: Game): Outfit {
 }
 
 export function weatherFor(g: Game): WeatherKind {
-  const h = ((g.year * 12 + g.month) * 2654435761) >>> 0;
-  const roll = h % 7;
-  if (g.isWinter && roll < 4) return 'snow';
-  if ([2, 3, 4, 8, 9, 10].includes(g.month) && roll < 2) return 'rain';
-  return 'clear';
+  return weatherAt(g.year, g.month);
 }
 
 /** Update 0.4 — the person in the current event stands next to you. */

@@ -42,6 +42,8 @@ export function relationshipsMonth(g: Game) {
     // birthdays of people who matter
     if (p.birthMonth === g.month && p.status === 'alive' && (FAMILY.includes(p.role) || ['partner', 'spouse', 'engaged', 'dating'].includes(p.role) || p.tags.includes('bestie'))) {
       sendText(g, p, 'birthday', `🎂 It’s ${p.name}’s birthday today!`);
+      // Update 0.8 — birthdays come with an invitation
+      if (p.rel >= 50 && g.ageOf(p) >= 13) sendText(g, p, 'invite', `${p.name}: "it’s my birthday!! dinner tonight? 🎂"`, { ctx: { plan: 'food' } });
     }
 
     // NPC life goes on
@@ -70,7 +72,7 @@ function npcLifeEvent(g: Game, pid: string) {
   const r = Math.random();
   if (r < 0.3 && age >= 17) {
     p.status = 'moved';
-    sendText(g, p, 'news', `${p.name}: "Big news — I’m moving across the country! I’ll miss you."`);
+    sendText(g, p, 'badnews', `${p.name}: "Big news — I’m moving across the country! I’ll miss you."`);
   } else if (r < 0.5 && age >= 22 && !p.tags.includes('married')) {
     p.tags.push('married');
     sendText(g, p, 'news', `${p.name}: "I’m getting married!! 💍"`);
@@ -78,7 +80,7 @@ function npcLifeEvent(g: Game, pid: string) {
     sendText(g, p, 'news', `${p.name}: "We had a baby! 👶"`);
   } else if (r < 0.75 && age >= 18) {
     p.status = 'jail';
-    sendText(g, p, 'news', `${p.name}: "Got arrested. Long story. Don’t tell anyone."`);
+    sendText(g, p, 'badnews', `${p.name}: "Got arrested. Long story. Don’t tell anyone."`);
   } else if (age >= 17 && age <= 25) {
     sendText(g, p, 'news', `${p.name}: "I got into college!! 🎓"`);
   }

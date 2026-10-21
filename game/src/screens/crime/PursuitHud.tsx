@@ -11,7 +11,7 @@ export function PursuitHud({ game }: { game: Game }) {
       <div className="pur-vignette" />
       <div className="pur-poster">
         <b>WANTED</b>
-        <Portrait look={game.s.look} age={game.age} size={70} />
+        <Portrait look={game.s.look} age={game.age} size={70} seed="me" mood={10} />
         <span>{game.s.name} {game.s.familyName}</span>
         <i>{'★'.repeat(game.s.underworld.wanted)}</i>
         <small>Police net</small>

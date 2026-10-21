@@ -1,6 +1,120 @@
 # HANDOVER.md
 
-## Current patch: Update 0.5 — Underworld
+## Current patch: Update 0.9 — Free Time
+These are your corrections after 0.8. The name "Free Time" is my placeholder; rename it if you like. All of `npm run verify` passes.
+- **Computer sittings are free:** PC, laptop or library computer, one sitting per time of day (`free: true` on the activity, plus `usedNow` / `markUsed` in `Game.ts`).
+- **Profile actions are free** (your correction): chat, compliment, flirt, ask for money… take no time but are once per time of day per person. Outings still use the slot (marked ⏱): hang out, date, party invite, care, visits, therapy, meet the parents, spending the night, fights, tutoring, crimes. (`USES_SLOT` in `npc/interactions.ts`.)
+- **Nights out into the morning** (your correction): you wake up with full energy, or half if you got drunk. Evening nights out restore nothing.
+- **Spark shows real faces:** profiles carry a look and an id. On a match, the person keeps both, so their portrait is identical in Messages and People.
+- **5 save slots** (`state/save.ts`, `screens/title/SlotPicker.tsx`):
+  - Still autosaved after every action.
+  - Continue shows your saved lives. New Life picks a slot: empty, or hold to overwrite.
+  - The overwrite only happens when the new life actually starts, so backing out keeps the old one.
+  - A new life from the pause or death screen, and continuing as your child, stay in the same slot.
+  - The old single save becomes slot 1.
+- Webhook: `webhook_patchnotes/update-0.9-free-time.json`. The 0.8 webhook is back to its original text.
+
+## Update 0.8 — Connected
+Built from `MD_UPDATES/UPDATE_0.8_CONNECTED.md` in one delivery, as you chose. All of `npm run verify` passes: typecheck, 18 feature tests, lint, Vitest and the build. New tests: `test-connected.ts`, `test-desktop.ts` and `test-nightlife.ts` (1,000 nights).
+
+### Messaging, plans, pipeline, notifications
+- **Conversations** (`state/phone/convo.ts`):
+  - Every NPC message has a kind with contextual replies, offered first in the composer.
+  - A reply makes your bubble, typing dots, then their reaction bubble with an effect chip (`🤝 +3 · Trust +2`). Sometimes a follow-up question or a closing line comes next.
+  - **Moods:** `state/npc/mood.ts`. They're upset after insults, fights, stand-ups or ignored invites (with the reason shown), or busy during day slots (they reply next slot).
+  - Kind messages always land unless they're upset.
+  - **Odds** show only on real gambles (the `GAMBLE` set in `chat.ts`).
+  - **Limit:** 10 messages per contact per month, plus a free reply to their messages. This replaces 3 per slot everywhere.
+- **Plans** (`state/phone/plans.ts`, event `plan_scene`):
+  - Accepting an invitation creates a plan. In its slot, a scene asks "Go", which uses the slot and reuses the hang-out, date or deep-talk outcomes, or "Stand them up", which upsets them.
+  - Unanswered invitations expire with "guess you're busy 🙃".
+  - Partners and besties ask you out themselves: date nights, surprises, check-ins. Neglect leads to "do you even want to be with me?". Birthdays come with an invite.
+  - There's a Plans strip above the places list.
+- **Pipeline** (`state/pipeline.ts`): actions end on a `ResultCard` you dismiss. Queued events show only after that; text banners only after events.
+  - Desktop sessions and nights out hold the queue until you shut down or head home.
+  - `ActionToast` was removed.
+- **Notifications** (`state/phone/notify.ts`):
+  - Number badges (HUD phone, Messages tile, each thread) all equal unread threads.
+  - Banners slide in at flush time and open the chat when clicked.
+  - A Notifications app with plans.
+  - **Sounds:** partner, family and others get different pitches of `notify.mp3` (placeholder until real files exist).
+- **Profile:** "Text hi" is gone. "💬 Open chat" opens the phone on that thread, and fake numbers are caught on the first send. Hostile in-person actions set an upset mood.
+
+### Computers (Doors desktop)
+- **Devices:** library PC (4 actions), laptop (6, at home, library, campus, downtown or Main Street), your PC (6). (0.9: sittings are now free, one per time of day.)
+- **Sites** (`state/web/*`):
+  - JobHunt (apply, CV +5%).
+  - ViewTube (tutorials, channel, uploads, ad money).
+  - Twitchy (watch, donate, go live with webcam and mic: raids, toxic chat, viral clips).
+  - Chirp (hot takes, ratios, cancellation, old posts resurfacing at work).
+  - OtakuPit, WeatherNerds (real next-month forecast), GameHub (guides boost game scores), NewsNow.
+  - LearnHub (3-session certificates: +10% hiring in that career track).
+  - Spark Web and Bank (the phone apps embedded).
+  - Nile (cart checkout, delivery in 1–2 slots, porch theft, wrong or damaged items, returns).
+  - PartPicker (compatibility).
+  - **SpicyHub:** 18+, Mature Content on, never on a library PC. A blurred placeholder only.
+  - **Onionmarket:** 18+, the Tor-ish download, Street 15, never on a library PC. Crypto +5%, scams, stings.
+- **Discorb:**
+  - Online friends show only their *claimed* age.
+  - Romance needs a real age of 18+ and meeting in person.
+  - A revealed minor triggers `online_minor`, a safety event that permanently ends romance with them (`noRomance`), with report and block.
+  - Minor players only meet honest peers.
+- **Bitstore games:** Flappy Pigeon, Furious Fowl, Snek, Mines, Block Drop, Word Duel, Golf Solitaire. Each run uses an action. Tournaments cost $20 and pay $150 for a great run. Adds to a gaming addiction meter.
+- **PC building** (`state/pc/*`):
+  - 41 fictional parts across 18 slots.
+  - Compatibility checks: socket, RAM type, PSU wattage, GPU length, cooler height.
+  - Assembly mini-game (drag or click) with Smarts checks and possible mistakes: unseated RAM, cable mess, a static zap that kills the GPU, forgotten thermal paste (overheating events).
+  - Then the first boot. PC score feeds games, streaming, uploads, mining (with an electricity bill) and the odds of the fraud crime.
+  - Old GPUs die after 3 years. Single parts can be swapped in.
+
+### Nightlife
+- **Venues:** each one is a single "Night Out" card that opens the night scene (`screens/night/NightScreen.tsx`). The old club, bar and roadhouse cards were removed, and their effects folded in.
+- **Venue types** rotate monthly: pub, dive, karaoke, trivia, techno, 18+ night, Pride night, rooftop, honky-tonk.
+- **Ages follow the life's laws** through `legalAge`. 18+ nights let 18-year-olds in with a wristband (no alcohol).
+- **The scene:**
+  - Zones (VIP costs $50 or Fame 40) and a crowd of 15–25 NPCs with vibes. An ex or rival may be there.
+  - Meters: about 12 actions, intoxication, confidence, cash.
+  - Drinks, buying a round, dancing, karaoke, trivia, pool, darts (a timing mini-game), the mechanical bull, line dancing, DJ set, open mic.
+- **Conversations** go Stranger → Connected, with odds shaped by vibe, traits, confidence and intoxication. Leaving a "wants to be alone" person alone earns karma.
+- **Leave together** (`nightlife/leave.ts`):
+  - Needs both 18+, Mature Content on, mutual chemistry, `canBeIntimate`, and both people under `INTOX_LIMIT` (70).
+  - Otherwise you get **Get them a cab / Swap numbers / Walk them to their friends**.
+  - **Stricter `canBeIntimate`:** it now also checks the player's own intoxication.
+  - A very drunk NPC stays `intox:very` for two slots.
+  - A minor with a fake ID gets no options with adults, not even numbers.
+- **Incidents:** drink spiking (you can only intervene or look away), an ex or rival making a scene (bar fights), a lost phone.
+- **After:** getting home (walk = mugging risk, cab $20, drive = drunk-driving or crash risk), then a morning-after card (hangover, a 3am text that's already been read, photos on Chirp, bank shock).
+
+### Choices I made (tell me to change any)
+- **Night scene:** built in the DOM (zones, chips, CSS light beat) over the existing Pixi venue backdrop, **not** a new side-on Pixi room.
+- **Desktop time:** 6 actions per sitting (library 4). See 0.9 for the time rule.
+- **Nile:** a whole cart checkout costs one action.
+- **Online age mix** for adult players: 5% minors claiming 18–20, 7% adults lying about age.
+- **No new audio:** the three notification sounds are pitched copies of `notify.mp3`.
+- **Laptops:** a laptop stays an asset (bought in the Shop), not a Bag item.
+
+### Not done from the 0.8 brief
+- Calendar as its own app (plans are in the Notifications app).
+- Recruiter messages on JobHunt.
+- A laptop battery.
+- Parody streamer NPCs with persistent personalities.
+- Gaming-chair and desk effects beyond score.
+- An "introduce your friend" chip at nights out.
+
+### Webhook
+- `webhook_patchnotes/update-0.8-connected.json`: 7 embeds, about 1,900 characters.
+
+## Not seen yet
+No browser on my side, so all visuals are unchecked. Please look at:
+- the result card and banners;
+- chats with contextual reply chips;
+- the Plans strip;
+- the Doors desktop (window dragging inside the zoomed frame);
+- all 7 mini-games (canvas sizes, controls);
+- the PC build screen (drag and drop);
+- the night scene layout at 1440×860.
+
+## Earlier: Update 0.5 — Underworld
 Built from `MD_UPDATES/UPDATE_0.5_UNDERWORLD.md`. All of `npm run verify` passes: typecheck, 11 feature tests, lint, Vitest and the build. That includes the new `test-underworld.ts` (1,000 crime-heavy lives) and `test-chat.ts` (300 chat-heavy lives plus direct gate checks).
 
 ### Hard rules (code-enforced, tested)
@@ -42,6 +156,18 @@ Built from `MD_UPDATES/UPDATE_0.5_UNDERWORLD.md`. All of `npm run verify` passes
   - 3 texts per chat per slot, free. Auto group chats: family, friends, class, work, crew.
   - Underworld texts add digital evidence unless sent from a burner.
 - **Crime app** in the phone. It appears after your first crime or once Street reaches 5.
+
+## Update 0.7 — New Faces
+- **Portraits** now use DiceBear: `@dicebear/core` 10.7 plus the "Avataaars" style from `@dicebear/styles` 10.6.
+  - Pablo Stanley's art, free for personal and commercial use. DiceBear itself is MIT.
+  - `fx/portrait.ts` maps our look onto Avataaars. Every variant name is validated against the style file in `test-portrait.ts`.
+- **What maps across:** skin hex, hair colour (greys with age), the 12 hairstyles (female and male tops), glasses, mood expression, gendered outfits, and beards on some adult men (stable per person id).
+- **Avataaars has no freckles or eye colour.** Those still show on the Pixi world avatar, which is unchanged.
+- **Men and women read correctly** (your report):
+  - NPCs only roll hairstyles that fit their body (`FEMALE_STYLES` / `MALE_STYLES`).
+  - Older saves are fixed on load with `fitHairStyle`, which leaves your own look untouched.
+  - The creator re-fits the hairstyle when you switch body.
+  - `continueAsChild` used to copy the parent's look, so daughters got the father's body. The heir now keeps their own look.
 
 ## Update 0.6 — Ascension (God Mode)
 - **Creator:** a new Nature row, Mortal or ⚡ Born a god. Gods start with Health, Smarts, Fitness, Charm, Creativity and Looks at 100, and a phone.

@@ -1,0 +1,49 @@
+/* Update 0.8 — Connected: result card, banners, badges, notification centre, plans, chat context */
+
+/* result card */
+.res-card .evt-title { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.res-month { font: 800 10.5px var(--font); font-style: normal; color: #fff; background: var(--violet, #8b72f5); border-radius: 99px; padding: 2px 8px; }
+
+/* text banner */
+.ntf-banner { position: absolute; top: 14px; left: 50%; margin-left: -200px; width: 400px; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 0; border-radius: 20px; background: rgba(255, 255, 255, 0.97); box-shadow: 0 14px 34px rgba(30, 15, 60, 0.28); cursor: pointer; text-align: left; color: var(--ink); }
+.ntf-banner .por-dice { border-radius: 50%; }
+.ntf-icon { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #fff1d6; font-size: 18px; }
+.ntf-body { display: flex; flex-direction: column; min-width: 0; }
+.ntf-body b { font: 600 14px var(--display); }
+.ntf-body small { font: 600 12.5px var(--font); color: var(--ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* app tile badge */
+.dev-tile { position: relative; }
+.dev-badge { position: absolute; top: -4px; right: 6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px; background: var(--pink); color: #fff; font: 800 11px var(--font); font-style: normal; display: grid; place-items: center; box-shadow: 0 0 0 2px #fff; }
+
+/* notification centre */
+.ntc-row { display: flex; align-items: center; gap: 10px; border: 0; background: rgba(255, 255, 255, 0.9); border-radius: 14px; padding: 8px 10px; text-align: left; color: var(--ink); cursor: pointer; }
+.ntc-row > span:first-child { font-size: 18px; }
+.ntc-mid { display: flex; flex-direction: column; min-width: 0; }
+.ntc-mid b { font: 600 13px var(--font); }
+.ntc-mid small { font: 700 10.5px var(--font); color: var(--ink-faint); }
+.ntc-row.unread { box-shadow: inset 3px 0 0 var(--pink); }
+.ntc-row.unread b { font-weight: 800; }
+
+/* inbox */
+.msg-row.unread .msg-mid b { font-weight: 800; }
+.msg-row.unread .msg-mid small { color: var(--ink); font-weight: 700; }
+.msg-need { font: 800 10px var(--font); font-style: normal; color: #d0551f; }
+
+/* chat */
+.cht-status { font: 700 11.5px var(--font); padding: 4px 8px; border-radius: 10px; margin-top: 6px; }
+.cht-status.mad { background: #fff0f1; color: #c2273c; }
+.cht-status.busy { background: #eef4ff; color: #3b62b5; }
+.cht-fx { font: 800 10px var(--font); color: #6a5a8a; background: #f2edfb; border-radius: 99px; padding: 1px 8px; margin: 3px 0 0 4px; }
+.cht-bub.soft { opacity: 0.75; font-style: italic; }
+.cht-ended { align-self: center; font: 700 10.5px var(--font); color: var(--ink-faint); margin-top: 4px; }
+.cht-ctx { display: flex; flex-direction: column; gap: 4px; padding-bottom: 6px; border-bottom: 1px dashed var(--line); }
+.cht-ctx-label { font: 700 10.5px var(--font); color: var(--ink-faint); }
+.cht-chip.ctx { background: linear-gradient(135deg, #fff, #ffeef4); box-shadow: inset 0 0 0 1.5px #ffc1d4; }
+.cht-full { color: #c2273c !important; }
+
+/* plans strip (top of the places card) */
+.pln-strip { display: flex; flex-direction: column; gap: 4px; padding: 0 4px 4px; border-bottom: 1px solid var(--line); }
+.pln-item { font: 600 12px var(--font); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pln-item b { font-weight: 800; }
+.pln-item small { color: var(--ink-faint); font-weight: 700; }

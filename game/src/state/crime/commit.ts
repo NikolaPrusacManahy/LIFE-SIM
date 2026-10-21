@@ -20,6 +20,8 @@ export function crimeOddsFor(g: Game, c: CrimeDef, target?: Person | null): numb
   let diff = c.diff;
   if (g.phase === 'night') diff -= 6;
   if (itemCount(g, 'lockpick') && c.id === 'burglary') diff -= 10;
+  // Update 0.8 — a strong PC makes online fraud easier
+  if (c.id === 'fraud' && g.has('pc')) diff -= g.s.pc.score / 8;
   if (target) diff += (g.ageOf(target) < 30 ? 5 : 0) + (target.archetype === 'jock' || target.archetype === 'athlete' ? 8 : 0);
   diff += g.s.heat / 12;
   return g.statOdds(c.stat, diff);

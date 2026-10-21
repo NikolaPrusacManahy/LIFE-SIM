@@ -53,6 +53,8 @@ const FAMILY = new Set(['mother', 'father', 'sibling', 'child']);
  */
 export function isRomanceEligible(g: Game, p: Person): boolean {
   if (!p.alive || FAMILY.has(p.role) || isTeacher(p) || p.status !== 'alive') return false;
+  // Update 0.8 — online contacts: only after meeting in person; a revealed minor is never an option again
+  if (p.tags.includes('noRomance') || (p.tags.includes('online') && !p.tags.includes('verified'))) return false;
   const a = g.age;
   const b = g.ageOf(p);
   const bandOk = (a < 18 && b < 18 && Math.abs(a - b) <= 2) || (a >= 18 && b >= 18);

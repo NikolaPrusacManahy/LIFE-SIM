@@ -1,0 +1,26 @@
+{
+  "username": "LIFE//SIM",
+  "content": "**Update 0.9 — Free Time** is out! ⏱️",
+  "embeds": [
+    {
+      "title": "⏱️ Free actions",
+      "color": 9139445,
+      "description": "Using your PC, laptop or a library computer no longer eats your time of day — one sitting per time slot. Chatting, complimenting, flirting or asking for money on someone's profile is free too, once per time of day per person. Real outings (hang outs, dates, parties, spending the night…) still take the slot and are marked ⏱."
+    },
+    {
+      "title": "🌅 Nights out",
+      "color": 13715036,
+      "description": "Partied until morning? You now wake up with full energy — or half if you got drunk."
+    },
+    {
+      "title": "💘 Real faces on Spark",
+      "color": 16731019,
+      "description": "Dating profiles show the person's actual face, and they look exactly the same when you match and meet."
+    },
+    {
+      "title": "💾 5 save slots",
+      "color": 16765802,
+      "description": "Keep up to five lives going. Continue picks a saved life; New Life picks a slot (hold to overwrite an old one). Saving is still automatic."
+    }
+  ]
+}

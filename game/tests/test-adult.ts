@@ -1,6 +1,7 @@
 // Update 0.3 — 18+ safety: 1,000 lives across the 14–26 age window.
 import { simulateLife } from './sim';
-import { check, done } from './harness';
+import { check, done, resolveAll } from './harness';
+import { doInteraction } from '../src/state/npc/interactions';
 import { applySettings } from '../src/state/settings';
 import { INTIMACY_AUDIT, canBeIntimate } from '../src/state/systems/intimacy';
 import { JAIL_AUDIT } from '../src/state/systems/crime';
@@ -20,6 +21,17 @@ for (let i = 0; i < 1000; i++) {
     crashes++;
     if (crashes < 3) console.log(e);
   }
+}
+// Update 0.9 — random play rarely reaches an encounter since nights out became a scene; make sure the path is exercised
+for (let i = 0; i < 300 && INTIMACY_AUDIT.length < 20; i++) {
+  const g = createLife({ name: 'A', familyName: 'B', gender: i % 2 ? 'male' : 'female', background: 'middle', hometown: 'city', traits: [], look: randomLook(), startAge: 23 });
+  g.s.sexuality = 'pan';
+  g.setFlag('hadFirstTime');
+  const p = g.addPerson('partner', { age: 22 + (i % 15) });
+  p.rel = 90;
+  p.romance = 90;
+  doInteraction(g, p.id, 'night');
+  resolveAll(g);
 }
 const minorIntimacy = INTIMACY_AUDIT.filter((a) => a.playerAge < 18 || a.partnerAge < 18);
 const adultJailForMinor = JAIL_AUDIT.filter((j) => j.age < 18 && !j.juvie);

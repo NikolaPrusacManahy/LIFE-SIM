@@ -4,6 +4,7 @@ import { settings } from '../settings';
 import { cannotConsent } from '../crime/consent';
 import { itemCount, spendItem } from '../inventory/items';
 import { line } from '../npc/lines';
+import { INTOX_LIMIT } from '../nightlife/types';
 
 // Update 0.3 — adult relationships (non-explicit). HARD RULES:
 //  1. Every action here requires BOTH people to be 18+ AND Mature Content on — checked through canBeIntimate().
@@ -18,8 +19,11 @@ export interface IntimacyAudit {
 /** Every intimacy outcome is recorded so tests can prove no minor is ever involved. */
 export const INTIMACY_AUDIT: IntimacyAudit[] = [];
 
+/** Update 0.8 — you can't consent past the limit either (during a night out, or right after it). */
+export const playerTooDrunk = (g: Game) => (g.s.night ? g.s.night.intox >= INTOX_LIMIT : g.flag('intoxTurn') === g.s.turn && g.flag('intox') >= INTOX_LIMIT);
+
 export function canBeIntimate(g: Game, p: Person | null | undefined): boolean {
-  return !!p && p.alive && settings.mature && g.age >= 18 && g.ageOf(p) >= 18 && !g.jailed && !cannotConsent(g, p);
+  return !!p && p.alive && settings.mature && g.age >= 18 && g.ageOf(p) >= 18 && !g.jailed && !cannotConsent(g, p) && !p.tags.includes('noRomance') && !(p.tags.includes('online') && !p.tags.includes('verified')) && !playerTooDrunk(g);
 }
 
 function audit(g: Game, p: Person, what: string) {

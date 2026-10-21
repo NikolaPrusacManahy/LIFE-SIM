@@ -37,12 +37,27 @@ export const ARCHETYPE_BY_ID = Object.fromEntries(ARCHETYPES.map((a) => [a.id, a
 const rint = (a: number, b: number, rnd = Math.random) => Math.floor(a + rnd() * (b - a + 1));
 const pickOf = <T,>(arr: T[], rnd = Math.random) => arr[Math.floor(rnd() * arr.length)];
 
+/** Update 0.7 — hairstyles that read clearly as the body's sex (indices into HAIR_STYLES). Players can still pick any. */
+export const FEMALE_STYLES = [0, 1, 2, 4, 5, 6, 7, 8, 11];
+export const MALE_STYLES = [0, 3, 7, 8, 9, 10];
+export const stylesFor = (body: AvatarSpec['body']) => (body === 'female' ? FEMALE_STYLES : MALE_STYLES);
+
+/** Update 0.7 — older NPCs could roll the other sex's hairstyle; move them to the closest fit (stable per id). */
+export function fitHairStyle(look: AvatarSpec, id: string) {
+  const pool = stylesFor(look.body);
+  if (pool.includes(look.hairStyle % 12)) return;
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  look.hairStyle = pool[h % pool.length];
+}
+
 export function randomAvatar(gender: Gender, rnd = Math.random): AvatarSpec {
   const body = gender === 'male' ? 'male' : gender === 'female' ? 'female' : rnd() < 0.5 ? 'male' : 'female';
+  const pool = stylesFor(body);
   return {
     skin: rint(0, 7, rnd),
     hair: rint(0, 9, rnd),
-    hairStyle: rint(0, 11, rnd),
+    hairStyle: pool[rint(0, pool.length - 1, rnd)],
     eyes: rint(0, 5, rnd),
     height: rint(0, 2, rnd),
     build: rint(0, 3, rnd),

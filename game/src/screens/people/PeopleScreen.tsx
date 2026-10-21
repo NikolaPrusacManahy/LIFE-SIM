@@ -8,16 +8,17 @@ import { GENDER_SYMBOL, SEXUALITY_LABEL } from '../../state/npc/identity';
 import { allLabels, contactGroup, GROUP_ORDER } from '../../state/npc/labels';
 import { NPC_TRAIT_BY_ID } from '../../state/npc/traits';
 import { ARCHETYPE_BY_ID } from '../../state/npc/generator';
-import { GROUP_ICON, interact, interactionsFor, type InteractionGroup, type ResolvedInteraction } from '../../state/npc/interactions';
+import { GROUP_ICON, doInteraction, interactionsFor, usesSlot, type InteractionGroup, type ResolvedInteraction } from '../../state/npc/interactions';
 import { hasPhone } from '../../state/systems/phone';
-import { textHi } from '../../state/phone/texts';
 import { MONTHS } from '../../state/types';
 import { WebView } from './WebView';
 
 interface Props {
   game: Game;
   onClose: () => void;
-  onResult: (r: ActionResult) => void;
+  onResult: (r: ActionResult, card?: boolean) => void;
+  /** Update 0.8 — texting lives in the phone: open this person's chat */
+  onOpenChat?: (pid: string) => void;
   initial?: string | null;
 }
 
@@ -30,7 +31,7 @@ const BARS: [keyof Person, string, string][] = [
 ];
 
 /** Update 0.4 — contacts on the left, profile on the right, relationship web tab. */
-export function PeopleScreen({ game, onClose, onResult, initial = null }: Props) {
+export function PeopleScreen({ game, onClose, onResult, onOpenChat, initial = null }: Props) {
   const [q, setQ] = useState('');
   const [tab, setTab] = useState<'contacts' | 'web'>('contacts');
   const [sel, setSel] = useState<string | null>(initial);
@@ -50,7 +51,7 @@ export function PeopleScreen({ game, onClose, onResult, initial = null }: Props)
   const doIt = (ri: ResolvedInteraction, opt?: string) => {
     if (!p) return;
     setPending(null);
-    const r = game.spendTurn(ri.def.label, ri.def.icon, () => interact(game, p.id, ri.def.id, opt), p.id);
+    const r = doInteraction(game, p.id, ri.def.id, opt);
     if (r) {
       onResult(r);
       setNote(r.text);
@@ -59,7 +60,7 @@ export function PeopleScreen({ game, onClose, onResult, initial = null }: Props)
   };
   const free = (fn: () => string) => {
     const msg = fn();
-    onResult(game.flush('', '', ''));
+    onResult(game.flush('', '', ''), false);
     setNote(msg);
   };
 
@@ -96,7 +97,7 @@ export function PeopleScreen({ game, onClose, onResult, initial = null }: Props)
           {p && (
             <section className="ppl-profile">
               <div className="ppl-head">
-                <Portrait look={p.look} age={game.ageOf(p)} size={86} />
+                <Portrait look={p.look} age={game.ageOf(p)} size={86} seed={p.id} mood={p.mood} />
                 <div>
                   <h3>{p.name} {p.surname}</h3>
                   <div className="ppl-chips">
@@ -154,7 +155,7 @@ export function PeopleScreen({ game, onClose, onResult, initial = null }: Props)
                       {items.map((ri) => (
                         <button key={ri.def.id} className="ppl-act" disabled={!ri.ok} title={ri.reason ?? ''} onClick={() => (ri.options ? setPending(ri) : doIt(ri))}>
                           <span>{ri.def.icon}</span>
-                          <b>{ri.def.label}</b>
+                          <b>{ri.def.label}{usesSlot(ri.def) ? ' ⏱' : ''}</b>
                           {ri.reason && <small>{ri.reason}</small>}
                         </button>
                       ))}
@@ -163,10 +164,10 @@ export function PeopleScreen({ game, onClose, onResult, initial = null }: Props)
                 ))}
               </div>
               <div className="ppl-phone">
-                {p.hasNumber && hasPhone(game) && <button className="btn btn-sm" onClick={() => free(() => textHi(game, p.id))}>👋 Text "hi"</button>}
+                {p.hasNumber && hasPhone(game) && onOpenChat && <button className="btn btn-sm btn-primary" onClick={() => onOpenChat(p.id)}>💬 Open chat</button>}
                 {p.hasNumber && <button className="btn btn-sm" onClick={() => free(() => { p.blocked = !p.blocked; return p.blocked ? `Blocked ${p.name}.` : `Unblocked ${p.name}.`; })}>{p.blocked ? 'Unblock' : '🚫 Block'}</button>}
                 {p.hasNumber && <button className="btn btn-sm btn-ghost" onClick={() => free(() => { p.hasNumber = false; return `Deleted ${p.name}’s number.`; })}>Delete number</button>}
-                <small>Interactions use one time slot.</small>
+                <small>Most actions are free, once per time of day. ⏱ = uses the time slot.</small>
               </div>
             </section>
           )}

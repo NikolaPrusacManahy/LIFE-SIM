@@ -4,12 +4,20 @@ import { visibleLocations } from '../src/state/systems/world';
 import { activitiesAt } from '../src/state/activities';
 import { visibleCareers, applyJob } from '../src/state/systems/career';
 import { availablePrograms, enroll, fundingOptions } from '../src/state/systems/education';
-import { interact, interactionsFor } from '../src/state/systems/relationships';
+import { interactionsFor } from '../src/state/systems/relationships';
+import { doInteraction } from '../src/state/npc/interactions';
 import { nextProfile, swipe } from '../src/state/systems/dating';
 import type { Background, Region } from '../src/state/types';
 import { COVER_ACTIONS, coverUp, finishScene } from '../src/state/crime/evidence';
 import { sendChip, chipsFor, tabsFor, threadState } from '../src/state/phone/chat';
+import { answer, contextReplies, pendingMessage } from '../src/state/phone/convo';
 import { addItem } from '../src/state/inventory/items';
+import { SITES, actionLock, siteLock, webAct } from '../src/state/web/sites';
+import { closeSession } from '../src/state/pc/session';
+import { DRINKS, drinkLock, endNight, orderDrink } from '../src/state/nightlife/night';
+import { approach, chipsFor as nightChips, current, talk } from '../src/state/nightlife/talk';
+import { chooseLeave, leaveOptions } from '../src/state/nightlife/leave';
+import { INCIDENT_CHOICES, NIGHT_ACTIONS, nightAct, resolveIncident } from '../src/state/nightlife/extras';
 
 export interface SimOptions {
   maxTurns?: number;
@@ -54,6 +62,20 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
       g.resolveChoice(pick(choices).idx);
       continue;
     }
+    // Update 0.8 — a night out: drink, mingle, maybe leave with someone, then head home
+    if (g.s.night) {
+      playNightStep(g);
+      continue;
+    }
+    // Update 0.8 — at a computer: do a few things on the web, then shut down
+    if (g.s.session) {
+      const sites = SITES.filter((x) => !siteLock(g, x) && x.actions.length);
+      const site = sites.length && Math.random() < 0.8 ? pick(sites) : null;
+      const a = site ? pick(site.actions.filter((x) => !actionLock(g, x))) : null;
+      if (site && a && g.s.session.left > 0) webAct(g, site.id, a.id);
+      else closeSession(g);
+      continue;
+    }
     // Update 0.5 — an open crime scene blocks every other action: cover up, then leave
     const scene = g.s.underworld.scene;
     if (scene) {
@@ -65,8 +87,14 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
     if (o.chat && Math.random() < o.chat) {
       const p = pick(g.s.people.filter((x) => x.hasNumber && threadState(g, x) === 'open'));
       if (p) {
-        const chips = chipsFor(g, p, pick(tabsFor(g, p))).filter((c) => !c.reason);
-        if (chips.length) sendChip(g, p.id, pick(chips).chip.id, Math.random() < 0.5);
+        // Update 0.8 — answer their message first (contextual replies), otherwise start something
+        const pend = pendingMessage(g, p.id);
+        const ctx = pend ? contextReplies(g, p, pend).filter((x) => !x.reason) : [];
+        if (pend && ctx.length) answer(g, p.id, pend.id, pick(ctx).reply.id);
+        else {
+          const chips = chipsFor(g, p, pick(tabsFor(g, p))).filter((c) => !c.reason);
+          if (chips.length) sendChip(g, p.id, pick(chips).chip.id, Math.random() < 0.5);
+        }
       }
     }
     if (o.crime && Math.random() < o.crime && g.canAct()) {
@@ -78,7 +106,7 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
         const a = pick(uw);
         const opts = (a.options ?? []).filter((x) => !x.reason);
         if (!a.options || opts.length) {
-          g.spendTurn(a.def.label, a.def.icon, () => interact(g, p.id, a.def.id, opts.length ? pick(opts).id : undefined), p.id);
+          doInteraction(g, p.id, a.def.id, opts.length ? pick(opts).id : undefined);
           continue;
         }
       }
@@ -106,7 +134,7 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
         const opts = (a.options ?? []).filter((o) => !o.reason);
         if (a.options && !opts.length) continue;
         const opt = opts.length ? pick(opts).id : undefined;
-        g.spendTurn(a.def.label, a.def.icon, () => interact(g, p.id, a.def.id, opt), p.id);
+        doInteraction(g, p.id, a.def.id, opt);
         continue;
       }
     }
@@ -120,4 +148,39 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
     else g.autopilot();
   }
   return g;
+}
+
+/** Update 0.8 — one random step of a night out (exported for the nightlife test). */
+export function playNightStep(g: Game) {
+  const n = g.s.night!;
+  if (n.incident) {
+    resolveIncident(g, pick(INCIDENT_CHOICES[n.incident.kind]).id);
+    return;
+  }
+  if (n.time <= 0) {
+    endNight(g);
+    return;
+  }
+  const c = current(g);
+  if (c) {
+    const opts = leaveOptions(g, c);
+    if (opts.length && Math.random() < 0.5) {
+      chooseLeave(g, pick(opts), 'the bar');
+      return;
+    }
+    const chips = nightChips(g, c).filter((x) => !x.reason);
+    talk(g, chips.length ? pick(chips).chip : 'leave');
+    return;
+  }
+  const r = Math.random();
+  if (r < 0.3) {
+    const d = DRINKS.filter((x) => !drinkLock(g, x.id));
+    if (d.length) orderDrink(g, pick(d).id);
+  } else if (r < 0.75) {
+    const idx = n.crowd.map((x, i) => ({ x, i })).filter((y) => !y.x.done && (y.x.zone !== 'vip' || n.vip));
+    if (idx.length) approach(g, pick(idx).i);
+  } else if (r < 0.95) {
+    const acts = NIGHT_ACTIONS.filter((a) => (!a.zone || a.zone === n.zone) && !a.lock?.(g));
+    if (acts.length) nightAct(g, pick(acts).id);
+  } else endNight(g);
 }

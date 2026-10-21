@@ -7,6 +7,8 @@ import type { Game } from '../../state/Game';
 import { BUILDS, EYES, HAIR, HAIR_STYLES, HEIGHTS, SKIN, hex } from '../../fx/look';
 import { PRONOUNS, SEXUALITY_LABEL } from '../../state/npc/identity';
 import { useEscape } from '../../hooks/useEscape';
+import { fitHairStyle } from '../../state/npc/generator';
+import { Portrait } from '../../components/Portrait';
 
 export interface CreatePreview {
   look: Appearance;
@@ -53,12 +55,18 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
   const pickGender = (g: Gender) => {
     setGender(g);
     if (pron !== 'custom') setPron(g === 'male' ? 'he' : g === 'female' ? 'she' : 'they');
-    if (g !== 'nonbinary') setLook({ ...look, body: g === 'male' ? 'male' : 'female' });
+    if (g !== 'nonbinary') setBody(g === 'male' ? 'male' : 'female');
   };
   const toggleTrait = (id: string) => setTraits((t) => (t.includes(id) ? t.filter((x) => x !== id) : t.length < 2 ? [...t, id] : [t[1], id]));
   const pronouns: Pronouns = pron === 'custom' ? { ...custom, label: `${custom.subj}/${custom.obj}` } : PRONOUNS[pron];
   const start = () => onCreate(createLife({ name, familyName: family, gender, background: bg, hometown: home, traits, look, pronouns, sexuality, siblings, startAge, millionaire, rules, god }));
   const set = <K extends keyof Appearance>(k: K, v: Appearance[K]) => setLook({ ...look, [k]: v });
+  // Update 0.7 — switching body re-fits a hairstyle that reads as the other sex (you can still pick any)
+  const setBody = (body: Appearance['body']) => {
+    const next = { ...look, body };
+    fitHairStyle(next, 'me');
+    setLook(next);
+  };
 
   return (
     <div className="crt-screen">
@@ -116,10 +124,14 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
         {step === 2 && (
           <>
             <h2 className="crt-title">Looks</h2>
+            <div className="crt-face">
+              <Portrait look={look} age={startAge} size={84} seed="me" mood={75} />
+              <small>Your portrait in chats, contacts and the news.</small>
+            </div>
             <div className="crt-section">Body base</div>
             <div className="crt-seg">
-              <button className={`crt-opt ${look.body === 'male' ? 'on' : ''}`} onClick={() => set('body', 'male')}>Male model</button>
-              <button className={`crt-opt ${look.body === 'female' ? 'on' : ''}`} onClick={() => set('body', 'female')}>Female model</button>
+              <button className={`crt-opt ${look.body === 'male' ? 'on' : ''}`} onClick={() => setBody('male')}>Male model</button>
+              <button className={`crt-opt ${look.body === 'female' ? 'on' : ''}`} onClick={() => setBody('female')}>Female model</button>
             </div>
             <div className="crt-section">Skin tone</div>
             <div className="crt-swatches">{SKIN.map((c, i) => <button key={i} className={`crt-sw ${look.skin === i ? 'on' : ''}`} style={{ background: hex(c) }} onClick={() => set('skin', i)} />)}</div>

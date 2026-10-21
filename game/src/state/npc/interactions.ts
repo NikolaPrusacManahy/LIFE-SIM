@@ -17,6 +17,8 @@ import { CREW_ROLES, recruit } from '../crime/drugs';
 import { openCase } from '../crime/investigation';
 import type { CrewRole } from '../crime/types';
 import { haremLock, inviteToHarem } from '../systems/god';
+import { setMad } from './mood';
+import type { ActionResult } from '../Game';
 
 const CAPITAL = ['murder_weapon', 'murder_gun', 'murder_poison', 'murder_sedative', 'murder_staged', 'murder_hire'];
 
@@ -752,13 +754,33 @@ export function interactionsFor(g: Game, p: Person): ResolvedInteraction[] {
     if (def.crime && !isValidCrimeTarget(g, p, !!def.dark)) continue;
     if (!def.when(g, p)) continue;
     if (def.romance && def.id !== 'flirt' && !isRomanceEligible(g, p)) continue;
-    const reason = def.req?.(g, p) ?? null;
+    const reason = def.req?.(g, p) ?? (!usesSlot(def) && g.usedNow(onceKey(p.id, def.id)) ? 'Once per time of day' : null);
     out.push({ def, ok: !reason && g.canAct(), reason: reason ?? undefined, options: def.options?.(g, p) });
   }
   return out;
 }
 
 /** Run an interaction (spends a time slot via Game.spendTurn in the UI). */
+const MAD_AFTER: Record<string, string> = {
+  insult: 'insulted them', argue: 'argued with them', confront: 'confronted them', fight: 'fought them', sabotage: 'sabotaged them', rumour: 'spread a rumour', breakup: 'broke up with them', prank: 'pranked them', u_threaten: 'threatened them', t_talkback: 'talked back',
+};
+
+/** Update 0.8 — these take real time (outings, care, crimes). Everything else on a profile is free, once per time slot. */
+export const USES_SLOT = new Set([
+  'hangout', 'date', 'invite', 'care', 'helphome', 'visit', 'therapy', 'meetparents', 'night', 'fight', 'challenge',
+  't_help', 't_extra', 't_club', 'p_ra', 'u_assault', 'u_rob', 'u_kidnap', 'u_kill', 'c_ransom', 'c_away',
+]);
+export const usesSlot = (def: InteractionDef) => USES_SLOT.has(def.id);
+const onceKey = (pid: string, id: string) => `ia:${pid}:${id}`;
+
+/** Run an interaction from the UI or the simulator: outings use the slot, the rest are free. */
+export function doInteraction(g: Game, pid: string, id: string, opt?: string): ActionResult | null {
+  const def = INTERACTION_BY_ID[id];
+  if (!def) return null;
+  const fn = () => interact(g, pid, id, opt);
+  return usesSlot(def) ? g.spendTurn(def.label, def.icon, fn, pid) : g.freeAction(def.label, def.icon, fn, pid);
+}
+
 export function interact(g: Game, pid: string, id: string, opt?: string): string {
   const p = g.personById(pid);
   const def = INTERACTION_BY_ID[id];
@@ -767,9 +789,15 @@ export function interact(g: Game, pid: string, id: string, opt?: string): string
   if (def.romance && def.id !== 'flirt' && !isRomanceEligible(g, p)) return '';
   if (def.crime && !isValidCrimeTarget(g, p, !!def.dark)) return '';
   if (def.captive && p.status !== 'captive') return '';
+  if (!usesSlot(def)) {
+    if (g.usedNow(onceKey(pid, id))) return '';
+    g.markUsed(onceKey(pid, id));
+  }
   if (def.energy) g.stat('energy', -def.energy);
   touch(g, p);
   const text = def.run(g, p, opt);
+  // Update 0.8 — hostile in-person actions leave them upset, so their texts make sense
+  if (MAD_AFTER[def.id]) setMad(g, p, MAD_AFTER[def.id]);
   relabel(g, p);
   return cap(text);
 }

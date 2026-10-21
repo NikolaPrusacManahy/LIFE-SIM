@@ -1,7 +1,6 @@
 import type { Game } from '../Game';
 import type { Person } from '../types';
-import type { ChatMsg, GroupChat } from '../crime/types';
-import { newId } from '../Game';
+import type { GroupChat } from '../crime/types';
 import { canBeIntimate } from '../systems/intimacy';
 import { isRomanceEligible, say } from '../npc/identity';
 import { bump } from '../npc/interactions';
@@ -11,8 +10,12 @@ import { darkCrimeOn, isValidCrimeTarget } from '../crime/consent';
 import { addDigital } from '../crime/investigation';
 import { itemCount } from '../inventory/items';
 import { hasPhone } from '../systems/phone';
+import { MAX_PER_MONTH, countMessage, effectChip, pushMsg, sentThisMonth } from './convo';
+import { createPlan } from './plans';
+import type { PlanKind } from './types';
+import { clearMad, npcState, setMad } from '../npc/mood';
 
-// Update 0.5 — real messenger. Texting is free (no time slot) but capped at 3 messages per chat per slot.
+// Update 0.5 — real messenger. Update 0.8 — free, capped at 10 messages per contact per month; odds only on real gambles.
 
 export type ChatTab = 'greet' | 'talk' | 'deep' | 'flirt' | 'plans' | 'intimate' | 'money' | 'support' | 'conflict' | 'underworld';
 export const TABS: { id: ChatTab; icon: string; label: string }[] = [
@@ -21,7 +24,6 @@ export const TABS: { id: ChatTab; icon: string; label: string }[] = [
   { id: 'money', icon: '💸', label: 'Money' }, { id: 'support', icon: '🙏', label: 'Support' }, { id: 'conflict', icon: '😠', label: 'Conflict' },
   { id: 'underworld', icon: '🗡️', label: 'Underworld' },
 ];
-export const MAX_PER_SLOT = 3;
 
 interface Pool { ok: string[]; fail: string[]; mature?: boolean }
 
@@ -116,10 +118,10 @@ export const CHIPS: ChipDef[] = [
   { id: 'flirtyselfie', tab: 'flirt', label: 'Send a flirty selfie 📷', pool: 'flirtyselfie', photo: '📷 Flirty selfie', risk: '⚠ Could screenshot', when: (g, p) => canBeIntimate(g, p), odds: (_g, p) => Math.min(0.95, p.attraction / 90 + p.romance / 200), run: (g, p, ok) => photoAftermath(g, p, ok) },
   // plans
   { id: 'hangplan', tab: 'plans', label: 'Hang out?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok) },
-  { id: 'partyplan', tab: 'plans', label: 'Party tonight?', pool: 'plans', odds: (g, p) => base(g, p, hasTrait(p, 'partyanimal') ? 0.85 : hasTrait(p, 'homebody') ? 0.2 : 0.55), run: (g, p, ok) => planned(g, p, ok) },
+  { id: 'partyplan', tab: 'plans', label: 'Party tonight?', pool: 'plans', odds: (g, p) => base(g, p, hasTrait(p, 'partyanimal') ? 0.85 : hasTrait(p, 'homebody') ? 0.2 : 0.55), run: (g, p, ok) => planned(g, p, ok, 'party') },
   { id: 'studyplan', tab: 'plans', label: 'Study together?', pool: 'plans', when: (g) => !!g.s.education.current, run: (g, p, ok) => { planned(g, p, ok); if (ok) g.stat('smarts', 1); } },
   { id: 'gymplan', tab: 'plans', label: 'Gym together?', pool: 'plans', run: (g, p, ok) => { planned(g, p, ok); if (ok) g.stat('fitness', 1); } },
-  { id: 'movieplan', tab: 'plans', label: 'Movie night?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok) },
+  { id: 'movieplan', tab: 'plans', label: 'Movie night?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok, 'movie') },
   { id: 'comeover', tab: 'plans', label: 'Come over?', pool: 'plans', run: (g, p, ok) => planned(g, p, ok) },
   { id: 'askout', tab: 'plans', label: 'Ask them out', pool: 'askout', when: (g, p) => isRomanceEligible(g, p) && !committed(p), odds: (_g, p) => Math.min(0.95, 0.15 + p.attraction / 120 + p.rel / 300), run: (g, p, ok) => { if (ok) { p.role = 'dating'; bump(p, 'romance', 12); g.burst('hearts'); } else g.stat('mood', -6); } },
   // intimate (18+ both, Mature Content, not cannotConsent, committed/FWB)
@@ -154,13 +156,12 @@ export const CHIPS: ChipDef[] = [
 ];
 export const CHIP_BY_ID: Record<string, ChipDef> = Object.fromEntries(CHIPS.map((c) => [c.id, c]));
 
-function planned(g: Game, p: Person, ok: boolean) {
+/** Update 0.8 — a yes makes a Plan for the next evening; the effects come when you actually go. */
+function planned(g: Game, p: Person, ok: boolean, kind: PlanKind = 'hang') {
   if (!ok) return;
-  bump(p, 'rel', 6);
-  if (committed(p)) bump(p, 'romance', 5);
-  g.stat('mood', 5);
-  g.stat('energy', -6);
+  bump(p, 'rel', 2);
   p.lastContact = g.s.clock;
+  createPlan(g, p, committed(p) && kind === 'hang' ? 'date' : kind, 'mine');
 }
 
 /** Private-photo consequences: screenshots, leaks, an ex who keeps them. */
@@ -204,14 +205,6 @@ export function chipsFor(g: Game, p: Person, tab: ChatTab): { chip: ChipDef; odd
     .map((c) => ({ chip: c, odds: c.odds ? c.odds(g, p) : base(g, p, 0.7), reason: c.req?.(g, p) ?? null }));
 }
 
-export const sentThisSlot = (g: Game, threadId: string) => g.flag(`msg:${threadId}:${g.s.turn}`);
-
-const push = (g: Game, threadId: string, m: Omit<ChatMsg, 'id' | 'turn' | 'read'> & { read?: boolean }) => {
-  const list = (g.s.chats[threadId] ??= []);
-  list.push({ id: newId(), turn: g.s.turn, read: false, ...m });
-  if (list.length > 60) list.splice(0, list.length - 60);
-};
-
 /** Audit: every mature reply resolution (tested). */
 export const CHAT_MATURE_AUDIT: { playerAge: number; npcAge: number; chip: string }[] = [];
 
@@ -228,36 +221,58 @@ function replyLine(g: Game, p: Person, pool: string, ok: boolean): string {
 
 export interface SendResult {
   error?: string;
-  /** NPC reply (null = left on read) */
+  /** NPC reply (null = left on read / not yet) */
   reply: string | null;
   delay: number;
+  /** a status line for the chat ("they'll reply later") */
+  note?: string;
 }
 
-/** Send a chip to a contact. Free, but capped per slot; Underworld chips leave a digital trail unless sent from a burner. */
+/** Update 0.8 — chips that are a real gamble show (and roll) odds. Everything else is kind and lands unless they're upset or busy. */
+export const GAMBLE = new Set([
+  'missyou', 'meme', 'voice', 'drunktext', 'compliment', 'pickup', 'tease', 'lookedgood', 'doyoulike', 'ilike', 'selfie', 'flirtyselfie',
+  'partyplan', 'askout', 'comeover18', 'privatephoto', 'askphoto', 'bootycall', 'borrow', 'payback', 'allowance', 'roast', 'accuse',
+  'breakuptext', 'menace', 'threat', 'demandpay', 'ordercrew', 'deal',
+]);
+export const isGamble = (c: ChipDef) => GAMBLE.has(c.id);
+const MAD_CHIPS: Record<string, string> = { insult: 'insulted them', accuse: 'accused them', breakuptext: 'dumped them by text', menace: 'menaced them', threat: 'threatened them' };
+
+/** Send a chip to a contact. Free, but 10 per contact per month; Underworld chips leave a digital trail unless sent from a burner. */
 export function sendChip(g: Game, pid: string, chipId: string, burner = false): SendResult {
   const p = g.personById(pid);
   const chip = CHIP_BY_ID[chipId];
   if (!p || !chip) return { error: 'Unknown', reply: null, delay: 0 };
   if (threadState(g, p) !== 'open') return { error: 'Can’t message them', reply: null, delay: 0 };
-  if (sentThisSlot(g, pid) >= MAX_PER_SLOT) return { error: 'Slow down — 3 messages per slot', reply: null, delay: 0 };
+  if (sentThisMonth(g, pid) >= MAX_PER_MONTH) return { error: `Limit reached — ${MAX_PER_MONTH} messages this month`, reply: null, delay: 0 };
   const allowed = chipsFor(g, p, chip.tab).find((c) => c.chip.id === chipId);
   if (!allowed || allowed.reason) return { error: allowed?.reason ?? 'Not available', reply: null, delay: 0 };
-  g.inc(`msg:${pid}:${g.s.turn}`);
+  countMessage(g, pid);
   p.lastContact = g.s.clock;
+
+  // a fake number bounces on the first message (this used to be the "Text hi" button)
+  if (p.fakeNumber) {
+    pushMsg(g, pid, { from: 'me', text: chip.photo ? '' : chip.label, photo: chip.photo, turn: g.s.turn, read: true });
+    p.hasNumber = false;
+    p.fakeNumber = false;
+    p.memory.unshift({ clock: g.s.clock, text: 'Gave you a fake number', tone: 'bad' });
+    bump(p, 'rel', -5);
+    return { error: `Not delivered — that number doesn’t exist. ${p.name} gave you a fake number. 😑`, reply: null, delay: 0 };
+  }
+
   const useBurner = burner && itemCount(g, 'burner') > 0;
   if (chip.tab === 'underworld' && !useBurner) addDigital(g);
 
   // fast or drunk texting: a private photo can go to the wrong (adult) person
   let target = p;
-  if (chip.photo && CHAT_POOLS[chip.pool]?.mature && (sentThisSlot(g, pid) >= MAX_PER_SLOT || g.flag('drunkTurn') >= g.s.turn - 1) && g.chance(0.15)) {
+  if (chip.photo && CHAT_POOLS[chip.pool]?.mature && (sentThisMonth(g, pid) >= MAX_PER_MONTH - 2 || g.flag('drunkTurn') >= g.s.turn - 1) && g.chance(0.15)) {
     const wrong = g.s.people.find((x) => x.id !== p.id && x.alive && x.hasNumber && canBeIntimate(g, x) && g.chance(0.3));
     if (wrong) target = wrong;
   }
-  push(g, target.id, { from: 'me', text: chip.photo ? '' : chip.label, photo: chip.photo, burner: useBurner });
+  pushMsg(g, target.id, { from: 'me', text: chip.photo ? '' : chip.label, photo: chip.photo, burner: useBurner, turn: g.s.turn, read: false });
   if (target !== p) {
     const ok = g.chance(0.4);
     const reply = replyLine(g, target, 'photo_wrong', ok);
-    push(g, target.id, { from: target.id, text: reply });
+    pushMsg(g, target.id, { from: target.id, text: reply, turn: g.s.turn, kind: 'reaction' });
     bump(target, 'rel', ok ? -2 : -20);
     g.karma(-3);
     g.stat('mood', -15);
@@ -265,22 +280,33 @@ export function sendChip(g: Game, pid: string, chipId: string, burner = false): 
     return { reply: `Sent to the wrong chat: ${target.name}. ${reply}`, delay: 900 };
   }
 
-  // shy / playing it cool: sometimes no reply (left on read)
-  const leftOnRead = (hasTrait(p, 'shy') || p.mood < 25) && g.chance(0.25);
-  const ok = Math.random() < allowed.odds;
-  chip.run?.(g, p, ok);
-  if (chip.reveals) for (const t of discover(p, chip.reveals, 20)) g.log(`🔍 You learned ${p.name} is ${t}.`, 'love', p.id);
+  const state = npcState(g, p);
+  const before = { rel: p.rel, romance: p.romance, trust: p.trust, attraction: p.attraction, mood: g.s.stats.mood, money: g.s.money };
+  const gamble = isGamble(chip);
   const mine = g.s.chats[pid][g.s.chats[pid].length - 1];
-  if (leftOnRead) {
+  // shy people sometimes leave a gamble on read; kind messages always get an answer
+  if (gamble && (hasTrait(p, 'shy') || p.mood < 25) && g.chance(0.25)) {
     mine.read = true;
     bump(p, 'rel', -1);
     return { reply: null, delay: 0 };
   }
-  const reply = replyLine(g, p, chip.pool, ok);
-  mine.read = true;
-  if (g.chance(0.3)) mine.reaction = ok ? g.pick(['❤️', '😂', '😮']) : g.pick(['😢', '👎']);
-  const theirPhoto = chip.id === 'askphoto' && ok ? '📷 Private photo' : undefined;
-  push(g, pid, { from: p.id, text: reply, photo: theirPhoto });
+  let reply: string;
+  if (state.mood === 'mad' && !['support', 'conflict'].includes(chip.tab)) {
+    reply = `still mad about ${(state.reason ?? 'that').split(',')[0]}.`;
+  } else {
+    const ok = gamble ? Math.random() < allowed.odds : true;
+    chip.run?.(g, p, ok);
+    if (chip.reveals) for (const t of discover(p, chip.reveals, 20)) g.log(`🔍 You learned ${p.name} is ${t}.`, 'love', p.id);
+    reply = replyLine(g, p, chip.pool, ok);
+    if (MAD_CHIPS[chip.id] && (chip.id !== 'accuse' || ok)) setMad(g, p, MAD_CHIPS[chip.id]);
+    if (chip.id === 'sorry') clearMad(g, p);
+  }
+  mine.read = state.mood !== 'busy';
+  const turn = state.mood === 'busy' ? g.s.turn + 1 : g.s.turn;
+  if (g.chance(0.3) && state.mood === 'ok') mine.reaction = g.pick(['❤️', '😂', '😮']);
+  const theirPhoto = chip.id === 'askphoto' && reply && CHAT_POOLS.askphoto.ok.includes(reply) ? '📷 Private photo' : undefined;
+  pushMsg(g, pid, { from: p.id, text: reply, photo: theirPhoto, turn, kind: 'reaction', effects: effectChip(g, p, before) || undefined });
+  if (state.mood === 'busy') return { reply: null, delay: 0, note: `${p.name} is ${state.reason} — they’ll reply later.` };
   const delay = hasTrait(p, 'clingy') ? 300 : hasTrait(p, 'shy') ? 1600 : 800;
   return { reply, delay };
 }
@@ -321,9 +347,9 @@ export function sendGroup(g: Game, groupId: string, chipId: string): SendResult 
   const grp = g.s.groups.find((x) => x.id === groupId);
   const chip = CHIP_BY_ID[chipId];
   if (!grp || !chip || !groupChips(chip.tab).includes(chip)) return { error: 'Not available', reply: null, delay: 0 };
-  if (sentThisSlot(g, groupId) >= MAX_PER_SLOT) return { error: 'Slow down — 3 messages per slot', reply: null, delay: 0 };
-  g.inc(`msg:${groupId}:${g.s.turn}`);
-  push(g, groupId, { from: 'me', text: chip.label });
+  if (sentThisMonth(g, groupId) >= MAX_PER_MONTH) return { error: `Limit reached — ${MAX_PER_MONTH} messages this month`, reply: null, delay: 0 };
+  countMessage(g, groupId);
+  pushMsg(g, groupId, { from: 'me', text: chip.label, turn: g.s.turn, read: true });
   const members = grp.members.map((id) => g.personById(id)).filter((p): p is Person => !!p && p.alive);
   const n = Math.min(members.length, g.rand(1, 3));
   let last = '';
@@ -331,7 +357,7 @@ export function sendGroup(g: Game, groupId: string, chipId: string): SendResult 
     const ok = g.chance(base(g, p, 0.7));
     chip.run?.(g, p, ok);
     last = replyLine(g, p, chip.pool, ok);
-    push(g, groupId, { from: p.id, text: last });
+    pushMsg(g, groupId, { from: p.id, text: last, turn: g.s.turn });
   }
   if (chip.tab === 'underworld' && grp.kind === 'crew') addDigital(g);
   return { reply: last, delay: 700 };

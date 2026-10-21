@@ -3,6 +3,7 @@ import { ageGate, legalAge, type GateKey } from '../rules/us';
 import { settings } from '../settings';
 import { fmt } from '../systems/finance';
 import { punish, type OffenseKind } from '../systems/trouble';
+import { PARTS, SLOT_ICON, SLOT_LABEL } from '../pc/parts';
 
 // Update 0.4 — inventory ("Bag"). Big things (car, laptop, phone) stay as assets.
 
@@ -26,7 +27,7 @@ export interface ItemDef {
   /** offence if found in a search */
   offense?: { kind: OffenseKind; sev: number };
   /** Update 0.5 — where it's sold: the Back Room sells `black` items (and pricier unregistered copies) */
-  market?: 'shop' | 'hardware' | 'gun' | 'black';
+  market?: 'shop' | 'hardware' | 'gun' | 'black' | 'nile';
   /** extra legal-purchase check (license, record) */
   check?: (g: Game) => string | null;
 }
@@ -74,6 +75,8 @@ export const ITEMS: ItemDef[] = [
   { id: 'stolen', name: 'Stolen Goods', icon: '📦', desc: 'Hot merchandise.', price: 0, shop: false, legality: 'illegal', consumable: true, offense: { kind: 'theft', sev: 2 } },
   { id: 'contraband', name: 'Contraband', icon: '🎒', desc: 'You know what this is.', price: 0, shop: false, legality: 'illegal', consumable: true, offense: { kind: 'drugs', sev: 2 } },
   { id: 'weapon', name: 'Weapon', icon: '🔪', desc: 'A very bad idea.', price: 0, shop: false, legality: 'illegal', consumable: false, offense: { kind: 'other', sev: 3 } },
+  // Update 0.8 — PC parts arrive in the bag from Nile orders
+  ...PARTS.map((p): ItemDef => ({ id: p.id, name: p.name, icon: SLOT_ICON[p.slot], desc: `${SLOT_LABEL[p.slot]} · tier ${p.tier}`, price: p.price, shop: false, market: 'nile', legality: 'legal', consumable: false })),
 ];
 export const ITEM_BY_ID: Record<string, ItemDef> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 

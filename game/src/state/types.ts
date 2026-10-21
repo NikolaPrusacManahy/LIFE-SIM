@@ -281,6 +281,19 @@ export interface GameState {
   underworld: import('./crime/types').Underworld;
   chats: Record<string, import('./crime/types').ChatMsg[]>;
   groups: import('./crime/types').GroupChat[];
+  /** Update 0.8 — accepted invitations and dates */
+  plans: import('./phone/types').Plan[];
+  /** Update 0.8 — notification centre (texts, plan reminders, bills, news) */
+  notes: import('./phone/types').Note[];
+  /** Update 0.8 — computers & the web */
+  pc: import('./pc/types').PcState;
+  web: import('./pc/types').WebState;
+  session: import('./pc/types').Session | null;
+  orders: import('./pc/types').Order[];
+  /** Update 0.8 — a night out in progress */
+  night: import('./nightlife/types').Night | null;
+  /** Update 0.8 — free actions you can only do once per time slot (profile actions, a computer sitting) */
+  usedThisSlot: { turn: number; ids: string[] };
   background: Background;
   /** Update 0.5.1 — legal system this life plays under */
   rules: 'us' | 'eu';

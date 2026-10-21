@@ -195,4 +195,6 @@ Source assets are staged in the root folders. Look there before you say an asset
 - LIFE//SIM: queued events can go stale (fired before a promotion resolves). `choicesFor()` falls back to "Continue" so the game never soft-locks.
 - LIFE//SIM: stale events also crash when a choice uses `g.s.education.current!` after juvie or expulsion. Never use `!` on optional state (`education.current`, `job`, `partner`) inside an event choice; it happened three times.
 - LIFE//SIM: `scrollIntoView()` also scrolls the zoomed `.app-frame` (overflow hidden), which slides the UI away and shows a black screen. Set `scrollTop` on the list itself instead. `.app-frame` now uses `overflow: clip` as a guard.
+- LIFE//SIM: canvas mini-games restart mid-run if a parent re-render hands them a new `onEnd`. Keep callbacks in a ref and start the loop only on mount/start.
+- LIFE//SIM: coverage checks over random play ("was X exercised?") flake when X is rare. Give the test a focused strategy for X instead of hoping random play reaches it.
 - A Python patch script that applies several anchors can half-apply when a later anchor is stale. Assert every anchor before writing anything, or split the script, then check the file before re-running it.

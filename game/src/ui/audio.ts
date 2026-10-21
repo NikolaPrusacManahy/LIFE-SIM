@@ -9,13 +9,18 @@ const cache: Partial<Record<SfxId, HTMLAudioElement>> = {};
 let bgm: HTMLAudioElement | null = null;
 let unlocked = false;
 
-export function sfx(id: SfxId) {
+/** `rate` pitches a sound (Update 0.8 — partner / family / unknown notifications until dedicated files exist). */
+export function sfx(id: SfxId, rate = 1) {
   if (!settings.sound || !unlocked) return;
   const base = (cache[id] ??= Object.assign(new Audio(url(id)), { preload: 'auto' }));
   const a = base.cloneNode() as HTMLAudioElement;
   a.volume = VOL[id];
+  a.playbackRate = rate;
+  a.preservesPitch = false;
   a.play().catch(() => undefined);
 }
+
+export const NOTIFY_RATE: Record<'partner' | 'family' | 'other', number> = { partner: 1.18, family: 0.88, other: 1 };
 
 /** Background music loops once the browser allows audio (after the first input). */
 export function syncMusic() {

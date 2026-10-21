@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { nextProfile, swipe, swipesLeft } from '../../../state/systems/dating';
 import type { AppProps } from './types';
+import { Portrait } from '../../../components/Portrait';
 
 /** Update 0.3 — swipe cards. Adults only (gated in the app list and in swipe()). */
 export function DatingApp({ game, done }: AppProps) {
@@ -16,7 +17,7 @@ export function DatingApp({ game, done }: AppProps) {
   return (
     <div className="app-stack">
       <div className="dat-card">
-        <div className="dat-face">{profile.icon}</div>
+        <div className="dat-face"><Portrait look={profile.look} age={profile.age} size={110} seed={profile.id} mood={75} /></div>
         <b>{profile.name}, {profile.age}</b>
         <small>{profile.gender === 'male' ? 'Man' : profile.gender === 'female' ? 'Woman' : 'Non-binary'}</small>
         <p>“{profile.bio}”</p>

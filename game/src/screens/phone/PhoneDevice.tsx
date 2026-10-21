@@ -4,6 +4,7 @@ import { MONTHS } from '../../state/types';
 import { weatherFor } from '../../fx/view';
 import { useEscape } from '../../hooks/useEscape';
 import { ageGate } from '../../state/rules/us';
+import { badgeCount } from '../../state/phone/notify';
 import { APPS, APP_ORDER, AppView, type AppHostProps, type AppId } from './apps';
 
 const CLOCK = { morning: '08:15', afternoon: '14:30', evening: '19:45', night: '23:10' } as const;
@@ -28,6 +29,8 @@ export function PhoneDevice({ mode, initial = null, ...host }: Props) {
   }, []);
 
   const apps = APP_ORDER.filter((id) => (mode === 'phone' || !APPS[id].phoneOnly) && (id !== 'dating' || ageGate('dating', g).allowed) && (id !== 'god' || g.s.god) && (id !== 'crime' || (g.age >= 18 && (g.s.god || g.flag('crimes05') > 0 || g.s.stats.street >= 5))));
+  // Update 0.8 — number badges (Messages = unread threads)
+  const badges: Partial<Record<AppId, number>> = mode === 'phone' ? { people: badgeCount(g), notes: g.s.notes.filter((n) => !n.read).length } : {};
   const temp = TEMP[g.month] + (g.s.region === 'country' ? -1 : 1) + (g.phase === 'night' ? -4 : g.phase === 'afternoon' ? 2 : 0);
 
   return (
@@ -61,10 +64,11 @@ export function PhoneDevice({ mode, initial = null, ...host }: Props) {
                 <button key={id} className="dev-tile" onClick={() => setApp(id)}>
                   <span className="dev-tile-icon" style={{ background: `linear-gradient(135deg, ${APPS[id].color[0]}, ${APPS[id].color[1]})` }}>{APPS[id].icon}</span>
                   <span className="dev-tile-name">{APPS[id].name}</span>
+                  {badges[id] ? <i className="dev-badge">{badges[id]! > 9 ? '9+' : badges[id]}</i> : null}
                 </button>
               ))}
             </div>
-            <div className="dev-foot">v0.6 · LIFE//SIM</div>
+            <div className="dev-foot">v0.9 · LIFE//SIM</div>
           </div>
         )}
         {mode === 'phone' && <div className="dev-bar" />}

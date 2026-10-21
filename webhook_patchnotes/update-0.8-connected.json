@@ -1,0 +1,41 @@
+{
+  "username": "LIFE//SIM",
+  "content": "**Update 0.8 — Connected** is out! 📱🖥️🪩",
+  "embeds": [
+    {
+      "title": "💬 Real conversations",
+      "color": 16735370,
+      "description": "Every text now has replies that fit it: say yes to the party, ask who's going, send the $50, react to the meme. Your bubble appears, they type, they react, and the effect shows right under it. Kind messages land kindly unless they're actually upset with you, and the chat tells you why."
+    },
+    {
+      "title": "📅 Plans & dates",
+      "color": 16753468,
+      "description": "Accept an invitation and it becomes a plan that plays out in that time slot. Partners and close friends ask you out on their own: date nights, surprises, \"can we talk?\". Standing someone up has consequences. Ignored invites expire."
+    },
+    {
+      "title": "🧾 One thing at a time",
+      "color": 9139445,
+      "description": "Every action ends on a result card you dismiss. Random events, texts and banners wait their turn instead of interrupting you."
+    },
+    {
+      "title": "🔔 Notifications",
+      "color": 16765802,
+      "description": "Number badges on the phone and every chat, banners that slide in when a text arrives, and a notification centre with your plans. Texting is free but capped at 10 messages per person per month (their messages always get a free reply)."
+    },
+    {
+      "title": "🖥️ Computers: the Doors desktop",
+      "color": 3843302,
+      "description": "Use your laptop, a library PC or your own build. One sitting uses a time slot. Browse JobHunt, ViewTube, Twitchy, Chirp, OtakuPit, WeatherNerds, GameHub, Nile, PartPicker, NewsNow, LearnHub, Discorb and more, and play 7 mini-games: Flappy Pigeon, Furious Fowl, Snek, Mines, Block Drop, Word Duel and Golf Solitaire."
+    },
+    {
+      "title": "🔧 Build your own PC",
+      "color": 4177780,
+      "description": "Order fictional parts on Nile, check compatibility on PartPicker, then assemble it yourself. Mistakes are very real: forget the thermal paste, unseated RAM, a static zap. Your PC score powers streaming, uploads, mining and games."
+    },
+    {
+      "title": "🪩 Nights out",
+      "color": 13715036,
+      "description": "Bars, clubs and the roadhouse are now a full scene: zones, a crowd with vibes, drinks, dancing, karaoke, darts, trivia, the mechanical bull. Walk up to people and build a connection. Too drunk? You'll be offered a cab, not a sleepover. And if you see someone spike a drink, step in."
+    }
+  ]
+}

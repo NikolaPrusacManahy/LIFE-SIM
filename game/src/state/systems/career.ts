@@ -43,6 +43,9 @@ export function hireChance(g: Game, c: CareerDef) {
   if (g.flag('ivy')) p += 0.12;
   if (g.hasDegree('mba') && (c.id === 'finance' || c.id === 'marketing')) p += 0.1;
   p += g.s.fame / 500;
+  // Update 0.8 — a JobHunt CV and LearnHub certificates help
+  if (g.flag('cv')) p += 0.05;
+  if (g.flag(`cert:${c.track}`)) p += 0.1;
   if (c.track === 'teen') p += 0.2;
   return clamp(p, 0.05, 0.97);
 }

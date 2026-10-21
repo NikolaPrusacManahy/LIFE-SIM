@@ -1,0 +1,9 @@
+/* Update 0.7 — DiceBear portraits (Avataaars) */
+.por-dice { display: block; object-fit: cover; background: transparent; }
+.me-avatar { overflow: hidden; }
+.me-avatar .por-dice { border-radius: 50%; }
+.crt-face { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.crt-face .por-dice { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #ffd1df; }
+.crt-face small { font: 700 11.5px var(--font); color: var(--ink-faint); }
+.dat-face { overflow: hidden; }
+.dat-face .por-dice { width: 100%; height: 100%; }

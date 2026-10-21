@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Game } from './state/Game';
-import { clearSave, loadGame, saveGame } from './state/save';
+import { anySave, clearSave, loadGame, saveGame } from './state/save';
+import { SlotPicker } from './screens/title/SlotPicker';
 import { continueAsChild } from './state/newGame';
 import { currentObligations } from './state/systems/obligations';
 import { StageCanvas, type StageHandle } from './fx/StageCanvas';
@@ -28,21 +29,31 @@ export function App() {
   useGame(game);
   useEffect(() => installAudio(), []);
 
+  // Update 0.9 — which of the 5 save slots this life writes to (autosave)
+  const slot = useRef(0);
+  const [picker, setPicker] = useState<'continue' | 'new' | null>(null);
+
   const begin = useCallback((g: Game) => {
-    g.onSave = (gg) => saveGame(gg.s);
+    g.onSave = (gg) => saveGame(gg.s, slot.current);
     g.save();
     setGame(g);
     setTab(currentObligations(g)[0]?.loc ?? g.s.location ?? 'home');
     setScreen('play');
   }, []);
 
-  const onContinue = () => {
-    const s = loadGame();
-    if (s) begin(new Game(s));
+  const pick = (n: number) => {
+    const mode = picker;
+    setPicker(null);
+    slot.current = n;
+    if (mode === 'continue') {
+      const s = loadGame(n);
+      if (s) begin(new Game(s));
+    } else setScreen('create'); // the old life in this slot is overwritten when the new one starts
   };
 
+  /** A new life from the pause menu / death screen stays in the current slot. */
   const restart = () => {
-    clearSave();
+    clearSave(slot.current);
     setGame(null);
     setScreen('create');
   };
@@ -73,7 +84,8 @@ export function App() {
     <div className="app-frame">
       <StageCanvas ref={stage} view={view} />
       <div className="app-ui">
-        {screen === 'title' && <TitleScreen hasSave={!!loadGame()} onContinue={onContinue} onNew={() => setScreen('create')} />}
+        {screen === 'title' && <TitleScreen hasSave={anySave()} onContinue={() => setPicker('continue')} onNew={() => setPicker('new')} />}
+        {screen === 'title' && picker && <SlotPicker mode={picker} onPick={pick} onClose={() => setPicker(null)} />}
         {!ageAsked && <AgeConfirm onDone={() => setAgeAsked(true)} />}
         {screen === 'create' && <CreateScreen onBack={() => setScreen('title')} onCreate={begin} onPreview={onPreview} />}
         {screen === 'play' && game && (

@@ -14,6 +14,8 @@ import { ageGate } from './rules/us';
 import { settings } from './settings';
 import { rollEncounter } from './encounters/pools';
 import { textsTick } from './phone/texts';
+import { plansTick } from './phone/plans';
+import { deliveriesTick } from './web/nile';
 import { pursuitTick } from './crime/pursuit';
 import { grounded } from './systems/trouble';
 
@@ -34,6 +36,8 @@ export interface ActionResult {
   deltas: Record<string, number>;
   fx: FxKind[];
   monthPassed: boolean;
+  /** Update 0.8 — who the result is about (portrait on the result card) */
+  pid?: string;
 }
 
 export interface ActivityStatus {
@@ -156,6 +160,13 @@ export class Game {
   flag(k: string) { return this.s.flags[k] ?? 0; }
   setFlag(k: string, v = 1) { this.s.flags[k] = v; }
   inc(k: string, d = 1) { this.s.flags[k] = (this.s.flags[k] ?? 0) + d; return this.s.flags[k]; }
+
+  /** Update 0.8 — once-per-time-slot limits for free actions */
+  usedNow(key: string) { return this.s.usedThisSlot.turn === this.s.turn && this.s.usedThisSlot.ids.includes(key); }
+  markUsed(key: string) {
+    if (this.s.usedThisSlot.turn !== this.s.turn) this.s.usedThisSlot = { turn: this.s.turn, ids: [] };
+    this.s.usedThisSlot.ids.push(key);
+  }
 
   onCooldown(id: string) { return (this.s.cooldowns[id] ?? -1) > this.s.turn; }
   cooldown(id: string, turns: number) { this.s.cooldowns[id] = this.s.turn + turns; }
@@ -281,7 +292,7 @@ export class Game {
   }
 
   canAct() {
-    return !this.s.dead && this.s.events.length === 0 && !this.s.underworld.scene;
+    return !this.s.dead && this.s.events.length === 0 && !this.s.underworld.scene && !this.s.session && !this.s.night;
   }
 
   doActivity(id: string): ActionResult | null {
@@ -298,11 +309,22 @@ export class Game {
     if (e > 0) this.stat('energy', -e);
     if (def.cooldown) this.cooldown(`act:${def.id}`, def.cooldown);
     const text = def.run(this);
-    recordSkips(this, obligations, def.id);
     this.log(text, def.kind ?? CAT_KIND[def.cat] ?? 'info');
+    // Update 0.8 — free activities (a computer sitting) don't use the time slot
+    if (def.free) return this.result(def.name, def.icon, text);
+    recordSkips(this, obligations, def.id);
     if (def.loc !== 'home' && !def.panel) rollEncounter(this, def.loc);
     this.endPhase();
     return this.result(def.name, def.icon, text);
+  }
+
+  /** Update 0.8 — something that takes no time (profile actions); the result card still shows. */
+  freeAction(title: string, icon: string, fn: () => string, pid?: string): ActionResult | null {
+    if (!this.canAct()) return null;
+    this.monthFlag = false;
+    const text = fn();
+    this.log(text, 'love', pid);
+    return { ...this.result(title, icon, text), pid };
   }
 
   /** Spend a time slot on something not in the activity table (e.g. people interactions). */
@@ -314,7 +336,7 @@ export class Game {
     recordSkips(this, obligations, '__social');
     this.log(text, 'love', pid);
     this.endPhase();
-    return this.result(title, icon, text);
+    return { ...this.result(title, icon, text), pid };
   }
 
   private result(title: string, icon: string, text: string): ActionResult {
@@ -331,6 +353,13 @@ export class Game {
     return this.result(title, icon, text);
   }
 
+  /** Update 0.8 — spend the current slot from inside an event (a plan you went to). Deltas stay with the event's result. */
+  takeSlot() {
+    const obligations = currentObligations(this);
+    recordSkips(this, obligations, '__social');
+    this.endPhase();
+  }
+
   private endPhase() {
     this.s.turn++;
     this.s.phase++;
@@ -341,8 +370,11 @@ export class Game {
       newMonth(this);
     }
     if (!this.s.dead && this.s.stats.health <= 0) this.die(this.pick(['Your body gave out', 'Complications from poor health']));
+    // Update 0.8 — a plan for this slot comes first; random events wait for a free slot
+    if (!this.s.dead) plansTick(this);
     if (!this.s.dead) this.rollRandomEvent();
     if (!this.s.dead) textsTick(this);
+    if (!this.s.dead) deliveriesTick(this);
     if (!this.s.dead) pursuitTick(this);
     this.s.netWorthPeak = Math.max(this.s.netWorthPeak, netWorth(this));
   }

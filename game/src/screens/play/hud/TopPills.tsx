@@ -2,7 +2,7 @@ import type { Game } from '../../../state/Game';
 import { PHASES, PHASE_ICON, PHASE_LABEL } from '../../../state/types';
 import { fmt } from '../../../state/systems/finance';
 import { hasPhone, phoneConfiscated } from '../../../state/systems/phone';
-import { unreadCount } from '../../../state/phone/texts';
+import { badgeCount } from '../../../state/phone/notify';
 
 const MONTH_FULL = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
 
@@ -16,7 +16,7 @@ interface Props {
 
 /** Top-right pills: time of day, date, money, phone/journal, next month, menu. */
 export function TopPills({ game, onDevice, onPeople, onAutopilot, onPause }: Props) {
-  const unread = unreadCount(game);
+  const unread = badgeCount(game);
   const s = game.s;
   const phone = hasPhone(game);
   return (
