@@ -1,4 +1,4 @@
-import { createLife, randomLook } from '../src/state/newGame';
+import { createLife, randomLook, type NewLifeOptions } from '../src/state/newGame';
 import type { Game } from '../src/state/Game';
 import { visibleLocations } from '../src/state/systems/world';
 import { activitiesAt } from '../src/state/activities';
@@ -25,6 +25,8 @@ export interface SimOptions {
   chat?: number;
   /** Update 0.5 — start with crime gear in the bag */
   gear?: boolean;
+  /** Update 0.5.1 — creator options (startAge, millionaire, rules) */
+  start?: Partial<NewLifeOptions>;
 }
 
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
@@ -32,7 +34,7 @@ const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 /** Play a life with random-but-legal inputs. Returns the finished game. */
 export function simulateLife(bg: Background, home: Region, opts: SimOptions | number = {}): Game {
   const o: SimOptions = typeof opts === 'number' ? { maxTurns: opts } : opts;
-  const g = createLife({ name: 'Test', familyName: 'Sim', gender: pick(['female', 'male', 'nonbinary'] as const), background: bg, hometown: home, traits: ['genius', 'lucky'], look: randomLook() });
+  const g = createLife({ name: 'Test', familyName: 'Sim', gender: pick(['female', 'male', 'nonbinary'] as const), background: bg, hometown: home, traits: ['genius', 'lucky'], look: randomLook(), ...o.start });
   if (o.ageOffset) {
     g.s.bornAt -= o.ageOffset * 12;
     if (o.ageOffset >= 4) {

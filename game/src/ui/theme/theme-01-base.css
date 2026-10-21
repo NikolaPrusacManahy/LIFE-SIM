@@ -33,7 +33,7 @@ body { display: flex; align-items: center; justify-content: center; }
 *::-webkit-scrollbar { display: none; }
 button { font-family: inherit; }
 
-.app-frame { position: relative; width: 1440px; height: 860px; zoom: var(--zoom); overflow: hidden; background: #000; user-select: none; }
+.app-frame { position: relative; width: 1440px; height: 860px; zoom: var(--zoom); overflow: hidden; overflow: clip; background: #000; user-select: none; }
 .stg-host { position: absolute; inset: 0; }
 .stg-host canvas { display: block; }
 .app-ui, .ply-screen { position: absolute; inset: 0; pointer-events: none; }

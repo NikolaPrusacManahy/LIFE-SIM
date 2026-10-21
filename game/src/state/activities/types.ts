@@ -23,11 +23,11 @@ export interface ActivityDef {
   maxAge?: number;
   /** Update 0.3 — legal age gate from rules/us.ts */
   gate?: GateKey;
-  /** 'illegalUnder21': minors may attempt it at a risk; a fake ID lets 16–20s into 21+ venues */
-  legality?: 'legal' | 'illegal' | 'illegalUnder21';
+  /** 'underage': below the legal age (US 21 / EU 18) you may attempt it at a risk; a fake ID gets 16+ into venues */
+  legality?: 'legal' | 'illegal' | 'underage';
   /** consequence preview chips, e.g. "Police 12%" */
   preview?: (g: Game) => string[];
-  /** a 21+ venue (bar, club, casino): underage entry needs a fake ID */
+  /** an age-restricted venue (bar, club, casino): underage entry needs a fake ID */
   venue?: boolean;
   region?: Region;
   when?: (g: Game) => boolean;

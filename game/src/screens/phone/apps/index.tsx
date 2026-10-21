@@ -15,6 +15,7 @@ import { LifeApp } from './LifeApp';
 import { SettingsApp } from './SettingsApp';
 import { DatingApp } from './DatingApp';
 import { CrimeApp } from './CrimeApp';
+import { GodApp } from './GodApp';
 import { BlackMarketApp } from './BlackMarketApp';
 
 export { APPS, APP_ORDER, type AppId } from './types';
@@ -24,6 +25,7 @@ const VIEW: Record<AppId, (p: AppProps) => ReactElement> = {
   dating: DatingApp,
   bag: BagApp,
   crime: CrimeApp,
+  god: GodApp,
   blackmarket: BlackMarketApp,
   jobs: CareerApp,
   school: SchoolApp,

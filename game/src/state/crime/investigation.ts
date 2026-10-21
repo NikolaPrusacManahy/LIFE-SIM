@@ -103,6 +103,7 @@ export function investigationMonth(g: Game) {
     if (c.found.length && !c.open.length && c.progress < 60 && g.s.clock - c.clock > 36) c.status = 'cold';
   }
   recomputeWanted(g);
+  if (g.s.god) return; // Update 0.6 — they investigate; nobody comes for a god
   const hot = u.cases.find((c) => c.status === 'open' && c.suspect && c.progress >= 60);
   if (hot && !u.pursuit && !g.jailed) {
     if (u.wanted >= 4) g.queue('manhunt', { caseId: hot.id });

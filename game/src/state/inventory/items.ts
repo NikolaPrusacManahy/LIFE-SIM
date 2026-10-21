@@ -1,5 +1,5 @@
 import type { Game } from '../Game';
-import { ageGate, type GateKey } from '../rules/us';
+import { ageGate, legalAge, type GateKey } from '../rules/us';
 import { settings } from '../settings';
 import { fmt } from '../systems/finance';
 import { punish, type OffenseKind } from '../systems/trouble';
@@ -15,7 +15,7 @@ export interface ItemDef {
   /** sold in the Shop app */
   shop: boolean;
   gate?: GateKey;
-  legality: 'legal' | 'illegalUnder21' | 'illegal';
+  legality: 'legal' | 'underage' | 'illegal';
   consumable: boolean;
   /** units per purchase */
   pack?: number;
@@ -51,8 +51,8 @@ export const ITEMS: ItemDef[] = [
   { id: 'preg_test', name: 'Pregnancy Test', icon: '🧪', desc: 'Peace of mind.', price: 15, shop: true, gate: 'intimacy', legality: 'legal', consumable: true, matureOnly: true },
   { id: 'first_aid', name: 'First Aid Kit', icon: '🩹', desc: 'Fixes minor injuries.', price: 25, shop: true, legality: 'legal', consumable: true },
   { id: 'painkillers', name: 'Painkillers', icon: '💊', desc: 'Hangovers, aches.', price: 8, shop: true, legality: 'legal', consumable: true },
-  { id: 'vape', name: 'Vape', icon: '💨', desc: 'Nicotine. Illegal under 21.', price: 20, shop: true, gate: 'tobacco', legality: 'illegalUnder21', consumable: true, pack: 3, offense: { kind: 'tobacco', sev: 1 } },
-  { id: 'alcohol', name: 'Bottle of Liquor', icon: '🍾', desc: 'Party supplies. Illegal under 21.', price: 25, shop: true, gate: 'alcohol', legality: 'illegalUnder21', consumable: true, offense: { kind: 'alcohol', sev: 1 } },
+  { id: 'vape', name: 'Vape', icon: '💨', desc: 'Nicotine. Age-restricted.', price: 20, shop: true, gate: 'tobacco', legality: 'underage', consumable: true, pack: 3, offense: { kind: 'tobacco', sev: 1 } },
+  { id: 'alcohol', name: 'Bottle of Liquor', icon: '🍾', desc: 'Party supplies. Age-restricted.', price: 25, shop: true, gate: 'alcohol', legality: 'underage', consumable: true, offense: { kind: 'alcohol', sev: 1 } },
   { id: 'fakeid', name: 'Fake ID', icon: '🪪', desc: 'Gets under-21s into venues.', price: 0, shop: false, legality: 'illegal', consumable: false, offense: { kind: 'id', sev: 1 } },
   // ---- Update 0.5 — tools & weapons (legal routes) and the Back Room
   { id: 'knife', name: 'Pocket Knife', icon: '🔪', desc: 'Intimidation. Robbery option.', price: 40, shop: true, market: 'hardware', gate: 'lease', legality: 'legal', consumable: false },
@@ -124,7 +124,7 @@ export function buyItem(g: Game, id: string, black = false): string {
 
 /** Items that are illegal for the player to hold right now. */
 export function contrabandHeld(g: Game): ItemDef[] {
-  return ITEMS.filter((it) => itemCount(g, it.id) > 0 && (it.legality === 'illegal' || (it.legality === 'illegalUnder21' && g.age < 21) || (it.id === 'pistol' && (g.flag('gunDirty') || !g.flag('gunRegistered')))));
+  return ITEMS.filter((it) => itemCount(g, it.id) > 0 && (it.legality === 'illegal' || (it.legality === 'underage' && g.age < legalAge(g, it.gate ?? 'alcohol')) || (it.id === 'pistol' && (g.flag('gunDirty') || !g.flag('gunRegistered')))));
 }
 
 /** A search finds illegal items: confiscate them and apply the age-appropriate consequence. */

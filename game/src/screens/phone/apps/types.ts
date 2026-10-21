@@ -12,7 +12,7 @@ export interface AppProps {
   openPeople?: (pid?: string) => void;
 }
 
-export type AppId = 'people' | 'dating' | 'bag' | 'crime' | 'blackmarket' | 'jobs' | 'school' | 'shop' | 'homes' | 'bank' | 'stats' | 'diary' | 'trophies' | 'settings';
+export type AppId = 'god' | 'people' | 'dating' | 'bag' | 'crime' | 'blackmarket' | 'jobs' | 'school' | 'shop' | 'homes' | 'bank' | 'stats' | 'diary' | 'trophies' | 'settings';
 
 export interface AppMeta {
   name: string;
@@ -24,6 +24,7 @@ export interface AppMeta {
 }
 
 export const APPS: Record<AppId, AppMeta> = {
+  god: { name: 'Become God', icon: '⚡', color: ['#ffe58a', '#ff9d3c'], phoneOnly: false },
   people: { name: 'Messages', icon: '💬', color: ['#ff8fb1', '#ff5c8a'], phoneOnly: false },
   dating: { name: 'Spark', icon: '💘', color: ['#ff9ec4', '#ff4f8b'], phoneOnly: true },
   bag: { name: 'Bag', icon: '🎒', color: ['#c9a6ff', '#9b6bff'], phoneOnly: false },
@@ -40,4 +41,4 @@ export const APPS: Record<AppId, AppMeta> = {
   settings: { name: 'Settings', icon: '⚙️', color: ['#c9cbd8', '#9a9db3'], phoneOnly: false },
 };
 
-export const APP_ORDER: AppId[] = ['people', 'dating', 'crime', 'bag', 'jobs', 'school', 'shop', 'homes', 'bank', 'stats', 'diary', 'trophies', 'settings'];
+export const APP_ORDER: AppId[] = ['god', 'people', 'dating', 'crime', 'bag', 'jobs', 'school', 'shop', 'homes', 'bank', 'stats', 'diary', 'trophies', 'settings'];

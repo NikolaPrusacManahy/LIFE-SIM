@@ -280,7 +280,7 @@ export const SCHOOL_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'vape_gym', loc: 'school', name: 'Vape Behind the Gym', icon: '💨', desc: 'Everyone’s doing it. Allegedly.', cat: 'fun', energy: 4, gate: 'tobacco', legality: 'illegalUnder21',
+    id: 'vape_gym', loc: 'school', name: 'Vape Behind the Gym', icon: '💨', desc: 'Everyone’s doing it. Allegedly.', cat: 'fun', energy: 4, gate: 'tobacco', legality: 'underage',
     when: (g) => g.s.education.current?.program === 'hs',
     preview: () => ['Caught 20%'],
     run: (g) => {

@@ -12,7 +12,11 @@ import { newId } from '../Game';
 
 export const VIOLENT_AUDIT: { playerAge: number }[] = [];
 
+/** Update 0.5.1 — carrying every item a crime can use (e.g. restraints AND sedative for a kidnapping) guarantees it. */
+export const fullyEquipped = (g: Game, c: CrimeDef) => c.id === 'kidnap' && !!c.needs?.every((i) => itemCount(g, i) > 0);
+
 export function crimeOddsFor(g: Game, c: CrimeDef, target?: Person | null): number {
+  if (fullyEquipped(g, c)) return 1;
   let diff = c.diff;
   if (g.phase === 'night') diff -= 6;
   if (itemCount(g, 'lockpick') && c.id === 'burglary') diff -= 10;
@@ -24,6 +28,7 @@ export function crimeOddsFor(g: Game, c: CrimeDef, target?: Person | null): numb
 export function crimeLock(g: Game, c: CrimeDef): string | null {
   if (g.age < 18) return 'Must be 18';
   if (c.dark && !darkCrimeOn()) return 'Dark Crime is off';
+  if (g.s.god) return null; // Update 0.6 — a god needs no gear
   if (c.needs && !c.needs.some((i) => itemCount(g, i) > 0)) return 'Missing gear (Back Room)';
   if (c.id === 'kidnap' && !g.s.underworld.properties.some((p) => ['basement', 'warehouse', 'cabin'].includes(p.kind))) return 'Nowhere to hold someone';
   if (c.id === 'murder_hire' && (g.s.money < 20000 || g.s.stats.street < 40)) return 'Needs $20,000 and Street 40';
@@ -57,9 +62,12 @@ export function commit(g: Game, crimeId: string, target?: Person | null): CrimeO
   g.karma(c.karma);
   g.inc('crimes05');
   g.s.crime.crimes++;
-  const ok = Math.random() < crimeOddsFor(g, c, target);
-  // consumables
-  if (c.needs) {
+  const sure = fullyEquipped(g, c);
+  const ok = sure || g.s.god || Math.random() < crimeOddsFor(g, c, target);
+  // consumables (a guaranteed job uses up the whole kit)
+  if (sure) {
+    for (const i of c.needs!) if (['sedative', 'poison', 'restraints'].includes(i)) spendItem(g, i);
+  } else if (c.needs) {
     const used = c.needs.find((i) => itemCount(g, i) > 0);
     if (used && ['sedative', 'poison', 'restraints'].includes(used)) spendItem(g, used);
   }
@@ -104,6 +112,7 @@ export function commit(g: Game, crimeId: string, target?: Person | null): CrimeO
   if (g.phase === 'night' && !tags.includes('alibi') && c.sev >= 4) tags.push('alibi');
 
   applyVictim(g, c, target ?? null);
+  if (g.s.god) return { ok: true, text: c.line }; // no scene, no case — nobody can touch you
 
   if (c.sev >= 3 && tags.length) {
     u.scene = { caseId: newId(), crimeId, victimId: target?.id, tags, resolved: [], added: [], actionsLeft: 2 + Math.floor(g.s.stats.smarts / 35) + (g.s.stats.energy > 50 ? 1 : 0), used: [] };

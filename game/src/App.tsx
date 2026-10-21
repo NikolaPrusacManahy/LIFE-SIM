@@ -65,7 +65,7 @@ export function App() {
       phase: 'evening',
       month: 5,
       weather: 'clear',
-      look: { ...preview.look, gender: preview.gender, age: 14, mood: 70, outfit: 'casual' },
+      look: { ...preview.look, gender: preview.gender, age: preview.age, mood: 70, outfit: 'casual' },
     };
   }
 

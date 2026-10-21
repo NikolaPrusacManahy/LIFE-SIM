@@ -1,0 +1,23 @@
+/* Update 0.6 — Ascension: the Become God app */
+
+.god-head { background: linear-gradient(135deg, #fff4c2, #ffd1a1); display: flex; flex-direction: column; gap: 3px; }
+.god-head > b { font: 600 18px var(--display); color: #8a4b00; }
+.god-head > small { font: 700 11.5px var(--font); color: #a8682a; }
+.god-stats { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.god-stats span { font: 700 12px var(--font); color: #6b3d00; display: flex; align-items: center; gap: 4px; }
+.god-stats i { font-style: normal; }
+
+.god-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.god-power { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; border: 0; border-radius: 16px; padding: 11px 12px; background: linear-gradient(160deg, #fffaf0, #ffeccc); color: #4a2a00; cursor: pointer; font: inherit; }
+.god-power .hold-label { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.god-power span:not(.hold-label):not(.hold-fill) { font-size: 22px; }
+.god-power b { font: 600 14px var(--display); }
+.god-power small { font: 700 10.5px var(--font); color: #a8682a; }
+.god-power:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(255, 157, 60, 0.35), inset 0 0 0 1.5px #ff9d3c; }
+.god-power:disabled { opacity: 0.45; cursor: not-allowed; }
+.god-power.big { background: linear-gradient(160deg, #ffb35c, #ff6a3d); color: #fff; }
+.god-power.big small { color: #fff3e0; }
+.god-power.dark { background: linear-gradient(160deg, #2e2a4a, #16142a); color: #e9e4ff; }
+.god-power.dark small { color: #b6aee0; }
+
+.god-target { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: rgba(255, 255, 255, 0.92); border-radius: 14px; padding: 6px 8px; }

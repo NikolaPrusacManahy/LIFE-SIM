@@ -42,6 +42,7 @@ export function stageViewFor(g: Game, locId: string): StageView {
   return {
     npc: npcLook(g),
     prison: g.jailed,
+    ruins: g.s.region === 'city' && g.flag('ruinsUntil') > g.s.clock,
     region: g.s.region,
     scene: loc.scene(g),
     phase: g.phase,

@@ -282,6 +282,10 @@ export interface GameState {
   chats: Record<string, import('./crime/types').ChatMsg[]>;
   groups: import('./crime/types').GroupChat[];
   background: Background;
+  /** Update 0.5.1 — legal system this life plays under */
+  rules: 'us' | 'eu';
+  /** Update 0.6 — born a god: immortal, untouchable */
+  god: boolean;
   traits: string[];
   look: Appearance;
   region: Region;

@@ -1,6 +1,7 @@
 import type { Game } from '../Game';
 import type { Enrollment } from '../types';
 import { PROGRAM_BY_ID, PROGRAMS, DEGREE_LABEL, type ProgramDef } from '../data/programs';
+import { tuitionFor } from '../rules/us';
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
@@ -52,9 +53,9 @@ export function fundingOptions(g: Game, p: ProgramDef): FundingOption[] {
   if (p.tuition === 0) return [{ id: 'free', label: p.stipend ? `Funded + $${p.stipend}/mo stipend` : 'Free', ok: true }];
   const par = g.parents;
   const love = par.length ? Math.max(...par.map((x) => x.rel)) : 0;
-  const parentsOk = par.length > 0 && g.s.background !== 'poor' && love >= 45 && g.age < 30 && (p.tuition < 20000 || g.s.background === 'rich');
+  const parentsOk = par.length > 0 && g.s.background !== 'poor' && love >= 45 && g.age < 30 && (tuitionFor(g, p.tuition) < 20000 || g.s.background === 'rich');
   const schol = (g.s.stats.smarts >= 80 && g.flag('lastPerf') >= 82) || g.flag('scholarship') > 0 || (g.flag('varsity') > 0 && g.s.stats.fitness >= 70 && p.kind === 'uni');
-  const monthly = Math.round(p.tuition / 12);
+  const monthly = Math.round(tuitionFor(g, p.tuition) / 12);
   return [
     { id: 'scholarship', label: 'Full Scholarship', ok: schol && p.kind === 'uni', reason: 'Needs elite grades, a science award, or varsity sports' },
     { id: 'parents', label: 'Parents pay', ok: parentsOk, reason: 'Parents can’t or won’t pay' },

@@ -2,7 +2,8 @@ import type { Game } from '../Game';
 import type { Region } from '../types';
 
 // Update 0.3 — United States ruleset. Every legal age lives here; activity files never hardcode them.
-// A future rules/eu.ts can supply the same shape (drinking 18, exams instead of GPA, euros).
+// Update 0.5.1 — rules/eu.ts supplies the same shape; each life picks one (`s.rules`).
+import { EU } from './eu';
 
 export type GateKey =
   | 'partTimeJob' | 'job' | 'hazardousJob'
@@ -12,8 +13,10 @@ export type GateKey =
   | 'marriage' | 'military' | 'gunRifle' | 'gunHandgun'
   | 'intimacy' | 'dating' | 'travel' | 'rehab' | 'steroids' | 'fakeId' | 'compete';
 
+export type RulesId = 'us' | 'eu';
+
 export interface Ruleset {
-  id: 'us';
+  id: RulesId;
   name: string;
   ages: Record<GateKey, number>;
   /** younger age allowed with a parent's consent */
@@ -21,6 +24,10 @@ export interface Ruleset {
   /** per-region law toggles */
   cannabisLegal: Record<Region, boolean>;
   abortionAccess: Record<Region, boolean>;
+  /** credit cards need proof of income below this age */
+  creditIncomeAge: number;
+  /** share of the listed (US) tuition you actually pay */
+  tuitionMult: number;
 }
 
 export const US: Ruleset = {
@@ -37,9 +44,17 @@ export const US: Ruleset = {
   withConsent: { tattoo: 16, military: 17, compete: 16 },
   cannabisLegal: { city: true, country: false },
   abortionAccess: { city: true, country: false },
+  creditIncomeAge: 21,
+  tuitionMult: 1,
 };
 
-export const RULES = US;
+export const RULESETS: Record<RulesId, Ruleset> = { us: US, eu: EU };
+/** The ruleset this life plays under (older saves: US). */
+export const rulesFor = (g: Game): Ruleset => RULESETS[g.s.rules] ?? US;
+/** Legal age for an action under this life's rules. */
+export const legalAge = (g: Game, key: GateKey) => rulesFor(g).ages[key];
+/** Yearly tuition you actually pay (EU public universities cost a fraction). */
+export const tuitionFor = (g: Game, listed: number) => Math.round(listed * rulesFor(g).tuitionMult);
 
 export interface GateResult {
   allowed: boolean;
@@ -49,7 +64,7 @@ export interface GateResult {
 }
 
 /** Single source of truth for legal ages. Locked cards show `reason` ("Must be 21"). */
-export function ageGate(action: GateKey, g: Game, rules: Ruleset = RULES): GateResult {
+export function ageGate(action: GateKey, g: Game, rules: Ruleset = rulesFor(g)): GateResult {
   const min = rules.ages[action];
   if (action === 'cannabis' && !rules.cannabisLegal[g.s.region]) return { allowed: false, reason: 'Not legal here' };
   if (g.age >= min) return { allowed: true };

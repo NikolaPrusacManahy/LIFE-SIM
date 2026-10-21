@@ -43,6 +43,53 @@ Built from `MD_UPDATES/UPDATE_0.5_UNDERWORLD.md`. All of `npm run verify` passes
   - Underworld texts add digital evidence unless sent from a burner.
 - **Crime app** in the phone. It appears after your first crime or once Street reaches 5.
 
+## Update 0.6 — Ascension (God Mode)
+- **Creator:** a new Nature row, Mortal or ⚡ Born a god. Gods start with Health, Smarts, Fitness, Charm, Creativity and Looks at 100, and a phone.
+- **Rules** live in `state/systems/god.ts`:
+  - **Immortal:** `die()` refuses.
+  - **Untouchable:** no jail (`sendToJail`), never caught (`riskCatch`), never hunted (`startPursuit`), and police never come for you (`investigationMonth`).
+  - **Crimes:** always succeed, need no gear, and leave no case.
+  - **Max money:** the wallet stays at `GOD_WEALTH` ($999,999,999). Spending shows the cost but never lowers it, and debt is cleared monthly.
+- **"Become God" app (phone) — powers, each spends a time slot:**
+  - Fly (switches city and countryside), Feat of Strength, Fireball, Answer Prayers, Gather Worshippers.
+  - ⚡ Smite (pick an adult).
+  - 🌋 Level the City and 🌟 Supernova, hold-to-confirm.
+- **The world reacts:**
+  - news ticker, fame, karma and guilt;
+  - a growing follower count;
+  - a levelled city stays in sepia ruins for 24 months, then is rebuilt.
+- **Harem:** "Invite into your circle" (👑, People → Romance). Members are tagged `harem` + `open`, so there are no cheating penalties.
+- **Hard rules, tested in `test-god.ts`:**
+  - Smite and crimes never target anyone under 18. Smite needs Dark Crime on, and the player must be 18+.
+  - Levelling the city kills nobody.
+  - Harem invites are adults only and need the other person's consent. Their own odds decide, so they can say no.
+  - Being in the harem never bypasses `canBeIntimate`.
+- **Open:**
+  - Achievements still count in god lives.
+  - No flying or fireball animation on the avatar, only screen flashes, shakes and particles.
+  - No separate "commit anything" menu: gods use the normal crime cards and People actions, which can't fail.
+
+## Update 0.5.1 — Fresh Start
+- **Character creator, "Where you start" step:**
+  - Laws: 🇺🇸 US or 🇪🇺 EU.
+  - Start at: 14 or 23.
+  - Fortune: Normal or Millionaire (+$1,000,000).
+- **Age-23 start:**
+  - You begin with a high-school diploma, your own phone, and a shared flat with a roommate.
+  - Your parents and siblings are aged to match.
+  - No high-school teachers are created.
+- **Rules:**
+  - `state/rules/eu.ts` mirrors `us.ts`.
+  - Each life stores `s.rules`; older saves default to US.
+  - `legalAge(g, key)`, `rulesFor(g)` and `tuitionFor(g, listed)` replace every hardcoded 21.
+  - The `'illegalUnder21'` legality value is renamed `'underage'`.
+- **EU numbers** (placeholders for you to confirm):
+  - Ages: drink, smoke, gamble, cannabis and handgun 18; driving permit 16, license 18; part-time work 15; car rental 21.
+  - Cannabis is illegal in both regions. Abortion access is available everywhere.
+  - Tuition is 10% of the US price. No proof-of-income rule for credit cards.
+- **Kidnapping:** carrying both Rope & Zip Ties and the sedative makes it 100%, and uses up both. You still need to be 18+, have Dark Crime on, own a place to hold someone, and pick an adult target.
+- **Not done:** money still shows in $ under EU rules, not €.
+
 ### Sound (added after 0.5)
 - Six files from `AUDIO/` were converted to `game/public/audio/` as 160 kbps mp3s: bgm, click, message, camera, nomoney, notify.
 - `ui/audio.ts` does the playing:

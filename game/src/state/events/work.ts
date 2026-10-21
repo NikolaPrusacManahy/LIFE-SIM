@@ -17,7 +17,7 @@ export const WORK_EVENTS: EventDef[] = [
       { label: 'Accept graciously', when: (g) => !!g.s.job, run: (g) => { promote(g); if (g.s.job?.careerId === 'founder' && g.s.job.level >= 3) g.achieve('unicorn'); return 'New title, new paycheck.'; } },
       { label: 'Negotiate a bigger raise', when: (g) => !!g.s.job, hint: checkHint('charm', 55), run: (g) => {
         promote(g);
-        if (g.check('charm', 55)) { const bonus = Math.round((careerName(g)?.levels[g.s.job!.level].pay ?? 1000) * 2); g.money(bonus); return `They caved — plus a ${fmt(bonus)} signing bonus.`; }
+        if (g.check('charm', 55)) { const bonus = Math.round((g.s.job ? careerName(g)?.levels[g.s.job.level].pay ?? 1000 : 1000) * 2); g.money(bonus); return `They caved — plus a ${fmt(bonus)} signing bonus.`; }
         if (g.s.job) g.s.job.perf -= 10;
         return 'They gave you the title, but you burned a little goodwill.';
       } },

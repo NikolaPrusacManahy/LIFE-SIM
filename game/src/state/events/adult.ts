@@ -1,6 +1,6 @@
 import type { Game } from '../Game';
 import { makeMatch } from '../npc/match';
-import { RULES } from '../rules/us';
+import { legalAge, rulesFor } from '../rules/us';
 import { settings } from '../settings';
 import { beginNight, canBeIntimate, condoms, consentOdds, encounter, hiddenOf, onBirthControl, stiTest } from '../systems/intimacy';
 import { fmt } from '../systems/finance';
@@ -57,7 +57,7 @@ export const ADULT_EVENTS: EventDef[] = [
     id: 'pregnancy_news', title: 'Two Lines', icon: '🍼', who: (_g, c) => c.pid,
     text: (g, c) => `A test confirms it: a pregnancy, with ${who(g, c)?.name ?? 'your partner'}. This is a big decision.`,
     choices: (g, c) => {
-      const access = RULES.abortionAccess[g.s.region];
+      const access = rulesFor(g).abortionAccess[g.s.region];
       return [
         {
           label: 'Keep the baby',
@@ -130,7 +130,7 @@ export const ADULT_EVENTS: EventDef[] = [
 ];
 
 function makeAdult(g: Game, role: 'fling' | 'crush', met: string, age?: number) {
-  const min = met === 'A night out' ? 21 : 18;
+  const min = met === 'A night out' ? Math.max(18, legalAge(g, 'alcohol')) : 18;
   const a = Math.max(min, age ?? g.age + g.rand(-4, 5));
   const p = makeMatch(g, role, [a, a], { rel: role === 'fling' ? 55 : 48, met, where: met });
   p.hasNumber = true;

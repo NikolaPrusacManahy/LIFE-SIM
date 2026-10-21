@@ -16,6 +16,7 @@ import { blackmail, DEMANDS, leverageOn, ransom, release, sendAway } from '../cr
 import { CREW_ROLES, recruit } from '../crime/drugs';
 import { openCase } from '../crime/investigation';
 import type { CrewRole } from '../crime/types';
+import { haremLock, inviteToHarem } from '../systems/god';
 
 const CAPITAL = ['murder_weapon', 'murder_gun', 'murder_poison', 'murder_sedative', 'murder_staged', 'murder_hire'];
 
@@ -681,6 +682,12 @@ export const INTERACTIONS: InteractionDef[] = [
     },
   },
   // ======================= Underworld (Update 0.5) — adults only, gated by isValidCrimeTarget()
+  // Update 0.6 — gods may keep a circle of willing adult partners; each one decides
+  {
+    id: 'g_harem', label: 'Invite into your circle', icon: '👑', group: 'Romance', romance: true, energy: 4, when: (g) => g.s.god,
+    req: (g, p) => haremLock(g, p),
+    run: (g, p) => inviteToHarem(g, p),
+  },
   {
     id: 'u_threaten', label: 'Threaten them', icon: '😠', group: 'Underworld', crime: true, energy: 6, when: (_g, p) => !isFamily(p) || p.role === 'sibling',
     run: (g, p) => {

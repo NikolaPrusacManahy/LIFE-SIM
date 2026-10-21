@@ -79,7 +79,7 @@ export const LIFE_EVENTS: EventDef[] = [
     id: 'bankruptcy', title: 'Rock Bottom', icon: '📉',
     text: (g) => `Your debt hit ${fmt(g.s.debt)}. A lawyer says bankruptcy is an option.`,
     choices: [
-      { label: 'Declare bankruptcy', run: (g) => { g.s.debt = 0; g.s.money = 0; g.setFlag('bankrupt'); g.stat('mood', -10); g.milestone('Declared bankruptcy'); return 'A clean slate. A wrecked credit score.'; } },
+      { label: 'Declare bankruptcy', run: (g) => { g.s.debt = 0; g.money(-g.s.money); g.setFlag('bankrupt'); g.stat('mood', -10); g.milestone('Declared bankruptcy'); return 'A clean slate. A wrecked credit score.'; } },
       { label: 'Keep fighting', run: (g) => { g.stat('mood', -4); return 'You’ll claw your way out.'; } },
     ],
   },

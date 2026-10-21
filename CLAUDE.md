@@ -193,5 +193,6 @@ Source assets are staged in the root folders. Look there before you say an asset
 - LIFE//SIM: React's lint rule treats any function named `use…` (`use()`, `useItem()`) as a hook. It happened twice. Name game helpers `consume`, `spendItem`, etc.
 - LIFE//SIM: inside a JavaScript template literal, `\b` is a backspace character. Write `\\b` for a regex word boundary.
 - LIFE//SIM: queued events can go stale (fired before a promotion resolves). `choicesFor()` falls back to "Continue" so the game never soft-locks.
-- LIFE//SIM: stale events also crash when a choice uses `g.s.education.current!` after juvie or expulsion. Never use `!` on optional state inside an event choice.
+- LIFE//SIM: stale events also crash when a choice uses `g.s.education.current!` after juvie or expulsion. Never use `!` on optional state (`education.current`, `job`, `partner`) inside an event choice; it happened three times.
+- LIFE//SIM: `scrollIntoView()` also scrolls the zoomed `.app-frame` (overflow hidden), which slides the UI away and shows a black screen. Set `scrollTop` on the list itself instead. `.app-frame` now uses `overflow: clip` as a guard.
 - A Python patch script that applies several anchors can half-apply when a later anchor is stale. Assert every anchor before writing anything, or split the script, then check the file before re-running it.

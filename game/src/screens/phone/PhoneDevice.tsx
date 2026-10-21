@@ -27,7 +27,7 @@ export function PhoneDevice({ mode, initial = null, ...host }: Props) {
     gsap.fromTo(frame.current, { y: 60, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(1.4)' });
   }, []);
 
-  const apps = APP_ORDER.filter((id) => (mode === 'phone' || !APPS[id].phoneOnly) && (id !== 'dating' || ageGate('dating', g).allowed) && (id !== 'crime' || (g.age >= 18 && (g.flag('crimes05') > 0 || g.s.stats.street >= 5))));
+  const apps = APP_ORDER.filter((id) => (mode === 'phone' || !APPS[id].phoneOnly) && (id !== 'dating' || ageGate('dating', g).allowed) && (id !== 'god' || g.s.god) && (id !== 'crime' || (g.age >= 18 && (g.s.god || g.flag('crimes05') > 0 || g.s.stats.street >= 5))));
   const temp = TEMP[g.month] + (g.s.region === 'country' ? -1 : 1) + (g.phase === 'night' ? -4 : g.phase === 'afternoon' ? 2 : 0);
 
   return (
@@ -64,7 +64,7 @@ export function PhoneDevice({ mode, initial = null, ...host }: Props) {
                 </button>
               ))}
             </div>
-            <div className="dev-foot">v0.5 · LIFE//SIM</div>
+            <div className="dev-foot">v0.6 · LIFE//SIM</div>
           </div>
         )}
         {mode === 'phone' && <div className="dev-bar" />}

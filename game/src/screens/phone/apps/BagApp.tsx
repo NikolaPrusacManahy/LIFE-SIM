@@ -1,5 +1,9 @@
 import { ITEM_BY_ID, contrabandHeld } from '../../../state/inventory/items';
 import type { AppProps } from './types';
+import { CRIMES } from '../../../state/crime/catalog';
+
+// Update 0.5.1 — gear says what it's for (crimes are started from places or the People screen, not the bag)
+const usedFor = (id: string) => CRIMES.filter((c) => c.needs?.includes(id)).map((c) => c.name);
 
 /** Update 0.4 — inventory. */
 export function BagApp({ game }: AppProps) {
@@ -17,6 +21,7 @@ export function BagApp({ game }: AppProps) {
               <span>{it.icon}</span>
               <b>{it.name}</b>
               <small>{n > 1 ? `×${n}` : ''}{hot.has(id) ? ' · illegal for you' : ''}</small>
+              {usedFor(id).length > 0 && <small className="bag-use">For: {usedFor(id).join(', ')}</small>}
             </div>
           );
         })}

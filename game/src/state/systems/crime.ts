@@ -64,6 +64,11 @@ export const JAIL_AUDIT: { age: number; juvie: boolean; months: number }[] = [];
 
 export function sendToJail(g: Game, months: number, crime: string) {
   const s = g.s;
+  // Update 0.6 — no cell holds a god
+  if (s.god) {
+    g.log('⛓️ The cuffs fell off your wrists. Nobody tried again.', 'crime');
+    return;
+  }
   months = Math.max(1, Math.round(months));
   const juvie = g.age < 18;
   if (juvie) months = Math.max(1, Math.round(months * 0.5));

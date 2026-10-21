@@ -1,11 +1,11 @@
-import { Game } from './Game';
+import { GOD_WEALTH, Game } from './Game';
 import type { Appearance, Background, GameState, Gender, Person, Pronouns, Region, Sexuality, StatKey } from './types';
 import { pronounsFor } from './npc/identity';
 import { blankUnderworld } from './crime/types';
 import { ensureStaff } from './npc/school';
 import { TRAIT_BY_ID } from './data/traits';
 import { firstName, lastName } from './data/names';
-import { netWorth } from './systems/finance';
+import { ensureRoommate, netWorth } from './systems/finance';
 import { randomAvatar } from './npc/generator';
 
 export const SAVE_VERSION = 4;
@@ -23,6 +23,14 @@ export interface NewLifeOptions {
   pronouns?: Pronouns;
   sexuality?: Sexuality;
   siblings?: number;
+  /** Update 0.5.1 — start as a teen (14) or a young adult (23) */
+  startAge?: 14 | 23;
+  /** Update 0.5.1 — $1,000,000 trust fund */
+  millionaire?: boolean;
+  /** Update 0.5.1 — US or EU laws */
+  rules?: 'us' | 'eu';
+  /** Update 0.6 — born a god */
+  god?: boolean;
 }
 
 const rnd = (a: number, b: number) => Math.floor(a + Math.random() * (b - a + 1));
@@ -43,6 +51,8 @@ export function blankState(): GameState {
     chats: {},
     groups: [],
     background: 'middle',
+    rules: 'us',
+    god: false,
     traits: [],
     look: { skin: 0, hair: 0, hairStyle: 0, eyes: 0, height: 1, build: 1, freckles: false, glasses: false, body: 'male' },
     region: 'city',
@@ -84,6 +94,8 @@ export function createLife(o: NewLifeOptions): Game {
   s.familyName = o.familyName.trim() || lastName();
   s.gender = o.gender;
   s.background = o.background;
+  s.rules = o.rules ?? 'us';
+  s.god = !!o.god;
   s.hometown = o.hometown;
   s.region = o.hometown;
   s.traits = o.traits.slice(0, 2);
@@ -91,7 +103,9 @@ export function createLife(o: NewLifeOptions): Game {
   s.sexuality = o.sexuality ?? 'unsure';
   s.flags.identitySet = o.sexuality && o.sexuality !== 'unsure' ? 1 : 0;
   s.look = o.look;
-  s.bornAt = -START_AGE * 12 - rnd(0, 11);
+  const age = o.startAge ?? START_AGE;
+  const adult = age >= 18;
+  s.bornAt = -age * 12 - rnd(0, 11);
 
   const st = s.stats;
   for (const k of Object.keys(st) as StatKey[]) if (k !== 'energy' && k !== 'health') st[k] = Math.max(0, st[k] + rnd(-6, 6));
@@ -99,24 +113,37 @@ export function createLife(o: NewLifeOptions): Game {
   if (o.background === 'poor') { st.street += 8; st.mood -= 5; }
   if (o.hometown === 'country') { st.fitness += 5; st.street -= 2; }
   for (const t of s.traits) for (const [k, v] of Object.entries(TRAIT_BY_ID[t]?.start ?? {})) st[k as StatKey] = Math.min(100, st[k as StatKey] + (v as number));
+  // Update 0.6 — a god is born at the peak of everything
+  if (o.god) for (const k of ['health', 'smarts', 'fitness', 'charm', 'creativity', 'looks'] as StatKey[]) st[k] = 100;
   for (const k of Object.keys(st) as StatKey[]) st[k] = Math.max(0, Math.min(100, st[k]));
-  s.money = { poor: 40, middle: 300, rich: 2500 }[o.background];
+  s.money = adult ? { poor: 900, middle: 4000, rich: 25000 }[o.background] : { poor: 40, middle: 300, rich: 2500 }[o.background];
+  if (o.millionaire) s.money += 1_000_000;
+  if (o.god) s.money = GOD_WEALTH;
 
-  s.education.current = { program: 'hs', months: 0, length: 48, perf: 50 + (st.smarts - 30) / 3, skips: 0, attended: 0, warnings: 0, funding: 'free' };
+  if (adult) {
+    // Update 0.5.1 — young-adult start: diploma done, own phone, a shared flat
+    s.education.degrees.push('hs');
+    s.assets.push('phone');
+  } else s.education.current = { program: 'hs', months: 0, length: 48, perf: 50 + (st.smarts - 30) / 3, skips: 0, attended: 0, warnings: 0, funding: 'free' };
 
-  if (o.background === 'rich') s.assets.push('phone');
+  if ((o.background === 'rich' || o.god) && !adult) s.assets.push('phone');
   const g = new Game(s);
   const parentRel = o.background === 'poor' ? rnd(50, 70) : rnd(60, 80);
   const single = o.background === 'poor' && Math.random() < 0.5;
   const fam = { surname: s.familyName, met: 'Family', where: 'Home' };
-  g.addPerson('mother', { ...fam, gender: 'female', age: rnd(36, 50), rel: parentRel });
-  if (!single) g.addPerson('father', { ...fam, gender: 'male', age: rnd(38, 52), rel: parentRel - rnd(0, 15) });
+  const older = age - START_AGE;
+  g.addPerson('mother', { ...fam, gender: 'female', age: rnd(36, 50) + older, rel: parentRel });
+  if (!single) g.addPerson('father', { ...fam, gender: 'male', age: rnd(38, 52) + older, rel: parentRel - rnd(0, 15) });
   const sibs = o.siblings ?? (Math.random() < 0.55 ? 1 : 0);
-  for (let i = 0; i < sibs; i++) g.addPerson('sibling', { ...fam, age: Math.max(1, START_AGE + rnd(-6, 6)), rel: rnd(40, 75) });
-  ensureStaff(g);
+  for (let i = 0; i < sibs; i++) g.addPerson('sibling', { ...fam, age: Math.max(1, age + rnd(-6, 6)), rel: rnd(40, 75) });
+  if (adult) {
+    s.housing = 'shared';
+    g.setFlag('movedOut');
+    ensureRoommate(g);
+  } else ensureStaff(g);
 
-  g.log(`👶 ${s.name} ${s.familyName} — age ${START_AGE}, ${o.hometown === 'city' ? 'the city' : 'the countryside'}, ${o.background} family.`, 'milestone');
-  g.queue('hs_first_day');
+  g.log(`👶 ${s.name} ${s.familyName} — age ${age}, ${o.hometown === 'city' ? 'the city' : 'the countryside'}, ${o.background} family${o.millionaire ? ', a millionaire' : ''}${o.god ? ' — and a god' : ''}.`, 'milestone');
+  if (!adult) g.queue('hs_first_day');
   return g;
 }
 
@@ -140,6 +167,7 @@ export function continueAsChild(old: GameState, childId: string): Game | null {
   s.startYear = old.startYear;
   s.bornAt = kid.bornMonths;
   s.generation = old.generation + 1;
+  s.rules = old.rules ?? 'us';
   s.money = estate;
   s.achievements = [...old.achievements];
   if (kidAge < 18) s.education.current = { program: 'hs', months: (kidAge - START_AGE) * 12, length: 48, perf: 55, skips: 0, attended: 0, warnings: 0, funding: 'free' };

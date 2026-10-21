@@ -113,3 +113,4 @@
 .cht-foot small { font: 700 10.5px var(--font); color: var(--ink-faint); }
 .cht-burnertog { font: 700 11px var(--font); display: flex; align-items: center; gap: 4px; }
 .cht-closed { padding: 10px; text-align: center; font: 700 12px var(--font); color: var(--ink-faint); }
+.bag-item .bag-use { font: 700 10px var(--font); color: #b0334a; text-align: center; }

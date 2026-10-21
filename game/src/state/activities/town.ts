@@ -3,6 +3,7 @@ import { DAY, NOT_NIGHT, type ActivityDef } from './types';
 import { maybeMeet, pct } from './helpers';
 import { riskCatch } from '../systems/trouble';
 import { addItem } from '../inventory/items';
+import { legalAge } from '../rules/us';
 
 /** Downtown (city) and Main Street (country) share most services. */
 const both = (defs: Omit<ActivityDef, 'loc'>[]): ActivityDef[] =>
@@ -138,8 +139,8 @@ export const TOWN_ACTS: ActivityDef[] = [
       },
     },
     {
-      id: 'fake_id', name: 'Buy a Fake ID', icon: '🪪', desc: 'Gets you into 21+ venues. Risky.', cat: 'money', energy: 6, cost: 150, gate: 'fakeId', legality: 'illegal',
-      when: (g) => g.age < 21 && !g.hasItem('fakeid'),
+      id: 'fake_id', name: 'Buy a Fake ID', icon: '🪪', desc: 'Gets you into bars and clubs underage. Risky.', cat: 'money', energy: 6, cost: 150, gate: 'fakeId', legality: 'illegal',
+      when: (g) => g.age < legalAge(g, 'alcohol') && !g.hasItem('fakeid'),
       preview: () => ['Police 12%'],
       run: (g) => {
         if (riskCatch(g, 0.12, { name: 'Buying a fake ID', sev: 1, kind: 'id', by: 'police' })) return 'The "contact" was an undercover cop…';

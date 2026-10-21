@@ -43,6 +43,14 @@ export function StatsCard({ game }: { game: Game }) {
           <div className="me-track stc-karma"><div style={{ left: s.karma >= 0 ? '50%' : `${50 + s.karma / 2}%`, width: `${Math.abs(s.karma) / 2}%`, background: s.karma >= 0 ? '#3cbfc4' : '#ff5d6c' }} /></div>
           <b>{Math.round(s.karma)}</b>
         </div>
+        {s.heat >= 1 && (
+          <div className="me-bar" title="Police heat — lie low to cool off">
+            <span>🚨</span>
+            <i className="stc-name">heat</i>
+            <div className="me-track"><div style={{ width: `${Math.min(100, s.heat)}%`, background: '#ff3b4f' }} /></div>
+            <b>{Math.round(s.heat)}</b>
+          </div>
+        )}
         {s.fame >= 1 && (
           <div className="me-bar">
             <span>🌟</span>

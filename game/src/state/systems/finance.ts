@@ -3,6 +3,7 @@ import type { HousingId, Region } from '../types';
 import { HOUSING } from '../data/locations';
 import { PROGRAM_BY_ID } from '../data/programs';
 import { phoneLock } from './phone';
+import { tuitionFor } from '../rules/us';
 
 export interface AssetDef {
   id: string;
@@ -186,7 +187,7 @@ export function monthlyFinances(g: Game) {
   const e = s.education.current;
   if (e) {
     const p = PROGRAM_BY_ID[e.program];
-    const monthly = Math.round(p.tuition / 12);
+    const monthly = Math.round(tuitionFor(g, p.tuition) / 12);
     if (monthly > 0) {
       if (e.funding === 'cash') cost += monthly;
       if (e.funding === 'loan') { s.debt += monthly; g.setFlag('hadDebt'); }

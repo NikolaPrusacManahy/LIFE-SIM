@@ -3,6 +3,7 @@ import { DEGREE_LABEL, PROGRAM_BY_ID } from '../../../state/data/programs';
 import { availablePrograms, dropOut, enroll, fundingOptions, gpa, gradeLabel } from '../../../state/systems/education';
 import { HoldButton } from '../../../components/HoldButton';
 import type { AppProps } from './types';
+import { tuitionFor } from '../../../state/rules/us';
 
 export function SchoolApp({ game, done }: AppProps) {
   const e = game.s.education.current;
@@ -33,7 +34,7 @@ export function SchoolApp({ game, done }: AppProps) {
             <span className="ph-row-icon">{p.icon}</span>
             <span className="ph-row-main">
               <b>{p.name}</b>
-              <small>{p.desc} · {p.length} mo · {p.tuition ? `$${p.tuition.toLocaleString()}/yr` : 'free'} · Smarts {p.minSmarts}+</small>
+              <small>{p.desc} · {p.length} mo · {p.tuition ? `$${tuitionFor(game, p.tuition).toLocaleString()}/yr` : 'free'} · Smarts {p.minSmarts}+</small>
               {open === p.id && (
                 <span className="sch-fund">
                   {fundingOptions(game, p).map((f) => (

@@ -23,6 +23,8 @@ export interface StageView {
   npc?: AvatarLook | null;
   /** Update 0.5 — greyscale world while incarcerated */
   prison?: boolean;
+  /** Update 0.6 — a levelled city: scorched sepia */
+  ruins?: boolean;
 }
 
 const DELTA_COLOR = { up: 0x5be37d, down: 0xff6b7a, money: 0xffcf4a, energy: 0x6fd3ff };
@@ -55,6 +57,12 @@ export class Stage {
   private avatar = new Avatar();
   private npcAvatar = new Avatar(true);
   private npcKey = '';
+  private scorch = (() => {
+    const f = new ColorMatrixFilter();
+    f.sepia(false);
+    f.brightness(0.75, true);
+    return f;
+  })();
   private grey = (() => {
     const f = new ColorMatrixFilter();
     f.desaturate();
@@ -118,7 +126,7 @@ export class Stage {
     if (sceneChanged) this.rebuildScene(v, season, !instant && !!prev && prev.scene !== v.scene);
     if (!prev || prev.phase !== v.phase) this.sky.setPhase(v.phase, instant || !prev);
     this.weather.set(v.weather);
-    this.root.filters = v.prison ? [this.grey] : [];
+    this.root.filters = v.prison ? [this.grey] : v.ruins ? [this.scorch] : [];
     if (v.look) this.avatar.setLook(v.look);
     this.avatar.view.visible = !!v.look;
     const key = v.npc ? JSON.stringify(v.npc) : '';

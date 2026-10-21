@@ -14,6 +14,7 @@ export const STAT_ROWS: [StatKey, string, string][] = [
   ['charm', '😏', '#ff5c8a'],
   ['creativity', '🎨', '#ff9d3c'],
   ['looks', '✨', '#c77dff'],
+  ['street', '🧢', '#b0334a'],
 ];
 
 export function StatsApp({ game }: AppProps) {

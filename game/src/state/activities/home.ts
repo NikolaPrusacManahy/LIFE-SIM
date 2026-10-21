@@ -5,6 +5,7 @@ import { ground, grounded, riskCatch } from '../systems/trouble';
 import { consume } from '../systems/addiction';
 import { settings } from '../settings';
 import { askForPhone } from '../systems/phone';
+import { legalAge } from '../rules/us';
 
 export const HOME_ACTS: ActivityDef[] = [
   {
@@ -179,15 +180,15 @@ export const HOME_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'liquor_cabinet', loc: 'home', name: 'Raid the Liquor Cabinet', icon: '🥃', desc: 'They won’t notice. Probably.', cat: 'fun', energy: 6, gate: 'alcohol', legality: 'illegalUnder21', cooldown: 4,
+    id: 'liquor_cabinet', loc: 'home', name: 'Raid the Liquor Cabinet', icon: '🥃', desc: 'They won’t notice. Probably.', cat: 'fun', energy: 6, gate: 'alcohol', legality: 'underage', cooldown: 4,
     when: (g) => g.livesWithParents && g.parents.length > 0,
-    preview: (g) => (g.age < 21 ? ['Caught 30%'] : []),
+    preview: (g) => (g.age < legalAge(g, 'alcohol') ? ['Caught 30%'] : []),
     run: (g) => {
       consume(g, 'alcohol', 4);
       g.stat('mood', 6);
       g.stat('health', -1);
       if (g.age < 18 && riskCatch(g, 0.3, { name: 'Drinking at home', sev: 1, kind: 'alcohol', by: 'parents' })) return 'You heard footsteps on the stairs…';
-      if (g.age < 21 && g.chance(0.3)) {
+      if (g.age < legalAge(g, 'alcohol') && g.chance(0.3)) {
         for (const p of g.parents) g.rel(p, -5);
         return 'Your parent noticed the bottle was lighter. Awkward breakfast.';
       }

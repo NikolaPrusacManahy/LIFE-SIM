@@ -2,6 +2,7 @@ import type { Game } from '../Game';
 import { sendToJail } from './crime';
 import { fmt } from './finance';
 import { confiscatePhone } from './phone';
+import { legalAge } from '../rules/us';
 
 // Update 0.3 — getting caught. Minors go through the juvenile system (parents, grounding,
 // community service, probation, juvenile hall); adults get fines, records and jail.
@@ -21,7 +22,7 @@ export const onProbation = (g: Game) => g.flag('probationUntil') > g.s.clock;
 
 /** Roll a catch chance; on a catch, queue the bust event. Returns true if caught. */
 export function riskCatch(g: Game, chance: number, o: Offense): boolean {
-  if (!g.chance(chance)) return false;
+  if (g.s.god || !g.chance(chance)) return false;
   g.fx({ type: 'police' });
   g.queue('busted', { ...o }, true);
   return true;
@@ -29,7 +30,7 @@ export function riskCatch(g: Game, chance: number, o: Offense): boolean {
 
 /** Underage use of an adult-only thing (drink, vape, fake ID…). */
 export function underageCatch(g: Game, chance: number, o: Offense) {
-  return g.age < 21 ? riskCatch(g, chance, o) : false;
+  return g.age < legalAge(g, o.kind === 'tobacco' ? 'tobacco' : 'alcohol') ? riskCatch(g, chance, o) : false;
 }
 
 export function ground(g: Game, months: number) {
@@ -71,7 +72,7 @@ function juvenile(g: Game, o: Offense, sev: number): string {
 }
 
 function adult(g: Game, o: Offense, sev: number): string {
-  if (o.kind === 'alcohol' && g.age < 21 && sev <= 1) {
+  if (o.kind === 'alcohol' && g.age < legalAge(g, 'alcohol') && sev <= 1) {
     g.money(-250);
     return `Underage drinking citation: ${fmt(250)} fine.`;
   }

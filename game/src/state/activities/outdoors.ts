@@ -5,6 +5,7 @@ import { consume } from '../systems/addiction';
 import { settings } from '../settings';
 import { canBeIntimate } from '../systems/intimacy';
 import { curfew, maybeMeet, pct, studyPerf } from './helpers';
+import { legalAge } from '../rules/us';
 
 /** Park, gym, library, hospital, church, and the countryside outdoors. */
 export const OUTDOOR_ACTS: ActivityDef[] = [
@@ -344,13 +345,13 @@ export const OUTDOOR_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'drink_park', loc: 'park', name: 'Drink in the Park', icon: '🍾', desc: 'Paper bag, park bench.', cat: 'social', energy: 8, gate: 'alcohol', legality: 'illegalUnder21', phases: LATE,
-    preview: (g) => [g.age < 21 ? 'Police 25%' : 'Police 10%'],
+    id: 'drink_park', loc: 'park', name: 'Drink in the Park', icon: '🍾', desc: 'Paper bag, park bench.', cat: 'social', energy: 8, gate: 'alcohol', legality: 'underage', phases: LATE,
+    preview: (g) => [g.age < legalAge(g, 'alcohol') ? 'Police 25%' : 'Police 10%'],
     run: (g) => {
       consume(g, 'alcohol', 5);
       g.stat('mood', 7);
       g.stat('health', -1.5);
-      if (riskCatch(g, g.age < 21 ? 0.25 : 0.1, { name: g.age < 21 ? 'Underage drinking' : 'Open container', sev: 1, kind: 'alcohol', by: 'police' })) return 'A flashlight swept across the bench…';
+      if (riskCatch(g, g.age < legalAge(g, 'alcohol') ? 0.25 : 0.1, { name: g.age < legalAge(g, 'alcohol') ? 'Underage drinking' : 'Open container', sev: 1, kind: 'alcohol', by: 'police' })) return 'A flashlight swept across the bench…';
       return 'Cheap drinks under the stars with good company.';
     },
   },

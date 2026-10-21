@@ -47,6 +47,9 @@ export interface ResolvedChoice {
   disabled: string | null;
 }
 
+/** Update 0.6 — a god always holds this much. */
+export const GOD_WEALTH = 999_999_999;
+
 export class Game {
   s: GameState;
   private deltas: Record<string, number> = {};
@@ -145,6 +148,8 @@ export class Game {
     if (!r) return;
     this.s.money += r;
     this.track('money', r);
+    // Update 0.6 — a god's wallet never runs low
+    if (this.s.god) this.s.money = GOD_WEALTH;
   }
   canAfford(n: number) { return this.s.money >= n; }
 
@@ -227,6 +232,11 @@ export class Game {
 
   die(cause: string) {
     if (this.s.dead) return;
+    // Update 0.6 — gods don't die
+    if (this.s.god) {
+      this.s.stats.health = 100;
+      return;
+    }
     this.s.dead = { cause, age: this.age };
     this.log(`💀 You died at age ${this.age}: ${cause}`, 'bad');
   }
@@ -239,8 +249,8 @@ export class Game {
     if (def.when && !def.when(this)) return { visible: false, ok: false };
     if (def.gate) {
       const gate = ageGate(def.gate, this);
-      // 21+ venues: a fake ID gets 16–20s through the door, at a risk
-      const fakeOk = def.legality === 'illegalUnder21' && (!def.venue || (this.hasItem('fakeid') && this.age >= 16));
+      // age-restricted venues: a fake ID gets 16+ through the door, at a risk
+      const fakeOk = def.legality === 'underage' && (!def.venue || (this.hasItem('fakeid') && this.age >= 16));
       if (!gate.allowed && !fakeOk) return { visible: true, ok: false, reason: def.venue && this.age >= 16 ? `${gate.reason} (or a fake ID)` : gate.reason };
     }
     if (grounded(this) && this.s.phase >= 2 && def.loc !== 'home') return { visible: true, ok: false, reason: 'Grounded' };

@@ -8,6 +8,7 @@ import { riskCatch, ground } from '../systems/trouble';
 import { consume, HABIT_LABEL, type Habit } from '../systems/addiction';
 import { relocate } from '../activities/travel';
 import { checkHint, inHS, type EventDef } from './types';
+import { legalAge, rulesFor } from '../rules/us';
 
 // Update 0.3 — life events: teen (14–17), young adult (18–25), adult (26+), and system follow-ups.
 
@@ -21,7 +22,7 @@ export const LIFE03_EVENTS: EventDef[] = [
     text: () => 'At a party, a friend holds out a vape. Everyone is watching.',
     random: { when: teen, cooldown: 30 },
     choices: [
-      { label: 'Try it', hint: 'Illegal under 21', run: (g) => { consume(g, 'nicotine', 6); g.stat('street', 1); if (riskCatch(g, 0.15, { name: 'Vaping', sev: 1, kind: 'tobacco', by: 'parents' })) return 'Your parent smelled it on your hoodie that night…'; return 'Mango ice. You coughed. Everyone laughed.'; } },
+      { label: 'Try it', hint: (g) => `Illegal under ${legalAge(g, 'tobacco')}`, run: (g) => { consume(g, 'nicotine', 6); g.stat('street', 1); if (riskCatch(g, 0.15, { name: 'Vaping', sev: 1, kind: 'tobacco', by: 'parents' })) return 'Your parent smelled it on your hoodie that night…'; return 'Mango ice. You coughed. Everyone laughed.'; } },
       { label: 'No thanks', run: (g) => { g.karma(1); g.stat('charm', 0.5); return 'Nobody cared as much as you thought they would.'; } },
     ],
   },
@@ -150,11 +151,11 @@ export const LIFE03_EVENTS: EventDef[] = [
   },
   {
     id: 'credit_card_offer', title: 'Pre-Approved!', icon: '💳',
-    text: (g) => `A bank offers you a credit card with a ${fmt(g.age < 21 ? 1000 : 3000)} limit. ${g.age < 21 ? '(Under 21: needs proof of income.)' : ''}`,
+    text: (g) => `A bank offers you a credit card with a ${fmt(g.age < rulesFor(g).creditIncomeAge ? 1000 : 3000)} limit. ${g.age < rulesFor(g).creditIncomeAge ? `(Under ${rulesFor(g).creditIncomeAge}: needs proof of income.)` : ''}`,
     random: { when: (g) => g.age >= 18 && !g.flag('creditCard'), once: true },
     choices: [
-      { label: 'Accept and treat yourself', req: (g) => (g.age < 21 && !g.s.job ? 'Needs proof of income' : null), run: (g) => { const lim = g.age < 21 ? 1000 : 3000; g.setFlag('creditCard'); g.money(lim); g.s.debt += lim; g.setFlag('hadDebt'); g.stat('mood', 8); return `You spent ${fmt(lim)} in a weekend. Interest starts now.`; } },
-      { label: 'Accept for emergencies only', req: (g) => (g.age < 21 && !g.s.job ? 'Needs proof of income' : null), run: (g) => { g.setFlag('creditCard'); g.stat('smarts', 1); return 'It sits in your wallet, building credit.'; } },
+      { label: 'Accept and treat yourself', req: (g) => (g.age < rulesFor(g).creditIncomeAge && !g.s.job ? 'Needs proof of income' : null), run: (g) => { const lim = g.age < rulesFor(g).creditIncomeAge ? 1000 : 3000; g.setFlag('creditCard'); g.money(lim); g.s.debt += lim; g.setFlag('hadDebt'); g.stat('mood', 8); return `You spent ${fmt(lim)} in a weekend. Interest starts now.`; } },
+      { label: 'Accept for emergencies only', req: (g) => (g.age < rulesFor(g).creditIncomeAge && !g.s.job ? 'Needs proof of income' : null), run: (g) => { g.setFlag('creditCard'); g.stat('smarts', 1); return 'It sits in your wallet, building credit.'; } },
       { label: 'Decline', run: () => 'Cash only. Old school.' },
     ],
   },
@@ -172,7 +173,7 @@ export const LIFE03_EVENTS: EventDef[] = [
     text: () => 'Blue lights outside. Someone yells "COPS!" and the music cuts.',
     random: { when: (g) => g.age >= 16 && g.age <= 25 && g.phase === 'night' },
     choices: [
-      { label: 'Stay calm', run: (g) => (g.age < 21 && g.chance(0.4) ? (riskCatch(g, 1, { name: 'Underage drinking', sev: 1, kind: 'alcohol', by: 'police' }), 'An officer asked how old you were…') : 'You showed ID and went home.') },
+      { label: 'Stay calm', run: (g) => (g.age < legalAge(g, 'alcohol') && g.chance(0.4) ? (riskCatch(g, 1, { name: 'Underage drinking', sev: 1, kind: 'alcohol', by: 'police' }), 'An officer asked how old you were…') : 'You showed ID and went home.') },
       { label: 'Run out the back', hint: checkHint('fitness', 45), run: (g) => (g.check('fitness', 45) ? 'Over the fence and gone.' : (g.stat('health', -5), riskCatch(g, 0.6, { name: 'Fleeing police', sev: 1, kind: 'other', by: 'police' }), 'You tore your jeans on the fence.')) },
     ],
   },
@@ -193,7 +194,7 @@ export const LIFE03_EVENTS: EventDef[] = [
     choices: [
       { label: 'Move with them', run: (g) => { g.rel(g.partner, 12); return relocate(g, g.s.region === 'city' ? 'country' : 'city'); } },
       { label: 'Try long distance', run: (g) => { g.rel(g.partner, -15); return 'Video calls every night. It’s hard.'; } },
-      { label: 'Break up', run: (g) => { const p = g.partner!; p.role = 'ex'; g.stat('mood', -12); return 'You both cried at the airport.'; } },
+      { label: 'Break up', run: (g) => { const p = g.partner; if (!p) return 'There was no one left to break up with.'; p.role = 'ex'; g.stat('mood', -12); return 'You both cried at the airport.'; } },
     ],
   },
   {
@@ -250,7 +251,7 @@ export const LIFE03_EVENTS: EventDef[] = [
     text: () => 'The company announces 20% layoffs. Everyone is nervous.',
     random: { when: (g) => !!g.s.job && CAREER_BY_ID[g.s.job.careerId].track !== 'special' && g.age >= 22, weight: 0.5 },
     choices: [
-      { label: 'Keep your head down', hint: (g) => `Safe if performance is high (${Math.round(g.s.job?.perf ?? 0)})`, run: (g) => { if ((g.s.job?.perf ?? 0) >= 55 || g.chance(0.5)) return 'You survived the cut.'; const sev = Math.round((CAREER_BY_ID[g.s.job!.careerId].levels[g.s.job!.level].pay) * 2); fire(g, 'laid off'); g.money(sev); return `Laid off with ${fmt(sev)} severance.`; } },
+      { label: 'Keep your head down', hint: (g) => `Safe if performance is high (${Math.round(g.s.job?.perf ?? 0)})`, run: (g) => { if ((g.s.job?.perf ?? 0) >= 55 || g.chance(0.5)) return 'You survived the cut.'; const j = g.s.job; if (!j) return 'The layoffs came, but you were already gone.'; const sev = Math.round(CAREER_BY_ID[j.careerId].levels[j.level].pay * 2); fire(g, 'laid off'); g.money(sev); return `Laid off with ${fmt(sev)} severance.`; } },
     ],
   },
   {
@@ -298,7 +299,7 @@ export const LIFE03_EVENTS: EventDef[] = [
     ],
   },
   {
-    id: 'turn21', title: 'You’re 21', icon: '🥂',
+    id: 'turn21', title: (g) => `You’re ${g.age}`, icon: '🥂',
     text: () => 'Bars, clubs and casinos are fully open to you now.',
     choices: [
       { label: 'Big night out', run: (g) => { g.stat('mood', 12); g.burst('confetti'); return 'Your friends made you wear a sash.'; } },

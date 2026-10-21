@@ -4,12 +4,13 @@ import { riskCatch, underageCatch } from '../systems/trouble';
 import { settings } from '../settings';
 import { LATE, type ActivityDef } from './types';
 import { maybeMeet, pct } from './helpers';
+import { legalAge } from '../rules/us';
 
-// Update 0.3 — clubs and bars are 21+ venues (a fake ID gets 16–20s in, at a risk).
+// Update 0.3 — clubs and bars are drinking-age venues (US 21 / EU 18; a fake ID gets 16+ in, at a risk).
 
-const VENUE = { gate: 'alcohol' as const, legality: 'illegalUnder21' as const, venue: true, phases: LATE };
+const VENUE = { gate: 'alcohol' as const, legality: 'underage' as const, venue: true, phases: LATE };
 const idCheck = (g: Parameters<ActivityDef['run']>[0]) => underageCatch(g, 0.2, { name: 'Fake ID at a bar', sev: 1, kind: 'id' });
-const idPreview = (g: Parameters<ActivityDef['run']>[0]) => (g.age < 21 ? ['ID check 20%'] : []);
+const idPreview = (g: Parameters<ActivityDef['run']>[0]) => (g.age < legalAge(g, 'alcohol') ? ['ID check 20%'] : []);
 
 /** Adults only, Mature Content on: a chance to meet someone for the night. */
 function maybeFling(g: Parameters<ActivityDef['run']>[0], p: number) {

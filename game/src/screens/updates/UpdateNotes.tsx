@@ -4,6 +4,26 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.6 — Ascension',
+    [
+      ['⚡', 'Born a god', ['New creator option. Immortal, untouchable,', 'every stat and your wallet maxed. The world still reacts.']],
+      ['🔥', 'Powers', ['Fly, feats of strength, fireballs, supernovas,', 'answer prayers, gather worshippers.']],
+      ['🌋', 'Level the city', ['Evacuated first — nobody dies.', 'Ruins for two years, then rebuilt.']],
+      ['👑', 'Your circle', ['Date several adults at once, no secrets.', 'Each partner decides for themselves.']],
+      ['🛡️', 'Still never', ['Smite is adults only and needs Dark Crime.', 'No power makes anyone love you.']],
+    ],
+  ],
+  [
+    'Update 0.5.1 — Fresh Start',
+    [
+      ['🔑', 'Start at 23', ['Skip high school: diploma, phone, shared flat.']],
+      ['💎', 'Millionaire start', ['+$1,000,000 trust fund. Any age.']],
+      ['🇪🇺', 'US or EU laws', ['EU: drink, gamble and smoke at 18, drive at 18,', 'cheap college, no proof-of-income rule.']],
+      ['🪢', 'Full kit', ['Restraints + sedative = a sure thing.']],
+      ['🔊', 'Sound', ['Music, clicks, texts, notifications.', 'Music / sound toggles in Settings.']],
+    ],
+  ],
+  [
     'Update 0.5 — Underworld',
     [
       ['🗡️', 'Crime tiers', ['Petty, property, organised, violent. 18+ only.', 'Dark Crime toggle in Settings. Minors are never targets.']],
@@ -13,7 +33,6 @@ const UPDATES: [string, Card[]][] = [
       ['🕶️', 'The Back Room', ['Gear, burners, fake passports. Properties, crew,', 'the business, laundering, heists.']],
       ['💬', 'Real messenger', ['Chat bubbles, typing, reactions, group chats.', '3 texts per chat per slot. Free.']],
       ['📵', 'Digital trail', ['Shady texts become evidence — unless from a burner.']],
-      ['🔊', 'Sound', ['Background music, clicks, texts, notifications.', 'Music / sound toggles in Settings.']],
       ['🛡️', 'Hard lines', ['Crime and intimacy never mix. Blackmail is never sexual.', 'Private photos: adults only, never shown.']],
     ],
   ],

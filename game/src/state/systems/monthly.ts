@@ -11,6 +11,8 @@ import { addictionMonth } from './addiction';
 import { sealJuvenileRecord } from './trouble';
 import { peopleMonth } from '../events/people';
 import { ensureStaff, retireStaff } from '../npc/school';
+import { legalAge } from '../rules/us';
+import { godMonth } from './god';
 
 /** Update 0.4 — fire scheduled follow-up events whose time has come. */
 function fireSchedule(g: Game) {
@@ -42,6 +44,7 @@ export function newMonth(g: Game) {
   intimacyMonth(g);
   addictionMonth(g);
   underworldMonth(g);
+  godMonth(g);
   body(g);
   birthday(g);
   checkAchievements(g);
@@ -98,7 +101,8 @@ function birthday(g: Game) {
     g.queue('adulthood');
     if (g.s.sexuality === 'unsure') g.queue('settle_sexuality');
   }
-  if (age === 21) g.queue('turn21');
+  // the night the bars open: 21 in the US, 18 in the EU
+  if (age === legalAge(g, 'alcohol')) g.queue('turn21');
   if (age === 40 || age === 50) g.queue('midlife');
   if (age === 30 || age === 60 || age === 80) g.queue('reflection', { age });
   if (age === 100) g.achieve('centenarian');

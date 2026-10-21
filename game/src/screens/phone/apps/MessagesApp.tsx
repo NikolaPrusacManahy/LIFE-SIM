@@ -67,9 +67,12 @@ function ChatView({ game, thread, onBack, done, openPeople, refresh }: { game: A
   const [typing, setTyping] = useState(false);
   const [burner, setBurner] = useState(false);
   const [note, setNote] = useState<string | null>(null);
-  const end = useRef<HTMLDivElement>(null);
+  const log = useRef<HTMLDivElement>(null);
   const msgs = threadFor(game, thread.id);
-  useEffect(() => end.current?.scrollIntoView({ block: 'end' }), [msgs.length, typing]);
+  // scroll only the chat log — scrollIntoView also scrolled the zoomed game frame and showed a dark screen
+  useEffect(() => {
+    if (log.current) log.current.scrollTop = log.current.scrollHeight;
+  }, [msgs.length, typing]);
   useEffect(() => {
     for (const m of game.s.inbox) if (m.pid === thread.id) m.read = true;
   }, [game, thread.id]);
@@ -108,7 +111,7 @@ function ChatView({ game, thread, onBack, done, openPeople, refresh }: { game: A
           </span>
         )}
       </div>
-      <div className="cht-log">
+      <div className="cht-log" ref={log}>
         {msgs.map((m) => {
           const mine = m.from === 'me';
           const pending = !mine && m.branch?.length ? game.s.inbox.find((x) => x.id === m.branch![0] && !x.replied) : null;
@@ -133,7 +136,6 @@ function ChatView({ game, thread, onBack, done, openPeople, refresh }: { game: A
         })}
         {typing && <div className="cht-row"><div className="cht-bub cht-typing"><i /><i /><i /></div></div>}
         {lastMine && !typing && <small className="cht-receipt">{lastMine.read ? 'Read' : 'Delivered'}</small>}
-        <div ref={end} />
       </div>
       {note && <div className="app-msg" onClick={() => setNote(null)}>{note}</div>}
       {state !== 'open' ? (

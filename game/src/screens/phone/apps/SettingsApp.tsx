@@ -4,6 +4,7 @@ import { settings } from '../../../state/settings';
 import { saveSettings } from '../../../ui/settingsStore';
 import type { AppProps } from './types';
 import { syncMusic } from '../../../ui/audio';
+import { rulesFor } from '../../../state/rules/us';
 
 export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
   const [mature, setMature] = useState(settings.mature);
@@ -11,6 +12,13 @@ export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
   const toggleDark = () => {
     saveSettings({ darkCrime: !dark });
     setDark(settings.darkCrime);
+  };
+  const [laws, setLaws] = useState(game.s.rules);
+  // Update 0.5.1 — switch this life's laws (like moving across the ocean)
+  const toggleLaws = () => {
+    game.s.rules = laws === 'us' ? 'eu' : 'us';
+    setLaws(game.s.rules);
+    game.save();
   };
   const [music, setMusic] = useState(settings.music);
   const [sound, setSound] = useState(settings.sound);
@@ -31,8 +39,15 @@ export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
     <div className="app-stack">
       <div className="app-box">
         <p className="app-sub">Your life saves automatically after every action.</p>
-        <p className="app-sub">Generation {game.s.generation} · Turn {game.s.turn} · Rules: United States</p>
+        <p className="app-sub">Generation {game.s.generation} · Turn {game.s.turn} · Rules: {rulesFor(game).name}</p>
       </div>
+      <button className="app-box set-row" onClick={toggleLaws}>
+        <span>
+          <b>Laws: {laws === 'eu' ? '🇪🇺 European Union' : '🇺🇸 United States'}</b>
+          <small>{laws === 'eu' ? 'Drink, smoke, gamble at 18. Drive at 18. Cheap college.' : 'Drink at 21. Drive at 16. Costly college.'} Tap to switch.</small>
+        </span>
+        <i className={`set-switch ${laws === 'eu' ? 'on' : ''}`} />
+      </button>
       <button className="app-box set-row" onClick={toggleMusic}>
         <span>
           <b>Music</b>

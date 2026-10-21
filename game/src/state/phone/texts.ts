@@ -7,6 +7,7 @@ import { bump } from '../npc/interactions';
 import { line } from '../npc/lines';
 import { say } from '../npc/identity';
 import { newId } from '../Game';
+import { legalAge } from '../rules/us';
 
 // Update 0.4 — texts arrive between time slots; replies are free (no slot).
 
@@ -105,7 +106,7 @@ export function textsTick(g: Game) {
     sendText(g, p, 'goodmorning', `${p.name}: "good morning ☀️ thinking of you"`);
     return;
   }
-  if (g.phase === 'night' && hasTrait(p, 'partyanimal') && g.ageOf(p) >= 21 && roll < 0.25) {
+  if (g.phase === 'night' && hasTrait(p, 'partyanimal') && g.ageOf(p) >= legalAge(g, 'alcohol') && roll < 0.25) {
     sendText(g, p, 'drunk', `${p.name}: "heyyyy whre r u 🍻🍻 i love youuu"`);
     return;
   }

@@ -2,6 +2,7 @@ import type { Game } from '../Game';
 import type { Archetype, Person } from '../types';
 import { LOC_BY_ID } from '../data/locations';
 import { addLabel } from '../npc/labels';
+import { legalAge } from '../rules/us';
 
 // Update 0.4 — random encounters: who you can meet depends on the place and on your age.
 
@@ -27,10 +28,10 @@ export const POOLS: Record<string, Pool> = {
   library: { ages: mixed, contexts: ['Library', 'Reading room'], bias: ['nerd', 'loner', 'overachiever'] },
   gym: { ages: mixed, contexts: ['Weight room', 'Treadmills'], bias: ['jock', 'athlete'] },
   work: { ages: (g) => [Math.max(16, g.age - 10), Math.max(30, g.age + 20)], contexts: ['Break room', 'The floor'], label: 'coworker' },
-  club: { ages: () => [21, 40], contexts: ['Dance floor', 'Bar line'], bias: ['party', 'popular', 'player'], minPlayerAge: 18 },
-  bar: { ages: () => [21, 65], contexts: ['At the bar', 'Pool table'], bias: ['party', 'mature'], minPlayerAge: 18 },
-  roadhouse: { ages: () => [21, 65], contexts: ['At the bar', 'Dance floor'], minPlayerAge: 18 },
-  casino: { ages: () => [21, 75], contexts: ['Card table', 'Slot row'], minPlayerAge: 18 },
+  club: { ages: (g) => [legalAge(g, 'alcohol'), 40], contexts: ['Dance floor', 'Bar line'], bias: ['party', 'popular', 'player'], minPlayerAge: 18 },
+  bar: { ages: (g) => [legalAge(g, 'alcohol'), 65], contexts: ['At the bar', 'Pool table'], bias: ['party', 'mature'], minPlayerAge: 18 },
+  roadhouse: { ages: (g) => [legalAge(g, 'alcohol'), 65], contexts: ['At the bar', 'Dance floor'], minPlayerAge: 18 },
+  casino: { ages: (g) => [legalAge(g, 'casino'), 75], contexts: ['Card table', 'Slot row'], minPlayerAge: 18 },
   church: { ages: (g) => (g.age < 18 ? [14, 80] : [18, 80]), contexts: ['After the service', 'Bake sale'], bias: ['religious', 'sweetheart', 'mature'] },
   hospital: { ages: (g) => (g.age < 18 ? [14, 80] : [18, 80]), contexts: ['Waiting room', 'Volunteer desk'], bias: ['sweetheart', 'mature'] },
   lake: { ages: mixed, contexts: ['The dock', 'Lakeshore'] },
@@ -58,7 +59,7 @@ export function rollEncounter(g: Game, loc: string): boolean {
   if (!pool || g.s.events.length || g.jailed || (pool.minPlayerAge && g.age < pool.minPlayerAge)) return false;
   if (!g.chance(0.14)) return false;
   const where = LOC_BY_ID[loc]?.name(g) ?? loc;
-  const kinds = KINDS.filter((k) => (!k.where || k.where.includes(loc)) && (!k.adult || g.age >= 21));
+  const kinds = KINDS.filter((k) => (!k.where || k.where.includes(loc)) && (!k.adult || g.age >= legalAge(g, 'alcohol')));
   const kind = g.pick(kinds);
   const [lo, hi] = pool.ages(g);
   // sometimes it's someone you already know from here

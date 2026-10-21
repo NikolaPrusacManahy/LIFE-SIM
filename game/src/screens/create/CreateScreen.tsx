@@ -12,6 +12,7 @@ export interface CreatePreview {
   look: Appearance;
   gender: Gender;
   hometown: Region;
+  age: number;
 }
 
 interface Props {
@@ -39,11 +40,15 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
   const [bg, setBg] = useState<Background>('middle');
   const [home, setHome] = useState<Region>('city');
   const [siblings, setSiblings] = useState(1);
+  const [startAge, setStartAge] = useState<14 | 23>(14);
+  const [millionaire, setMillionaire] = useState(false);
+  const [rules, setRules] = useState<'us' | 'eu'>('us');
+  const [god, setGod] = useState(false);
   const [traits, setTraits] = useState<string[]>([]);
   const [look, setLook] = useState<Appearance>(() => randomLook('female'));
   useEscape(() => (step > 0 ? setStep(step - 1) : onBack()));
 
-  useEffect(() => onPreview({ look, gender, hometown: home }), [look, gender, home, onPreview]);
+  useEffect(() => onPreview({ look, gender, hometown: home, age: startAge }), [look, gender, home, startAge, onPreview]);
 
   const pickGender = (g: Gender) => {
     setGender(g);
@@ -52,7 +57,7 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
   };
   const toggleTrait = (id: string) => setTraits((t) => (t.includes(id) ? t.filter((x) => x !== id) : t.length < 2 ? [...t, id] : [t[1], id]));
   const pronouns: Pronouns = pron === 'custom' ? { ...custom, label: `${custom.subj}/${custom.obj}` } : PRONOUNS[pron];
-  const start = () => onCreate(createLife({ name, familyName: family, gender, background: bg, hometown: home, traits, look, pronouns, sexuality, siblings }));
+  const start = () => onCreate(createLife({ name, familyName: family, gender, background: bg, hometown: home, traits, look, pronouns, sexuality, siblings, startAge, millionaire, rules, god }));
   const set = <K extends keyof Appearance>(k: K, v: Appearance[K]) => setLook({ ...look, [k]: v });
 
   return (
@@ -152,6 +157,26 @@ export function CreateScreen({ onBack, onCreate, onPreview }: Props) {
         {step === 3 && (
           <>
             <h2 className="crt-title">Where you start</h2>
+            <div className="crt-section">Laws</div>
+            <div className="crt-seg">
+              <button className={`crt-opt ${rules === 'us' ? 'on' : ''}`} onClick={() => setRules('us')}>🇺🇸 US rules<small>Drink at 21, drive at 16, costly college</small></button>
+              <button className={`crt-opt ${rules === 'eu' ? 'on' : ''}`} onClick={() => setRules('eu')}>🇪🇺 EU rules<small>Drink at 18, drive at 18, cheap college</small></button>
+            </div>
+            <div className="crt-section">Start at</div>
+            <div className="crt-seg">
+              <button className={`crt-opt ${startAge === 14 ? 'on' : ''}`} onClick={() => setStartAge(14)}>🎒 Age 14<small>High school, parents, curfew</small></button>
+              <button className={`crt-opt ${startAge === 23 ? 'on' : ''}`} onClick={() => setStartAge(23)}>🔑 Age 23<small>Diploma, own phone, shared flat</small></button>
+            </div>
+            <div className="crt-section">Nature</div>
+            <div className="crt-seg">
+              <button className={`crt-opt ${!god ? 'on' : ''}`} onClick={() => setGod(false)}>🧍 Mortal<small>One life. Real stakes.</small></button>
+              <button className={`crt-opt ${god ? 'on' : ''}`} onClick={() => setGod(true)}>⚡ Born a god<small>Immortal, untouchable, every power</small></button>
+            </div>
+            <div className="crt-section">Fortune</div>
+            <div className="crt-seg">
+              <button className={`crt-opt ${!millionaire ? 'on' : ''}`} onClick={() => setMillionaire(false)}>🪙 Normal<small>Money from your family</small></button>
+              <button className={`crt-opt ${millionaire ? 'on' : ''}`} onClick={() => setMillionaire(true)}>💎 Millionaire<small>+$1,000,000 trust fund</small></button>
+            </div>
             <div className="crt-section">Hometown</div>
             <div className="crt-seg">
               <button className={`crt-opt ${home === 'city' ? 'on' : ''}`} onClick={() => setHome('city')}>🏙️ The City<small>Nightlife, careers, crowds</small></button>
