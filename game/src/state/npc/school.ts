@@ -1,6 +1,6 @@
 import type { Game } from '../Game';
 import { PROGRAM_BY_ID } from '../data/programs';
-import { addLabel } from './labels';
+import { addLabel, dropLabel } from './labels';
 
 // Update 0.4 — teachers (never romance-eligible) and professors (adults; see identity.ts).
 
@@ -37,10 +37,14 @@ export function ensureStaff(g: Game) {
   }
 }
 
-/** Staff leave your life when you leave the school. */
+/** Staff leave your life when you leave the school. Update 0.11 — so do school rivalries. */
 export function retireStaff(g: Game) {
   const e = g.s.education.current;
   for (const p of g.s.people) {
     if ((p.role === 'teacher' || p.role === 'professor') && (!e || !p.tags.includes(`staff:${e.program}`))) p.status = 'moved';
+    if (!e && p.where === 'School' && (p.labels.includes('rival') || p.rivalry > 20)) {
+      dropLabel(p, 'rival');
+      p.rivalry = Math.min(p.rivalry, 20);
+    }
   }
 }

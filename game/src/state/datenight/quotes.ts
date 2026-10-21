@@ -19,6 +19,16 @@ export const QUOTES: Record<string, Lines> = {
   whisper: { ok: ['Stop, I’m going to laugh out loud!', 'Shh~ you’re terrible. Keep going.'], fail: ['Shh! I’m watching!', 'The whole row heard that.'] },
   arm: { ok: ['…Okay. This is nice.', 'Took you long enough~'], fail: ['Your elbow is in my ear.', 'The armrest is right there, you know.'] },
   scare: { ok: ['I wasn’t scared! …Don’t let go.', 'Hold on, I’m hiding behind you.'], fail: ['You screamed louder than me!', 'Personal space, please!'] },
+  flirtdark: { ok: ['Shh… keep going~', 'Are you even watching the movie?'], fail: ['People can hear you, idiot!', 'Not during the good part!'] },
+  brush: { ok: ['…Was that on purpose? Do it again.', 'Your hand is so warm~'], fail: ['You got butter on me!', 'Uh… excuse me?'] },
+  backrow: { ok: ['The back row? Sneaky~', 'Much better view from here.'], fail: ['I can’t see anything back here.', 'Why are we moving?'] },
+  snoop: { ok: ['Like it? I cleaned. For you~', 'Don’t look in that drawer!'], fail: ['Hey, that’s private!', 'Stop judging my plants!'] },
+  // gym (Update 0.11)
+  lift: { ok: ['Okay, those arms~', 'Same time next week? Deal.'], fail: ['Bend your knees, idiot!', 'Are you okay?! That clanged.'] },
+  spot: { ok: ['I feel safe with you spotting me~', 'Your hands were right there. Thanks~'], fail: ['You were on your phone!', 'I almost dropped it on my face!'] },
+  treadmill: { ok: ['You’re fast! …I let you win.', 'Again! Loser buys smoothies!'], fail: ['You fell off the treadmill!', 'I’m dying. You’re dying. Stop.'] },
+  stretch: { ok: ['Okay, this is… a lot of eye contact~', 'You’re flexible. Noted~'], fail: ['OW. Too far!', 'Personal space!'] },
+  shake: { ok: ['Chocolate? You know me.', 'Gains together~'], fail: ['It’s chalky…', 'Is that… broccoli flavour?'] },
   // gala
   slowdance: { ok: ['You can actually dance?!', 'Don’t step on my— wow. Okay.'], fail: ['Idiot! My foot!', 'Let’s just… sit this one out.'] },
   champagne: { ok: ['Bubbles go straight to my head~', 'This is so fancy. I love it.'], fail: ['It went up my nose!', 'Too many bubbles…'] },

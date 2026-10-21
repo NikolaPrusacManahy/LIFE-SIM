@@ -79,7 +79,7 @@ export const PEOPLE_EVENTS: EventDef[] = [
   {
     id: 'admirer_notes', title: 'The Secret Admirer', icon: '💌',
     text: () => 'Anonymous notes keep appearing in your locker. Three people keep glancing your way. Who is it?',
-    random: { when: (g) => g.age >= 14 && g.age <= 22 && !!g.s.education.current && !g.partner, cooldown: 96 },
+    random: { when: (g) => inHS(g) && !g.partner, cooldown: 96 },
     choices: (g) => {
       const age = g.age;
       const lo = age < 18 ? Math.max(14, age - 1) : 18;
@@ -110,10 +110,11 @@ export const PEOPLE_EVENTS: EventDef[] = [
   },
   {
     id: 'rival_emerges', title: 'A Rival Appears', icon: '⚔️',
-    text: () => 'Someone has decided you’re their competition — in class, at work, everywhere.',
+    // Update 0.11 — school rivals only while you're in school; after that, work
+    text: (g) => (g.s.education.current ? 'Someone in class has decided you’re their competition.' : 'Someone at work has decided you’re their competition.'),
     random: { when: (g) => g.age >= 14 && (!!g.s.education.current || !!g.s.job) && !g.s.people.some((p) => p.labels.includes('rival')), cooldown: 96 },
     choices: [
-      { label: 'Game on', run: (g) => { const p = g.addPerson('acquaintance', { age: Math.max(14, g.age + g.rand(-1, 1)), rel: 15, met: g.dateLabel, where: g.s.job ? 'Work' : 'School' }); p.rivalry = 55; addLabel(p, 'rival'); return say('{name} smirks at you from across the room. It’s on.', p); } },
+      { label: 'Game on', run: (g) => { const p = g.addPerson('acquaintance', { age: Math.max(14, g.age + g.rand(-1, 1)), rel: 15, met: g.dateLabel, where: g.s.education.current ? 'School' : 'Work' }); p.rivalry = 55; addLabel(p, 'rival'); return say('{name} smirks at you from across the room. It’s on.', p); } },
       { label: 'Ignore them', run: () => 'You refuse to play their game. For now.' },
     ],
   },
@@ -142,7 +143,7 @@ export const PEOPLE_EVENTS: EventDef[] = [
   {
     id: 'mentor_push', title: 'Someone Believes in You', icon: '🌱', who: (g) => g.s.people.find((p) => (p.role === 'teacher' || p.role === 'professor') && p.respect >= 70 && p.status === 'alive')?.id ?? null,
     text: (g) => say('{name} keeps you after class. "You have real talent. Have you thought about where it could take you?"', g.s.people.find((p) => (p.role === 'teacher' || p.role === 'professor') && p.respect >= 70) ?? null),
-    random: { when: (g) => g.s.people.some((p) => (p.role === 'teacher' || p.role === 'professor') && p.respect >= 70 && p.status === 'alive'), once: true },
+    random: { when: (g) => !!g.s.education.current && g.s.people.some((p) => (p.role === 'teacher' || p.role === 'professor') && p.respect >= 70 && p.status === 'alive'), once: true },
     choices: [
       { label: 'Take their advice seriously', run: (g) => { g.setFlag('scholarship'); g.stat('smarts', 3); g.stat('mood', 8); return 'They nominated you for a scholarship and an academic competition.'; } },
       { label: 'Shrug it off', run: () => 'Maybe they see something you don’t.' },

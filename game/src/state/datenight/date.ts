@@ -1,8 +1,8 @@
 import type { Game } from '../Game';
 import type { Person } from '../types';
 import type { DateVenue, Moment } from './types';
-import { DATE_ACTIONS, MOMENT_AT, RESTROOM_LOVE } from './types';
-import { SHARED_ACTIONS, VENUES, venueLock, type DateAction } from './venues';
+import { DATE_ACTIONS, FRIEND_EXTRA, MOMENT_AT, RESTROOM_LOVE } from './types';
+import { SHARED_ACTIONS, VENUES, venueCost, venueLock, type DateAction } from './venues';
 import { INTOX_LIMIT } from '../nightlife/types';
 import { isRomanceEligible, say } from '../npc/identity';
 import { hasTrait } from '../npc/traits';
@@ -12,6 +12,10 @@ import { legalAge } from '../rules/us';
 import { itemCount, spendItem } from '../inventory/items';
 import { homeBonus } from './venues';
 import { quoteFor } from './quotes';
+import { startDesire, theyAsk } from './desire';
+
+/** Update 0.11 — a date indoors (yours or theirs) */
+export const indoors = (g: Game) => g.s.date?.venue === 'home' || g.s.date?.venue === 'theirs';
 
 // Update 0.10 — dates as a scene. Romantic dates only. Every action moves the spark; moments unlock as it rises.
 // HARD RULES: hand-holding is fine for any couple; kisses and intimacy need canBeIntimate (both 18+, Mature on,
@@ -22,6 +26,11 @@ export const DATE_AUDIT: { moment: Moment; playerAge: number; npcAge: number; in
 
 const ROMANTIC_ROLES = ['crush', 'talking', 'dating', 'partner', 'engaged', 'spouse', 'fling'];
 export const isRomanticDate = (g: Game, p: Person) => isRomanceEligible(g, p) && (ROMANTIC_ROLES.includes(p.role) || p.labels.includes('fwb'));
+/** Update 0.11 — a friend you could make a move on: same date scene, but harder. */
+export const isFriendDate = (g: Game, p: Person) => p.role === 'friend' && !p.labels.includes('fwb') && isRomanceEligible(g, p);
+/** Spark needed for a moment on this date (friends need more). */
+export const momentAt = (g: Game, m: Moment) => Math.min(95, MOMENT_AT[m] + (g.s.date?.friend ? FRIEND_EXTRA : 0));
+const FRIEND_ODDS = 0.1;
 
 export const inDate = (g: Game) => !!g.s.date;
 export const date = (g: Game) => g.s.date!;
@@ -29,17 +38,19 @@ export const partner = (g: Game) => (g.s.date ? g.personById(g.s.date.pid) : nul
 
 /** Called from the "Go on a date" interaction (which spends the slot). */
 export function startDate(g: Game, p: Person, venue: DateVenue): string {
-  if (!isRomanticDate(g, p)) return '';
+  const friend = !isRomanticDate(g, p);
+  if (friend && !isFriendDate(g, p)) return '';
   const lock = venueLock(g, venue);
   if (lock) return lock;
   const v = VENUES[venue];
   if (venue === 'movie' && itemCount(g, 'movie_tix')) spendItem(g, 'movie_tix');
   else if (venue === 'concert' && itemCount(g, 'concert_tix')) spendItem(g, 'concert_tix');
-  else if (v.cost) g.money(-v.cost);
-  // romantic people start warmer; a rocky relationship starts colder
-  const spark = Math.max(0, Math.min(40, Math.round(p.romance / 4 + (hasTrait(p, 'romantic') ? 8 : 0) - (p.rivalry > 30 ? 10 : 0))));
-  g.s.date = { pid: p.id, venue, time: DATE_ACTIONS, spark, intox: 0, moments: [], log: [], offer: false };
-  return say(`You meet {name} at the ${v.name.toLowerCase()}.`, p, g.s.name);
+  else if (venueCost(g, venue)) g.money(-venueCost(g, venue));
+  // romantic people start warmer; a rocky relationship starts colder; a friend starts from what they feel
+  const warm = friend ? Math.min(15, p.attraction / 6) : p.romance / 4;
+  const spark = Math.max(0, Math.min(40, Math.round(warm + (hasTrait(p, 'romantic') ? 8 : 0) - (p.rivalry > 30 ? 10 : 0))));
+  g.s.date = { pid: p.id, venue, time: DATE_ACTIONS, spark, intox: 0, moments: [], log: [], offer: false, ...(friend ? { friend: true } : {}) };
+  return say(friend ? `You meet {name} at the ${v.name.toLowerCase()}. Just friends… for now.` : `You meet {name} at the ${v.name.toLowerCase()}.`, p, g.s.name);
 }
 
 export const actionsFor = (g: Game): DateAction[] => [...VENUES[date(g).venue].actions, ...SHARED_ACTIONS];
@@ -61,6 +72,7 @@ export function oddsOf(g: Game, a: DateAction): number {
   if (hasTrait(p, 'cheap') && a.cost) o -= 0.2;
   if (d.intox > 50) o -= (d.intox - 50) / 150;
   if (d.venue === 'home') o += homeBonus(g);
+  if (d.friend) o -= FRIEND_ODDS;
   return Math.max(0.05, Math.min(0.95, o));
 }
 
@@ -84,9 +96,9 @@ export function dateAct(g: Game, id: string): string {
   const line = ok ? say(g.pick([`${a.icon} {name} lights up.`, `${a.icon} {name} can’t stop smiling.`, `${a.icon} That went perfectly.`]), p, g.s.name) : say(g.pick([`${a.icon} It fell a little flat.`, `${a.icon} {name} smiles politely.`, `${a.icon} Awkward pause.`]), p, g.s.name);
   tick(g, line);
   // sometimes they're the one who suggests going back to yours
-  if (!d.offer && d.spark >= MOMENT_AT.yours && momentLock(g, 'yours') === null && g.chance(0.25 + (d.venue === 'home' ? homeBonus(g) * 2 : 0))) {
+  if (!d.offer && d.spark >= momentAt(g, 'yours') && momentLock(g, 'yours') === null && g.chance((0.25 + (d.venue === 'home' ? homeBonus(g) * 2 : 0)) * (d.friend ? 0.5 : 1))) {
     d.offer = true;
-    return `${line} ${say(d.venue === 'home' ? '{name} takes your hand: “Show me the bedroom?”' : '{name} leans in: “Want to get out of here? Your place?”', p, g.s.name)}`;
+    return `${line} ${say(d.venue === 'home' ? '{name} takes your hand: “Show me the bedroom?”' : d.venue === 'theirs' ? '{name} takes your hand: “Stay the night?”' : '{name} leans in: “Want to get out of here? Your place?”', p, g.s.name)}`;
   }
   return line;
 }
@@ -99,7 +111,7 @@ export function momentLock(g: Game, m: Moment): string | null {
   const p = partner(g);
   if (!p) return 'Not here';
   if (d.moments.includes(m) && m !== 'kiss' && m !== 'french') return 'Done';
-  if (d.spark < MOMENT_AT[m]) return `Spark ${MOMENT_AT[m]}`;
+  if (d.spark < momentAt(g, m)) return `Spark ${momentAt(g, m)}`;
   if (m === 'hands') return null;
   // everything past holding hands: adults, Mature Content, consent, nobody too drunk
   if (!canBeIntimate(g, p)) return g.age < 18 || g.ageOf(p) < 18 ? 'Adults only' : 'Not available';
@@ -108,14 +120,29 @@ export function momentLock(g: Game, m: Moment): string | null {
     if (!VENUES[d.venue].restroom) return 'No restroom here';
     if (p.romance < RESTROOM_LOVE) return 'Needs more love';
   }
+  if (m === 'spot') {
+    if (!VENUES[d.venue].spot) return 'Not at this venue';
+    if (p.romance < RESTROOM_LOVE) return 'Needs more love';
+  }
   return null;
 }
 
-/** Hold hands, kiss, French kiss — or the two that end the date. */
+/** Update 0.11 — will a friend kiss you back? */
+export const friendKissOdds = (p: Person) => Math.max(0.15, Math.min(0.85, 0.3 + p.attraction / 200 + p.romance / 200));
+
+/** Hold hands, kiss, French kiss — or the ones that end the date. */
 export function doMoment(g: Game, m: Moment): string {
   const d = g.s.date;
   const p = partner(g);
   if (!d || !p || momentLock(g, m)) return '';
+  // Update 0.11 — making a move on a friend: the first kiss can be turned down
+  if (d.friend && m === 'kiss' && !d.moments.includes('kiss') && !g.chance(friendKissOdds(p))) {
+    d.spark = Math.max(0, d.spark - 15);
+    bump(p, 'rel', -3);
+    d.quote = 'Whoa— I thought we were just friends…';
+    tick(g, say('💋 You lean in. {name} turns {their} head. Awkward.', p, g.s.name));
+    return d.log[d.log.length - 1];
+  }
   if (m !== 'hands') DATE_AUDIT.push({ moment: m, playerAge: g.age, npcAge: g.ageOf(p), intox: d.intox });
   if (!d.moments.includes(m)) d.moments.push(m);
   if (m === 'hands' || m === 'kiss' || m === 'french') d.quote = quoteFor(m, true);
@@ -129,23 +156,44 @@ export function doMoment(g: Game, m: Moment): string {
     bump(p, 'romance', m === 'kiss' ? 4 : 6);
     d.spark = Math.min(100, d.spark + (m === 'kiss' ? 6 : 8));
     g.burst('hearts');
+    // a friend who kisses you back: you're talking now
+    if (d.friend && p.role === 'friend') {
+      p.role = 'talking';
+      d.friend = false;
+      g.milestone(`More than friends with ${p.name}`);
+    }
     tick(g, say(m === 'kiss' ? '💋 A soft kiss. {name} smiles against your lips.' : '😘 A long, slow kiss. The world goes quiet.', p, g.s.name));
     return d.log[d.log.length - 1];
   }
   // the date ends here — fade to black
-  const restroom = m === 'restroom';
+  const venue = d.venue;
   endDate(g);
-  if (restroom) {
-    g.queue('protection_choice', { pid: p.id, place: 'restroom' }, true);
-    return say('You catch {name}’s eye and nod toward the restroom…', p, g.s.name);
+  if (m === 'restroom') {
+    const locker = venue === 'gym';
+    g.queue('protection_choice', { pid: p.id, place: locker ? 'locker' : 'restroom' }, true);
+    return say(locker ? 'You catch {name}’s eye and nod toward the locker room…' : 'You catch {name}’s eye and nod toward the restroom…', p, g.s.name);
   }
-  return `${say(d.venue === 'home' ? 'You lead {name} to the bedroom.' : 'You head back to your place together.', p, g.s.name)} ${beginNight(g, p, 'mine')}`.trim();
+  if (m === 'spot') {
+    g.queue('protection_choice', { pid: p.id, place: 'theater' }, true);
+    return say('The back row is empty. {name} pulls you closer…', p, g.s.name);
+  }
+  if (venue === 'theirs') return `${say('{name} leads you to {their} bedroom.', p, g.s.name)} ${beginNight(g, p, 'theirs')}`.trim();
+  return `${say(venue === 'home' ? 'You lead {name} to the bedroom.' : 'You head back to your place together.', p, g.s.name)} ${beginNight(g, p, 'mine')}`.trim();
 }
 
 /** Their "your place?" — yes goes home; no is always fine. */
 export function answerOffer(g: Game, yes: boolean): string {
   const d = date(g);
   d.offer = false;
+  const q = partner(g);
+  // Update 0.11 — they love you this much: they ask where and how
+  if (yes && q && indoors(g) && theyAsk(g, q) && momentLock(g, 'yours') === null) {
+    const theirs = d.venue === 'theirs';
+    DATE_AUDIT.push({ moment: 'yours', playerAge: g.age, npcAge: g.ageOf(q), intox: d.intox });
+    endDate(g);
+    startDesire(g, q, 'them', theirs);
+    return say('{name} doesn’t let go of your hand.', q, g.s.name);
+  }
   if (yes) return doMoment(g, 'yours');
   const p = partner(g);
   tick(g, p ? say('“Another time,” you say. {name} nods — no pressure.', p, g.s.name) : '');
@@ -156,7 +204,7 @@ export function answerOffer(g: Game, yes: boolean): string {
 export function calmNight(g: Game): string {
   const d = g.s.date;
   const p = partner(g);
-  if (!d || !p || d.venue !== 'home') return '';
+  if (!d || !p || !indoors(g)) return '';
   bump(p, 'romance', 4 + Math.round(d.spark / 20));
   bump(p, 'trust', 3);
   g.stat('mood', 4);

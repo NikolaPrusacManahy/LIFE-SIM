@@ -2,6 +2,7 @@ import type { Ctx, EventDef } from './types';
 import type { Game } from '../Game';
 import { bump, interact } from '../npc/interactions';
 import { say } from '../npc/identity';
+import { isRomanticDate } from '../datenight/date';
 import { PLAN_ICON, PLAN_LABEL, standUp } from '../phone/plans';
 import { clearMad } from '../npc/mood';
 
@@ -18,6 +19,9 @@ function go(g: Game, c: Ctx): string {
   let text: string;
   if (plan.kind === 'date') text = interact(g, p.id, 'date', g.canAfford(60) ? 'restaurant' : 'park');
   else if (plan.kind === 'over') text = interact(g, p.id, 'date', 'home');
+  // Update 0.11 — at their place; and a movie with a partner is a date
+  else if (plan.kind === 'theirs') text = interact(g, p.id, 'date', 'theirs');
+  else if (plan.kind === 'movie' && isRomanticDate(g, p)) text = interact(g, p.id, 'date', 'movie');
   else if (plan.kind === 'talk') {
     text = interact(g, p.id, 'deeptalk');
     bump(p, 'trust', 6);

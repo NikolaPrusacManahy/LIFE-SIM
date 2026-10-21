@@ -122,7 +122,16 @@ function partnerTick(g: Game): boolean {
     const r = Math.random();
     if (r < 0.15 && p.trust < 45) sendText(g, p, 'checkin', `${p.name}: "can we talk tonight?"`);
     else if (r < 0.35) sendText(g, p, 'surprise', `${p.name}: "I booked us something 👀 keep tonight free"`);
-    else sendText(g, p, 'date_ask', `${p.name}: "${g.pick(['date night friday? 🍿', 'let’s try that new place', 'movie night? I’ll bring snacks'])}"`);
+    else {
+      // Update 0.11 — partners ask for movies and to come over (yours or theirs)
+      const [msg, plan] = g.pick<[string, string]>([
+        ['date night tonight? 🕯️', 'date'], ['let’s try that new place', 'date'],
+        ['movie tonight? 🎬 I’ll get the popcorn', 'movie'], ['there’s a horror movie out 👀 come with me', 'movie'],
+        ...(g.s.housing !== 'homeless' ? ([['can I come over tonight? 🥺', 'over'], ['your place tonight? I’ll bring wine 🍷', 'over']] as [string, string][]) : []),
+        ['come over to mine tonight? 🏡', 'theirs'], ['my place is empty tonight 😏', 'theirs'],
+      ]);
+      sendText(g, p, 'date_ask', `${p.name}: "${msg}"`, { ctx: { plan } });
+    }
   } else {
     sendText(g, p, 'invite', `${p.name}: "${g.pick(['wanna hang tonight?', 'come over later? 🎮', 'food? I’m starving'])}"`, { ctx: { plan: g.pick(['hang', 'game', 'food']) } });
   }

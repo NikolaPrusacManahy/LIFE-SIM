@@ -12,6 +12,10 @@ const UPDATES: [string, Card[]][] = [
       ['🦈', 'Investors', ['Angels, VCs, mega funds. Cash for a share.', 'Safe pitch is easy to fund, moonshot has the higher ceiling.']],
       ['🌳', 'Skill tree', ['Profit, speed, payroll, pitch.', 'Three red months in a row and it folds.']],
       ['🕊️', 'Diplomatic', ['$1B and a skyscraper: police and scandals', 'can’t touch you anymore. For life.']],
+      ['🏋️', 'Gym & movie dates', ['Gym: lift together, spot them, locker room or home.', 'Movies: flirt in the dark, the back row — no restroom.']],
+      ['😏', 'Make a move on a friend', ['Same date scene, but harder:', '+10 spark per moment, and they can dodge the kiss.']],
+      ['🏡', 'They ask you', ['Partners text: movie tonight? come over? my place?', 'In love (80+): they pick where & how. Spouses: you can ask.']],
+      ['🎓', 'School stays in school', ['No school events or school rivals after you leave.']],
     ],
   ],
   [
@@ -19,7 +23,7 @@ const UPDATES: [string, Card[]][] = [
     [
       ['🕯️', 'Dates are a scene', ['Raise the spark with actions. Romantic dates only.', 'Your date reacts out loud: “Idiot! That was my shin!”']],
       ['🍝', 'Every venue differs', ['Restaurant, movies, gala, concert, park, arcade,', 'beach, picnic, mini-golf, dinner at home.']],
-      ['💋', 'Moments', ['Hold hands → kiss → French kiss →', 'your place, or the restroom if it’s love.']],
+      ['💋', 'Moments', ['Hold hands → kiss → French kiss →', 'your place, or the restroom if it’s love (0.11: not at the movies).']],
       ['🏠', 'Your place', ['Invite them over (or text “Come over?”).', 'Calm night in, or the bedroom. Nicer home = better odds.']],
       ['💶', 'Euros', ['EU lives show prices in € (1 € = 1.12 $).']],
       ['⏰', 'Tonight means tonight', ['Say yes in the evening or at night: it starts now.', 'In the morning: this evening, same day.']],

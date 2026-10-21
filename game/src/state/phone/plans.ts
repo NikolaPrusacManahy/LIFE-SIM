@@ -10,9 +10,9 @@ import { pushNote } from './notify';
 // Update 0.8 — accepted invitations become plans; when the slot comes, the plan plays as a scene.
 
 export const PLAN_LABEL: Record<PlanKind, string> = {
-  party: 'Party', movie: 'Movie night', food: 'Food', date: 'Date', game: 'Game night', talk: 'Serious talk', hang: 'Hang out', over: 'Coming over',
+  party: 'Party', movie: 'Movie night', food: 'Food', date: 'Date', game: 'Game night', talk: 'Serious talk', hang: 'Hang out', over: 'Coming over', theirs: 'Their place',
 };
-export const PLAN_ICON: Record<PlanKind, string> = { party: '🎉', movie: '🍿', food: '🍜', date: '🕯️', game: '🎮', talk: '💬', hang: '🛋️', over: '🏠' };
+export const PLAN_ICON: Record<PlanKind, string> = { party: '🎉', movie: '🍿', food: '🍜', date: '🕯️', game: '🎮', talk: '💬', hang: '🛋️', over: '🏠', theirs: '🏡' };
 
 /** Phase index a future turn falls on. */
 export const phaseAt = (g: Game, turn: number) => (g.s.phase + (turn - g.s.turn)) % PHASES.length;

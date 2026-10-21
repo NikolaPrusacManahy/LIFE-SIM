@@ -203,7 +203,7 @@ export function playDateStep(g: Game) {
     endDate(g);
     return;
   }
-  const open = (['hands', 'kiss', 'french', 'yours', 'restroom'] as Moment[]).filter((m) => !momentLock(g, m));
+  const open = (['hands', 'kiss', 'french', 'yours', 'restroom', 'spot'] as Moment[]).filter((m) => !momentLock(g, m));
   if (open.length && Math.random() < 0.4) {
     doMoment(g, pick(open));
     return;

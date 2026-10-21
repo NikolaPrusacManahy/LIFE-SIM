@@ -171,7 +171,7 @@ const DECLINE: Record<'understanding' | 'disappointed' | 'jealous', string[]> = 
   jealous: ['are you seeing someone else?', 'who are you hanging out with instead?', 'hm. ok. busy with who?'],
 };
 const CLOSING = ['gtg, see u tmrw 👋', 'ok I’m heading to bed, night!', 'talk later!', 'gotta run 🏃'];
-const FOLLOWUP = ['what are you up to today?', 'how’s everything going btw?', 'did you hear about the thing at school/work??'];
+const FOLLOWUP = ['what are you up to today?', 'how’s everything going btw?', 'did you hear the news??'];
 
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 
@@ -301,7 +301,7 @@ export function answer(g: Game, pid: string, msgId: string, replyId: string): An
     line = pick(REACT.apology);
   } else if (r.intent === 'accept') {
     r.run?.(g, p, true);
-    const kind: PlanKind = (m.kind === 'invite' && (g.s.inbox.find((x) => m.branch?.includes(x.id))?.ctx?.plan as PlanKind)) || KIND_PLAN[m.kind ?? ''] || 'hang';
+    const kind: PlanKind = ((m.kind === 'invite' || m.kind === 'date_ask') && (g.s.inbox.find((x) => m.branch?.includes(x.id))?.ctx?.plan as PlanKind)) || KIND_PLAN[m.kind ?? ''] || 'hang';
     const plan = createPlan(g, p, kind, m.kind === 'invite' ? 'invite' : m.kind === 'checkin' ? 'checkin' : m.kind === 'surprise' ? 'surprise' : 'date', todaySlot(g));
     line = pick(REACT.accept).replace('{slot}', slotLabel(g, plan.turn));
     note = `📅 Plan: ${PLAN_LABEL[plan.kind]} with ${p.name}, ${slotLabel(g, plan.turn)}`;

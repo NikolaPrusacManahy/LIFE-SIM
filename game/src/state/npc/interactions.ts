@@ -20,8 +20,9 @@ import { haremLock, inviteToHarem } from '../systems/god';
 import { setMad } from './mood';
 import type { ActionResult } from '../Game';
 import { cannotConsent } from '../crime/consent';
-import { VENUES, VENUE_ORDER, venueLock } from '../datenight/venues';
-import { isRomanticDate, startDate } from '../datenight/date';
+import { VENUES, VENUE_ORDER, venueCost, venueLock } from '../datenight/venues';
+import { isFriendDate, isRomanticDate, startDate } from '../datenight/date';
+import { canAskSpouse, startDesire } from '../datenight/desire';
 import type { DateVenue } from '../datenight/types';
 import { hostLock } from '../datenight/venues';
 
@@ -107,7 +108,7 @@ const HANG_OPTIONS = [
 ];
 /** Update 0.10 — every date venue (the date itself is a scene: state/datenight). */
 const DATE_OPTIONS = (g: Game): InteractionOption[] =>
-  VENUE_ORDER.map((v) => ({ id: v, label: `${VENUES[v].icon} ${VENUES[v].name}${VENUES[v].cost ? ` ($${VENUES[v].cost})` : ''}`, reason: venueLock(g, v) }));
+  VENUE_ORDER.map((v) => ({ id: v, label: `${VENUES[v].icon} ${VENUES[v].name}${venueCost(g, v) ? ` ($${venueCost(g, v)})` : ''}`, reason: venueLock(g, v) }));
 
 export const INTERACTIONS: InteractionDef[] = [
   // ======================= Talk (anyone)
@@ -396,6 +397,12 @@ export const INTERACTIONS: InteractionDef[] = [
     run: (g, p, opt = 'park') => startDate(g, p, (VENUES[opt as DateVenue] ? opt : 'park') as DateVenue) + noteTraits(g, p, 'date'),
   },
   {
+    // Update 0.11 — the same date scene with a friend: make a move (harder)
+    id: 'frienddate', label: 'Hang out… make a move?', icon: '😏', group: 'Romance', romance: true, energy: 12, when: (g, p) => isFriendDate(g, p),
+    options: DATE_OPTIONS,
+    run: (g, p, opt = 'park') => startDate(g, p, (VENUES[opt as DateVenue] ? opt : 'park') as DateVenue),
+  },
+  {
     id: 'holdhands', label: 'Hold hands', icon: '🤝', group: 'Romance', romance: true, energy: 1, when: (_g, p) => committed(p),
     run: (g, p) => { bump(p, 'romance', 3); g.stat('mood', 3); return say('You and {name} walk hand in hand. Simple. Perfect.', p); },
   },
@@ -501,6 +508,8 @@ export const INTERACTIONS: InteractionDef[] = [
     },
   },
   { id: 'kiss', label: 'Kiss', icon: '💋', group: 'Adult', mature: true, energy: 2, when: (g, p) => canBeIntimate(g, p) && (romantic(p) || p.role === 'fling' || p.labels.includes('fwb')), req: (_g, p) => (p.rel < 40 ? 'Get closer first' : null), run: (g, p) => kiss(g, p) },
+  // Update 0.11 — only with your spouse do you do the asking (where, how)
+  { id: 'askintimacy', label: 'Ask for intimacy', icon: '🔥', group: 'Adult', mature: true, energy: 8, when: (g, p) => canAskSpouse(g, p), run: (g, p) => (startDesire(g, p, 'you') ? say('You pull {name} close…', p) : '') },
   { id: 'night', label: 'Spend the night', icon: '🌙', group: 'Adult', mature: true, energy: 8, when: (g, p) => canBeIntimate(g, p) && (romantic(p) || p.role === 'fling' || p.labels.includes('fwb') || p.labels.includes('situationship')), req: (_g, p) => (p.rel < 60 && !p.labels.includes('fwb') ? 'Get closer first' : null), run: (g, p) => askNight(g, p) },
   {
     id: 'fwb', label: 'Friends with benefits?', icon: '🔥', group: 'Adult', mature: true, energy: 4,
@@ -761,7 +770,7 @@ const MAD_AFTER: Record<string, string> = {
 
 /** Update 0.8 — these take real time (outings, care, crimes). Everything else on a profile is free, once per time slot. */
 export const USES_SLOT = new Set([
-  'hangout', 'date', 'invite_over', 'invite', 'care', 'helphome', 'visit', 'therapy', 'meetparents', 'night', 'fight', 'challenge',
+  'hangout', 'date', 'frienddate', 'invite_over', 'askintimacy', 'invite', 'care', 'helphome', 'visit', 'therapy', 'meetparents', 'night', 'fight', 'challenge',
   't_help', 't_extra', 't_club', 'p_ra', 'u_assault', 'u_rob', 'u_kidnap', 'u_kill', 'c_ransom', 'c_away',
 ]);
 export const usesSlot = (def: InteractionDef) => USES_SLOT.has(def.id);

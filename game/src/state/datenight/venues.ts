@@ -28,6 +28,10 @@ export interface VenueDef {
   lock?: (g: Game) => string | null;
   /** has a restroom you could sneak off to */
   restroom: boolean;
+  /** Update 0.11 — what the restroom is called here */
+  restroomLabel?: string;
+  /** Update 0.11 — intimacy right there (the back row) */
+  spot?: boolean;
   actions: DateAction[];
 }
 
@@ -41,6 +45,18 @@ export const SHARED_ACTIONS: DateAction[] = [
   A('gaze', 'Hold eye contact', '👀', 0.55, 12, { stat: 'looks' }),
 ];
 
+/** Update 0.11 — shared by your place and theirs. */
+const HOME_ACTIONS: DateAction[] = [
+    A('tour', 'Give them the tour', '🗝️', 0.75, 8),
+    A('cook', 'Cook together ($15)', '🍳', 0.7, 10, { stat: 'creativity', cost: 15 }),
+    A('takeout', 'Order takeout ($25)', '🥡', 0.85, 7, { cost: 25 }),
+    A('couch', 'Movie on the couch', '🛋️', 0.8, 10),
+    A('cuddle', 'Cuddle up', '🫂', 0.6, 13),
+    A('boardgame', 'Play a board game', '🎲', 0.7, 9, { stat: 'smarts' }),
+    A('kitchen', 'Slow dance in the kitchen', '💃', 0.6, 14),
+    A('bottle', 'Open a bottle', '🍷', 0.8, 8, { drink: 16 }),
+];
+
 export const VENUES: Record<DateVenue, VenueDef> = {
   restaurant: { name: 'Restaurant', icon: '🍝', cost: 60, restroom: true, actions: [
     A('wine', 'Order a bottle of wine', '🍷', 0.75, 10, { cost: 30, drink: 18 }),
@@ -48,11 +64,23 @@ export const VENUES: Record<DateVenue, VenueDef> = {
     A('footsie', 'Footsie under the table', '🦶', 0.5, 15, { stat: 'charm' }),
     A('toast', 'A toast to them', '🥂', 0.7, 9, { stat: 'charm' }),
   ] },
-  movie: { name: 'Movies', icon: '🎬', cost: 25, restroom: true, lock: (g) => (itemCount(g, 'movie_tix') || g.canAfford(25) ? null : 'Need tickets or $25'), actions: [
+  // Update 0.11 — the movies: flirting in the dark; no restroom, the back row instead
+  movie: { name: 'Movies', icon: '🎬', cost: 25, restroom: false, spot: true, lock: (g) => (itemCount(g, 'movie_tix') || g.canAfford(25) ? null : 'Need tickets or $25'), actions: [
     A('popcorn', 'Share popcorn', '🍿', 0.85, 7),
     A('whisper', 'Whisper jokes', '🤫', 0.6, 10, { stat: 'creativity' }),
     A('arm', 'Arm around their shoulder', '🫶', 0.55, 14, { stat: 'looks' }),
     A('scare', 'Cuddle at the scary part', '😱', 0.65, 12),
+    A('flirtdark', 'Flirt in the dark', '😏', 0.55, 14, { stat: 'charm' }),
+    A('brush', 'Brush their hand', '✋', 0.65, 11),
+    A('backrow', 'Move to the back row', '🪑', 0.7, 9, { stat: 'charm' }),
+  ] },
+  // Update 0.11 — the gym: lift together, spot them; the locker room or your place after
+  gym: { name: 'Gym', icon: '🏋️', cost: 12, restroom: true, restroomLabel: '🚿 Sneak into the locker room', lock: (g) => (g.flag('gympass') || g.canAfford(12) ? null : 'Need $12 or a membership'), actions: [
+    A('lift', 'Lift together', '🏋️', 0.7, 10, { stat: 'fitness' }),
+    A('spot', 'Spot them', '🤲', 0.6, 14, { stat: 'fitness' }),
+    A('treadmill', 'Treadmill race', '🏃', 0.6, 10, { stat: 'fitness' }),
+    A('stretch', 'Partner stretches', '🧘', 0.55, 13, { stat: 'looks' }),
+    A('shake', 'Protein shakes ($8)', '🥤', 0.85, 7, { cost: 8 }),
   ] },
   gala: { name: 'Gala', icon: '🥂', cost: 200, restroom: true, lock: (g) => (g.age < 18 ? 'Must be 18' : g.canAfford(200) ? null : 'Need $200'), actions: [
     A('slowdance', 'Slow dance', '💃', 0.6, 15, { stat: 'fitness' }),
@@ -96,14 +124,12 @@ export const VENUES: Record<DateVenue, VenueDef> = {
   ] },
   // Update 0.10 — a date at your place (invite them over). Your home makes it better or worse (HOME_BONUS).
   home: { name: 'Your place', icon: '🏠', cost: 0, restroom: false, lock: (g) => hostLock(g), actions: [
-    A('tour', 'Give them the tour', '🗝️', 0.75, 8),
-    A('cook', 'Cook together ($15)', '🍳', 0.7, 10, { stat: 'creativity', cost: 15 }),
-    A('takeout', 'Order takeout ($25)', '🥡', 0.85, 7, { cost: 25 }),
-    A('couch', 'Movie on the couch', '🛋️', 0.8, 10),
-    A('cuddle', 'Cuddle up', '🫂', 0.6, 13),
-    A('boardgame', 'Play a board game', '🎲', 0.7, 9, { stat: 'smarts' }),
-    A('kitchen', 'Slow dance in the kitchen', '💃', 0.6, 14),
-    A('bottle', 'Open a bottle', '🍷', 0.8, 8, { drink: 16 }),
+    ...HOME_ACTIONS,
+  ] },
+  // Update 0.11 — they invited you over (only through their invitation, never picked from the list)
+  theirs: { name: 'Their place', icon: '🏡', cost: 0, restroom: false, actions: [
+    A('snoop', 'Look around their place', '🔎', 0.75, 8),
+    ...HOME_ACTIONS.filter((a) => a.id !== 'tour'),
   ] },
 };
 
@@ -114,5 +140,7 @@ export const HOME_BONUS: Record<HousingId, number> = {
 export const hostLock = (g: Game) => (g.s.housing === 'homeless' ? 'You have no place to invite them to' : null);
 export const homeBonus = (g: Game) => HOME_BONUS[g.s.housing] ?? 0;
 
-export const VENUE_ORDER: DateVenue[] = ['restaurant', 'movie', 'park', 'arcade', 'concert', 'picnic', 'beach', 'minigolf', 'home', 'gala'];
+export const VENUE_ORDER: DateVenue[] = ['restaurant', 'movie', 'gym', 'park', 'arcade', 'concert', 'picnic', 'beach', 'minigolf', 'home', 'gala'];
 export const venueLock = (g: Game, v: DateVenue) => VENUES[v].lock?.(g) ?? (g.canAfford(VENUES[v].cost) ? null : `Need $${VENUES[v].cost}`);
+/** Update 0.11 — members get into the gym free. */
+export const venueCost = (g: Game, v: DateVenue) => (v === 'gym' && g.flag('gympass') ? 0 : VENUES[v].cost);

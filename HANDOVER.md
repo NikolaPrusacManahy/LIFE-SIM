@@ -15,6 +15,15 @@ Built from your chat request. The name "START-UP" is the app's name, reused as t
 - **Status by valuation:** Founder → CEO ($1M) → Tycoon ($25M) → Magnate ($250M) → **Diplomatic** ($1B + skyscraper).
 - **Diplomatic immunity** (`systems/immunity.ts` `untouchable`): no jail, no getting caught, no police pursuit or investigation, no Chirp cancellation. It's permanent once earned. The hard safety rules (consent, minors, Mature/Dark Crime toggles) are unchanged.
 - **Balance (scripted careful play):** about $3–7M valuation by year 1–3, about $15–30M by year 10. Tycoon is hard and the billion needs investors plus a moonshot. Companies that grow too fast fold.
+- **Dates, your follow-ups** (`datenight/*`, `datenight/desire.ts`, `events/desire.ts`, test `test-desire.ts`):
+  - **Gym date** (🏋️ $12, free with a membership): lift together, spot them, treadmill race, partner stretches, protein shakes. Ends in the locker room (the restroom moment, needs love) or your place.
+  - **Movies:** new flirting actions (flirt in the dark, brush their hand, move to the back row). No restroom any more; instead **🎬 Right here in the back row** (moment `spot`, spark 80, needs romance 60).
+  - **Friends:** "😏 Hang out… make a move?" on a friend's profile opens the same date scene, harder: +10 spark for every moment, −10% odds, they suggest your place half as often, and the first kiss can be turned down (30–85% by attraction and romance). A kiss back makes them "Talking".
+  - **Partners text you:** "movie tonight?" (a movie date), "can I come over?" (a date at your place), "come over to mine?" (new **Their place** date scene: home actions, ends in a calm night or staying over).
+  - **They ask (romance 80+):** when they suggest the bedroom at your place or theirs and you say yes, *they* ask where (couch / bed / kitchen counter) and how (a quick one / five rounds, energy −20 / skip the condom). You can always insist on a condom; they accept with no penalty.
+  - **The player asks only with a spouse:** "🔥 Ask for intimacy" (spouse only) → you pick where and how. Partners and dates always lead. Your existing date moments (your place, restroom) are unchanged.
+  - Hard rules unchanged: every step re-checks `canBeIntimate`; fade to black.
+- **School stays in school** (your correction): a rival appears "in class" only while enrolled, otherwise at work. Admirer locker notes need high school, a teacher's "after class" talk needs enrolment, and school rivals drop the rivalry once you leave school (`retireStaff`).
 - **Webhook:** `webhook_patchnotes/update-0.11-start-up.json`.
 
 ## Update 0.10 — Date Night
