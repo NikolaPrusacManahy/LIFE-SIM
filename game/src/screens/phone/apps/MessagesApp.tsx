@@ -13,8 +13,9 @@ import { PersonChip } from '../../../components/PersonChip';
 import { Portrait } from '../../../components/Portrait';
 import { sfx } from '../../../ui/audio';
 import type { AppProps } from './types';
+import { AnonChat } from './AnonChat';
 
-type Thread = { kind: 'person' | 'group'; id: string };
+type Thread = { kind: 'person' | 'group' | 'anon'; id: string };
 
 /** Update 0.5 — messenger. Update 0.8 — contextual replies, both bubbles, inline effects, 10 per contact per month. */
 export function MessagesApp({ game, done, openPeople, initialThread }: AppProps) {
@@ -29,6 +30,7 @@ export function MessagesApp({ game, done, openPeople, initialThread }: AppProps)
       </div>
     );
   }
+  if (thread?.kind === 'anon') return <AnonChat game={game} onBack={() => setThread(null)} done={done} />;
   if (thread) return <ChatView game={game} thread={thread} onBack={() => setThread(null)} done={done} openPeople={openPeople} refresh={refresh} />;
 
   const visible = (id: string) => threadFor(game, id).filter((m) => arrived(game, m.turn));
@@ -48,6 +50,13 @@ export function MessagesApp({ game, done, openPeople, initialThread }: AppProps)
         </button>
       ))}
       <div className="ph-section">Chats</div>
+      {game.s.stalker && (
+        <button className={`msg-row anon-row ${game.s.stalker.read ? '' : 'unread'}`} onClick={() => setThread({ kind: 'anon', id: 'anon' })}>
+          <span className="msg-grp">👤</span>
+          <span className="msg-mid"><b>Unknown number</b><small>{game.s.stalker.msgs[game.s.stalker.msgs.length - 1]?.photo ?? game.s.stalker.msgs[game.s.stalker.msgs.length - 1]?.text}</small></span>
+          {!game.s.stalker.read && <i className="msg-badge">!</i>}
+        </button>
+      )}
       {sorted.length === 0 && <p className="app-empty">No contacts yet. Get some numbers!</p>}
       {sorted.slice(0, 40).map((p) => {
         const n = unreadIn(game, p.id);
@@ -122,7 +131,7 @@ function ChatView({ game, thread, onBack, done, openPeople, refresh }: { game: A
   const shown = typing ? msgs.slice(0, msgs.length - 1) : msgs;
 
   return (
-    <div className="cht-wrap">
+    <div className={`cht-wrap ${p?.persona ? `psn-${p.persona}` : ''}`}>
       <div className="cht-head">
         <button className="app-back" onClick={onBack}>‹</button>
         {p ? <PersonChip game={game} p={p} compact onClick={() => openPeople?.(p.id)} /> : <b className="cht-gname">{grp?.icon} {grp?.name}</b>}

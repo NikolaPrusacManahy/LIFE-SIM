@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Game } from '../../state/Game';
 import { HOME_YOURS_LABEL, MOMENT_LABEL, THEIRS_YOURS_LABEL, type Moment } from '../../state/datenight/types';
-import { actionLock, actionsFor, answerOffer, calmNight, dateAct, doMoment, endDate, momentAt, momentLock, oddsOf, partner } from '../../state/datenight/date';
+import { actionLock, actionsFor, answerOffer, calmNight, dateAct, doMoment, finishDate, momentAt, momentLock, oddsOf, partner } from '../../state/datenight/date';
 import { HOUSING } from '../../state/data/locations';
 import { VENUES, homeBonus } from '../../state/datenight/venues';
 import { INTOX_LIMIT } from '../../state/nightlife/types';
@@ -41,7 +41,7 @@ export function DateScreen({ game, onEnd, onChange }: { game: Game; onEnd: (summ
         {d.intox > 0 && <span className="dts-meter" title="Drinks">🍷 <i><em style={{ width: `${d.intox}%`, background: d.intox >= INTOX_LIMIT ? '#ff3b4f' : '#ff9d3c' }} /></i></span>}
         {atHome && <span className="dts-home" title="Your home changes the odds">{HOUSING[game.s.housing].icon} {HOUSING[game.s.housing].name} {bonus >= 0 ? '+' : ''}{Math.round(bonus * 100)}%</span>}
         {(atHome || atTheirs) && <button className="btn btn-sm" onClick={() => onEnd(calmNight(game))}>🛋️ Calm night in</button>}
-        <button className="btn btn-sm" onClick={() => onEnd(endDate(game))}>{over ? '🌙 Say goodnight' : '🚪 End the date'}</button>
+        <button className="btn btn-sm" onClick={() => onEnd(finishDate(game))}>{over ? '🌙 Say goodnight' : '🚪 End the date'}</button>
       </div>
 
       <div className="dts-stage">

@@ -51,7 +51,7 @@ function ActionList({ game, notify, site, actions, arg }: DeskProps & { site: Si
           <button key={a.id} className="brw-act" disabled={!!lock} title={lock ?? ''} onClick={() => notify(webAct(game, site.id, a.id, arg))}>
             <span>{a.icon}</span>
             <b>{a.label}</b>
-            <small>{lock ?? `${a.desc}${a.free ? ' · free' : ''}`}</small>
+            <small>{lock ?? a.desc}</small>
           </button>
         );
       })}
@@ -110,8 +110,8 @@ function SitePage(props: DeskProps & { site: SiteDef }) {
           {friends.length === 0 && <p className="app-empty">Nobody yet — hang out in a room.</p>}
           {friends.map((p) => (
             <div key={p.id} className="brw-friend">
-              <b>{p.name} · {isVerified(p) ? `${game.ageOf(p)} ✔` : `says ${claimedAge(game, p)}`}</b>
-              <ActionList {...props} actions={FRIEND_ACTIONS.filter((a) => a.id !== 'meet' || !isVerified(p))} arg={p.id} />
+              <b>{p.name} · {isVerified(p) ? `${game.ageOf(p)} ✔` : `says ${claimedAge(game, p)}`}{p.persona === 'gamer' ? ' · 🎮' : ''}</b>
+              <ActionList {...props} actions={FRIEND_ACTIONS.filter((a) => (a.id !== 'meet' || !isVerified(p)) && (a.id !== 'numbers' || !p.hasNumber))} arg={p.id} />
             </div>
           ))}
         </>

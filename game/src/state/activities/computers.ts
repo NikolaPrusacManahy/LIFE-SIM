@@ -7,7 +7,7 @@ import { itemCount } from '../inventory/items';
 // Update 0.8 — computers. A sitting takes no time (one per time slot) and gives a few actions on the Doors desktop.
 
 const laptopAt = (loc: string): ActivityDef => ({
-  id: `laptop_${loc}`, loc, name: 'Use Your Laptop', icon: '💻', desc: 'Web, games, work. 6 actions · no time.', cat: 'fun', energy: 4, free: true,
+  id: `laptop_${loc}`, loc, name: 'Use Your Laptop', icon: '💻', desc: 'Web & games free. 12 ⚡ for Hackr / START-UP.', cat: 'fun', energy: 4, free: true,
   when: (g) => g.has('laptop'),
   lock: (g) => deviceLock(g, 'laptop'),
   run: (g) => {
@@ -18,7 +18,7 @@ const laptopAt = (loc: string): ActivityDef => ({
 
 export const COMPUTER_ACTS: ActivityDef[] = [
   {
-    id: 'use_pc', loc: 'home', name: 'Use Your PC', icon: '🖥️', desc: 'Your build. 6 actions · no time.', cat: 'fun', energy: 4, free: true,
+    id: 'use_pc', loc: 'home', name: 'Use Your PC', icon: '🖥️', desc: 'Your build. 12 ⚡ for Hackr / START-UP.', cat: 'fun', energy: 4, free: true,
     when: (g) => g.has('pc'),
     lock: (g) => deviceLock(g, 'pc'),
     run: (g) => openSession(g, 'pc'),
@@ -29,7 +29,7 @@ export const COMPUTER_ACTS: ActivityDef[] = [
   laptopAt('downtown'),
   laptopAt('mainstreet'),
   {
-    id: 'library_pc', loc: 'library', name: 'Public Computer', icon: '🖥️', desc: 'Public. 4 actions · no time.', cat: 'study', energy: 4, free: true,
+    id: 'library_pc', loc: 'library', name: 'Public Computer', icon: '🖥️', desc: 'Public. Web & games free. 4 ⚡ for START-UP.', cat: 'study', energy: 4, free: true,
     lock: (g) => deviceLock(g, 'library'),
     run: (g) => openSession(g, 'library'),
   },

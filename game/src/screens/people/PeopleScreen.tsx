@@ -12,6 +12,8 @@ import { GROUP_ICON, doInteraction, interactionsFor, usesSlot, type InteractionG
 import { hasPhone } from '../../state/systems/phone';
 import { MONTHS } from '../../state/types';
 import { WebView } from './WebView';
+import { PERSONA, personaShown } from '../../state/npc/persona';
+import { inHospital, isDepressed } from '../../state/systems/shy';
 
 interface Props {
   game: Game;
@@ -121,6 +123,11 @@ export function PeopleScreen({ game, onClose, onResult, onOpenChat, initial = nu
                 ))}
               </div>
               <div className="ppl-traits">
+                {p.persona && <span className={`psn-chip psn-${p.persona === 'yandere' ? 'hidden' : p.persona}`} title={p.persona === 'yandere' ? 'Maybe a bit passionate' : PERSONA[p.persona].desc}>{personaShown(p)}</span>}
+                {p.tags.includes('stunning') && <span className="psn-chip psn-stun">✨ Stunning</span>}
+                {p.tags.includes('loveAtFirstSight') && <span className="psn-chip">💘 Love at first sight</span>}
+                {inHospital(game, p) && <span className="psn-chip">🏥 In hospital</span>}
+                {isDepressed(game, p) && <span className="psn-chip">🌧️ Heartbroken</span>}
                 {p.traits.map((t) => {
                   const d = NPC_TRAIT_BY_ID[t.id];
                   return t.revealed ? (

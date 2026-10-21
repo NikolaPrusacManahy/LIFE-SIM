@@ -41,6 +41,13 @@ fx/StageCanvas ──▶ fx/stage/Stage (PixiJS, presentation only; never reads 
 | `npc/mood.ts` | Upset / busy state behind replies (`setMad`, `npcState`). |
 | `pipeline.ts` | Pure reducer: result card → events → banners. `PlayScreen` uses it; sessions and nights hold the queue. |
 | `pc/*` · `web/*` · `games/*` | Update 0.8 computers: parts, compatibility, assembly, sessions · sites + gates (`siteVisible` / `siteLock`), Nile / Onion orders, Discorb (verification), monthly web · mini-game rules. |
+| `npc/persona.ts`, `phone/voice.ts` | Update 0.12 personas: who can be what (`rollPersona`, `makeYandere`), how they sound and what they like. |
+| `systems/yandere.ts`, `systems/stalker.ts`, `systems/shy.ts` | Yandere partner jealousy, the anonymous stalker (`s.stalker`), shy confessions (hospital / heartbroken flags). |
+| `minigames/*` + `screens/mini/*` | Update 0.12 activity minigames (code, cook, write, gym): pure scoring in state; the UI sets `g.mini`, activities read it with `takeMini`. Coding activities call `codeLearn` for the clean-build / first-ship / mastery bonuses. |
+| `web/hack.ts` + `screens/desktop/hack/*` | Update 0.12 Hackr (crime): `hackLock` (18+, VPN, not library), monthly `leaksFor`, `guess`, `chargeCard`, `takeWallet` (into the Bitcons wallet). |
+| `systems/bitcons.ts` + `screens/desktop/wallet/*` | Update 0.12 Bitcons wallet: `s.wallet`, monthly price (`bitconsMonth`, called from `webMonth`), buy/sell with fee, `depositUsd` (PC mining). |
+| `npc/golddigger.ts` | Money gates on romance steps for gold diggers (`goldLock` / `goldPay`, checked in `interactionsFor` / `interact`). |
+| `datenight/after.ts` | End-of-date asks by spark (second date / FWB / one night). |
 | `startup/*` | Update 0.11 START-UP company: ideas/buildings/status data, actions (`company.ts`), the monthly tick and dividend (`month.ts`). |
 | `systems/immunity.ts` | `untouchable(g)`: god mode or Diplomatic status. Jail, catches, pursuit, investigations and cancellation check it. |
 | `datenight/*` | Update 0.10 dates as a scene: venues and their actions, spark, moments (`momentLock` = the hard gates), `DATE_AUDIT`. |

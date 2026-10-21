@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { NotebookView } from './NotebookView';
 import { ITEM_BY_ID, contrabandHeld } from '../../../state/inventory/items';
 import type { AppProps } from './types';
 import { CRIMES } from '../../../state/crime/catalog';
@@ -7,6 +9,9 @@ const usedFor = (id: string) => CRIMES.filter((c) => c.needs?.includes(id)).map(
 
 /** Update 0.4 — inventory. */
 export function BagApp({ game }: AppProps) {
+  // Update 0.12 — the notebook opens to read
+  const [reading, setReading] = useState(false);
+  if (reading) return <NotebookView game={game} onBack={() => setReading(false)} />;
   const entries = Object.entries(game.s.inventory).filter(([, n]) => n > 0);
   const hot = new Set(contrabandHeld(game).map((i) => i.id));
   return (
@@ -22,6 +27,7 @@ export function BagApp({ game }: AppProps) {
               <b>{it.name}</b>
               <small>{n > 1 ? `×${n}` : ''}{hot.has(id) ? ' · illegal for you' : ''}</small>
               {usedFor(id).length > 0 && <small className="bag-use">For: {usedFor(id).join(', ')}</small>}
+              {id === 'notebook' && <button className="btn btn-sm" onClick={() => setReading(true)}>📖 Read</button>}
             </div>
           );
         })}

@@ -2,6 +2,8 @@ import type { Game } from '../Game';
 import type { Person } from '../types';
 import type { WebAction } from './types';
 import { bump } from '../npc/interactions';
+import { itemCount } from '../inventory/items';
+import { isRomanceEligible } from '../npc/identity';
 
 // Update 0.8 — Discorb: topic rooms, online friends with UNVERIFIED info.
 // HARD RULE: romance with an online contact needs a real age of 18+ AND meeting in person (verified).
@@ -17,7 +19,7 @@ export const claimedAge = (g: Game, p: Person) => {
   return t ? Number(t.slice(7)) : g.ageOf(p);
 };
 
-export const onlineFriends = (g: Game) => g.s.people.filter((p) => isOnline(p) && p.alive && p.status === 'alive' && !p.blocked);
+export const onlineFriends = (g: Game) => g.s.people.filter((p) => (isOnline(p) || (p.persona === 'gamer' && p.hasNumber)) && p.alive && p.status === 'alive' && !p.blocked);
 
 /** Meet someone online. Under-18 players only meet honest peers; adults meet mostly adults — some profiles lie. */
 export function meetOnline(g: Game, topic: string): string {
@@ -54,8 +56,30 @@ export const DISCORB: WebAction[] = [
   })),
 ];
 
+/** Update 0.12 — a webcam for video calls */
+export const hasWebcam = (g: Game) => !!(g.s.pc.parts.webcam || itemCount(g, 'pc_cam1'));
+
 /** Friend actions take the friend's id as the argument. */
 export const FRIEND_ACTIONS: WebAction[] = [
+  {
+    // Update 0.12 — gamers would rather call than text. With a webcam it can be a date; the first is a face reveal.
+    id: 'call', label: 'Video call', icon: '📞', desc: 'Webcam · can be a date',
+    run: (g, pid) => {
+      const p = g.personById(pid ?? '');
+      if (!p) return '';
+      const cam = hasWebcam(g);
+      bump(p, 'rel', p.persona === 'gamer' ? 8 : 5);
+      g.stat('mood', 4);
+      const romantic = cam && isVerified(p) && isRomanceEligible(g, p) && (p.attraction >= 30 || p.romance >= 20);
+      if (!romantic) return cam ? `A long call with ${p.name}. You played until 3am.` : `A voice call with ${p.name} (no webcam). Fun anyway.`;
+      const reveal = !p.tags.includes('faceReveal');
+      if (reveal) p.tags.push('faceReveal');
+      bump(p, 'romance', reveal ? 10 : 6);
+      bump(p, 'attraction', reveal ? 8 : 3);
+      p.lastContact = g.s.clock;
+      return reveal ? `📷 Face reveal! You and ${p.name} turned your cameras on for the first time. Nobody played the game.` : `💜 A Discorb date with ${p.name}: cameras on, game paused, talking for hours.`;
+    },
+  },
   {
     id: 'chat', label: 'Chat', icon: '💬', desc: 'Friendship +',
     run: (g, pid) => {

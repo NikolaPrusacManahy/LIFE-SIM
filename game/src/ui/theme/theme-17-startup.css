@@ -29,7 +29,9 @@
 .sup-row-mid small { font: 700 10.5px var(--font); color: var(--ink-faint); }
 .sup-row:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px #3aa8e6; }
 .sup-row:disabled { opacity: 0.5; cursor: not-allowed; }
-.sup-skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.sup-skills { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+/* Update 0.12 — cost of the next level */
+.sup-cost { font: 800 9.5px var(--font); font-style: normal; color: #3aa8e6; }
 .sup-skill { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; border-radius: 12px; padding: 10px 6px; background: #fff; cursor: pointer; color: var(--ink); }
 .sup-skill span { font-size: 22px; }
 .sup-skill b { font: 600 13px var(--display); }

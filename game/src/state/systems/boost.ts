@@ -5,8 +5,8 @@ import { fmt } from './finance';
 
 // Update 0.11 — "Stats on steroids": buy stat levels with real money (computer app). Karma can't be bought.
 
-/** Every stat that can be bought (karma is a meter, not a stat). */
-export const BOOST_STATS: StatKey[] = ['health', 'mood', 'energy', 'smarts', 'fitness', 'charm', 'creativity', 'looks', 'street'];
+/** Every stat that can be bought (karma is a meter, not a stat). Update 0.12 — health & energy only through their max. */
+export const BOOST_STATS: StatKey[] = ['mood', 'smarts', 'fitness', 'charm', 'creativity', 'looks', 'street'];
 /** These two can also have their maximum raised. */
 export const CAP_STATS = ['health', 'energy'] as const;
 export type CapStat = (typeof CAP_STATS)[number];

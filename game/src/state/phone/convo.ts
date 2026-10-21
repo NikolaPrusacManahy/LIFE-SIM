@@ -53,6 +53,48 @@ export const CONTEXT: Record<string, { type: MsgType; replies: CtxReply[] }> = {
     { id: 'inv_later', label: 'Another time?', intent: 'defer' },
     { id: 'inv_who', label: 'Who’s going?', intent: 'ask' },
   ] },
+  // Update 0.12 — persona openers (what they want to hear)
+  p_shy: { type: 'greeting', replies: [
+    { id: 'ps_gentle', label: 'Hi ☺️ that made my day', intent: 'kind', run: (_g, p) => { bump(p, 'rel', 4); bump(p, 'attraction', 2); } },
+    { id: 'ps_tease', label: 'Why are you so shy lol', intent: 'kind', run: (_g, p) => bump(p, 'rel', -1) },
+    { id: 'ps_read', label: 'Leave on read', intent: 'read', run: (_g, p) => { bump(p, 'rel', -3); p.mood = Math.max(0, p.mood - 8); } },
+  ] },
+  p_otaku: { type: 'question', replies: [
+    { id: 'po_yes', label: 'YES. which arc are you on?', intent: 'kind', run: (_g, p) => { bump(p, 'rel', 5); bump(p, 'trust', 2); } },
+    { id: 'po_rec', label: 'Recommend me one', intent: 'kind', run: (_g, p) => bump(p, 'rel', 3) },
+    { id: 'po_cringe', label: 'Anime is cringe', intent: 'cold', run: (_g, p) => { bump(p, 'rel', -6); p.mood = Math.max(0, p.mood - 5); } },
+  ] },
+  p_nerd: { type: 'question', replies: [
+    { id: 'pn_specs', label: 'Specs?? tell me everything', intent: 'kind', run: (_g, p) => { bump(p, 'rel', 5); bump(p, 'respect', 3); } },
+    { id: 'pn_help', label: 'Can you fix my laptop too?', intent: 'kind', run: (g, p) => { bump(p, 'rel', 2); g.stat('smarts', 0.5); } },
+    { id: 'pn_bored', label: 'That’s nerd stuff', intent: 'cold', run: (_g, p) => bump(p, 'rel', -4) },
+  ] },
+  p_yandere: { type: 'flirt', replies: [
+    { id: 'py_love', label: 'Only you ♡', intent: 'kind', run: (_g, p) => { bump(p, 'romance', 5); bump(p, 'attraction', 4); } },
+    { id: 'py_creep', label: 'How do you know that?', intent: 'kind', run: (_g, p) => bump(p, 'attraction', 2) },
+    { id: 'py_space', label: 'I need some space', intent: 'cold', run: (_g, p) => { bump(p, 'romance', -4); bump(p, 'attraction', 3); } },
+  ] },
+  // Update 0.12 — more persona openers
+  p_booknerd: { type: 'question', replies: [
+    { id: 'pb_rec', label: 'Try “The Count of Monte Cristo”', intent: 'kind', run: (_g, p) => { bump(p, 'rel', 5); bump(p, 'respect', 3); } },
+    { id: 'pb_ask', label: 'What would you recommend?', intent: 'kind', run: (g, p) => { bump(p, 'rel', 3); g.stat('smarts', 0.5); } },
+    { id: 'pb_nah', label: 'I don’t really read', intent: 'cold', run: (_g, p) => bump(p, 'rel', -4) },
+  ] },
+  p_gamer: { type: 'invitation', replies: [
+    { id: 'pg_yes', label: 'Hop on Discorb tonight 🎧', intent: 'kind', run: (g, p) => { bump(p, 'rel', 5); g.setFlag(`dcall:${p.id}`, g.s.clock + 1); } },
+    { id: 'pg_phone', label: 'Can we just text?', intent: 'kind', run: (_g, p) => bump(p, 'rel', -1) },
+    { id: 'pg_no', label: 'Games are a waste of time', intent: 'cold', run: (_g, p) => bump(p, 'rel', -6) },
+  ] },
+  p_gyaru: { type: 'question', replies: [
+    { id: 'pgy_10', label: 'Obviously a 10 ✨', intent: 'kind', run: (_g, p) => { bump(p, 'rel', 5); bump(p, 'attraction', 3); } },
+    { id: 'pgy_honest', label: 'Honestly? A 7', intent: 'cold', run: (_g, p) => { bump(p, 'rel', -5); bump(p, 'respect', 4); } },
+    { id: 'pgy_care', label: 'I don’t care about fashion', intent: 'cold', run: (_g, p) => bump(p, 'rel', -6) },
+  ] },
+  p_golddigger: { type: 'request', replies: [
+    { id: 'pgd_pay', label: '💳 Send $250', intent: 'kind', req: (g) => (g.canAfford(250) ? null : 'Need $250'), run: (g, p) => { g.money(-250); bump(p, 'romance', 6); bump(p, 'attraction', 8); } },
+    { id: 'pgd_later', label: 'Maybe for your birthday', intent: 'kind', run: (_g, p) => bump(p, 'attraction', -2) },
+    { id: 'pgd_no', label: 'I’m not an ATM', intent: 'cold', run: (_g, p) => { bump(p, 'attraction', -8); bump(p, 'romance', -4); } },
+  ] },
   date_ask: { type: 'date', replies: [
     { id: 'date_yes', label: 'Yes! 😍', intent: 'accept', run: (_g, p) => { bump(p, 'romance', 4); bump(p, 'rel', 2); } },
     { id: 'date_no', label: 'Not this time', intent: 'decline' },

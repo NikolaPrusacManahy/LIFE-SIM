@@ -34,7 +34,9 @@ const mk = (rules: 'us' | 'eu' = 'us') => {
   check('can’t “buy” a level you already have', boostLock(g, 'charm', 50) === 'Already there');
   g.s.money = 50;
   check('needs the money', boostLock(g, 'looks', 100) === 'Not enough money' && boostStat(g, 'looks', 100) === '');
-  check('every stat can be bought, karma can’t', BOOST_STATS.length === 9 && !(BOOST_STATS as string[]).includes('karma'));
+  // Update 0.12 — your correction: health & energy are raised only through their max
+  check('stats can be bought, not karma, health or energy', BOOST_STATS.length === 7 && !(BOOST_STATS as string[]).some((k) => ['karma', 'health', 'energy'].includes(k)));
+  check('health and energy can’t be bought as levels', boostLock(g, 'health', 100) === 'Can’t be bought' && boostLock(g, 'energy', 100) === 'Can’t be bought');
 }
 
 // ---------- max health & energy: 100 → up to 300
@@ -48,8 +50,7 @@ const mk = (rules: 'us' | 'eu' = 'us') => {
   check('energy can now fill up to 250 (not 300, not 100)', g.s.stats.energy === 250);
   check('the cap stops at 300', capLock(g, 'energy', CAP_MAX + 1) === `Max ${CAP_MAX}`);
   raiseCap(g, 'health', 300);
-  boostStat(g, 'health', 300);
-  check('health can be bought up to the raised max (300)', g.s.stats.health === 300 && g.maxOf('health') === 300);
+  check('max health can be raised to 300', g.maxOf('health') === 300 && boostStat(g, 'health', 300) === '');
   check('other stats stay capped at 100', (g.stat('smarts', 500), g.s.stats.smarts <= 100));
   const old = hydrate(JSON.parse(JSON.stringify({ ...g.s, statCaps: undefined })));
   check('old saves load with max 100', old?.statCaps.health === 100 && old?.statCaps.energy === 100);

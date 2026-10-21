@@ -12,14 +12,13 @@ import { Golf } from './Golf';
 
 const VIEW = { flappy: Flappy, fowl: Fowl, snek: Snek, mines: Mines, blocks: Blocks, words: Words, golf: Golf } as const;
 
-/** Update 0.8 — one run = one session action. Tournaments cost an entry fee; a great run wins the pot. */
+/** Update 0.8 — game runs (free since 0.12: computer energy is only for Hackr and START-UP). Tournaments cost an entry fee; a great run wins the pot. */
 export function GameWindow({ game, notify, id, onClose }: DeskProps & { id: GameId; onClose: () => void }) {
   const [run, setRun] = useState(0);
   const [result, setResult] = useState<string | null>(null);
   const [tour, setTour] = useState(false);
   const def = GAME_BY_ID[id];
   const View = VIEW[id];
-  const left = game.s.session?.left ?? 0;
   const end = (raw: number) => {
     const text = finishRun(game, id, raw, tour);
     setResult(text);
@@ -30,13 +29,12 @@ export function GameWindow({ game, notify, id, onClose }: DeskProps & { id: Game
       <div className="gm-end">
         <b>{result}</b>
         <div className="gm-btns">
-          <button className="btn btn-sm btn-primary" disabled={left <= 0} onClick={() => { setResult(null); setRun((n) => n + 1); }}>{left > 0 ? 'Play again' : 'No actions left'}</button>
+          <button className="btn btn-sm btn-primary" onClick={() => { setResult(null); setRun((n) => n + 1); }}>Play again</button>
           <button className="btn btn-sm" onClick={onClose}>Close</button>
         </div>
       </div>
     );
   }
-  if (left <= 0) return <p className="app-empty">No actions left this sitting. Shut down and come back later.</p>;
   return (
     <div className="gm-wrap">
       <label className="gm-tour">

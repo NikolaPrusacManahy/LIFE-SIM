@@ -49,12 +49,27 @@ export const BUILDING_ORDER: Building[] = ['room', 'office', 'facility', 'hq', '
 /** Monthly wages. */
 export const WAGES = { employee: 4000, supervisor: 7000, manager: 12000, hr: 8000 };
 
+/** Update 0.12 — 13 branches, 5 levels each. Levels 1–3 cost 1 point, levels 4–5 cost 2. */
 export const SKILLS: Record<SkillBranch, { name: string; icon: string; per: string; max: number }> = {
-  profit: { name: 'Profit', icon: '💰', per: '+15% revenue', max: 3 },
-  speed: { name: 'Speed', icon: '⚡', per: '+20% development', max: 3 },
-  payroll: { name: 'Payroll', icon: '🧾', per: '−10% wages', max: 3 },
-  pitch: { name: 'Pitch', icon: '🎤', per: '+5% investor odds', max: 3 },
+  profit: { name: 'Profit', icon: '💰', per: '+15% revenue', max: 5 },
+  speed: { name: 'Speed', icon: '⚡', per: '+20% development', max: 5 },
+  payroll: { name: 'Payroll', icon: '🧾', per: '−10% wages', max: 5 },
+  pitch: { name: 'Pitch', icon: '🎤', per: '+5% investor odds', max: 5 },
+  marketing: { name: 'Marketing', icon: '📣', per: '+20% hype from campaigns', max: 5 },
+  brand: { name: 'Brand', icon: '🏷️', per: 'Hype fades 15% slower', max: 5 },
+  quality: { name: 'Quality', icon: '💎', per: '+2 quality per launch', max: 5 },
+  stability: { name: 'Stability', icon: '🛡️', per: '−20% bug scandals', max: 5 },
+  viral: { name: 'Viral', icon: '🚀', per: '+2% viral chance a month', max: 5 },
+  terms: { name: 'Investor terms', icon: '🤝', per: 'Investors take 8% less', max: 5 },
+  dividend: { name: 'Dividend', icon: '💼', per: '+5% of profit paid to you', max: 5 },
+  space: { name: 'Office space', icon: '🏢', per: '+10% staff per building', max: 5 },
+  crunch: { name: 'Crunch', icon: '☕', per: 'Crunch +2 dev, −2 energy cost', max: 5 },
 };
+export const SKILL_ORDER = Object.keys(SKILLS) as SkillBranch[];
+/** Points to buy the next level (1 for levels 1–3, 2 for levels 4–5). */
+export const skillCost = (level: number) => (level < 3 ? 1 : 2);
+/** Skill points for every new status rank. */
+export const STATUS_POINTS = 2;
 
 /** Status by company valuation. Diplomatic also needs the skyscraper. */
 export const STATUS: Record<Status, { name: string; icon: string; at: number }> = {

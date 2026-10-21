@@ -15,6 +15,8 @@ import { legalAge } from '../rules/us';
 import { godMonth } from './god';
 import { webMonth } from '../web/month';
 import { startupMonth } from '../startup/month';
+import { stalkerMonth } from './stalker';
+import { shyMonth } from './shy';
 
 /** Update 0.4 — fire scheduled follow-up events whose time has come. */
 function fireSchedule(g: Game) {
@@ -49,6 +51,8 @@ export function newMonth(g: Game) {
   godMonth(g);
   webMonth(g);
   startupMonth(g);
+  stalkerMonth(g);
+  shyMonth(g);
   body(g);
   birthday(g);
   checkAchievements(g);

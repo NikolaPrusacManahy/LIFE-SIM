@@ -94,6 +94,8 @@ export interface AvatarSpec {
   freckles: boolean;
   glasses: boolean;
   body: BodyBase;
+  /** Update 0.12 — sunglasses / tinted shades (gyaru) */
+  accessory?: string;
 }
 
 export interface Memory {
@@ -146,6 +148,8 @@ export interface Person {
   /** teachers/professors */
   subject?: string;
   lastContact?: number;
+  /** Update 0.12 — shy, otaku, tech nerd, yandere */
+  persona?: import('./npc/persona').Persona;
 }
 
 export type StiKind = 'none' | 'chlamydia' | 'gonorrhea' | 'herpes' | 'hiv';
@@ -300,6 +304,14 @@ export interface GameState {
   startup: import('./startup/types').Startup | null;
   /** Update 0.11 — max health / energy (100, raised up to 300 with Stats on steroids) */
   statCaps: { health: number; energy: number };
+  /** Update 0.12 — the anonymous number (a yandere stalker) */
+  stalker: import('./systems/stalker').Stalker | null;
+  /** Update 0.12 — journal pages and stories you wrote (the notebook in your bag) */
+  notebook: import('./minigames/write').NoteEntry[];
+  /** Update 0.12 — the Bitcons wallet */
+  wallet: import('./systems/bitcons').Wallet;
+  /** Update 0.12 — Hackr: this month's leaked accounts */
+  hack: import('./web/hack').HackState;
   background: Background;
   /** Update 0.5.1 — legal system this life plays under */
   rules: 'us' | 'eu';

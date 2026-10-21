@@ -3,6 +3,9 @@ import type { Archetype, Person } from '../types';
 import { LOC_BY_ID } from '../data/locations';
 import { addLabel } from '../npc/labels';
 import { legalAge } from '../rules/us';
+import { makeMatch } from '../npc/match';
+import { makeYandere, rollPersona, setPersona, type Persona } from '../npc/persona';
+import { isRomanceEligible } from '../npc/identity';
 
 // Update 0.4 — random encounters: who you can meet depends on the place and on your age.
 
@@ -51,14 +54,78 @@ export const KINDS: { id: string; text: string; where?: string[]; adult?: boolea
   { id: 'money', text: '{name} asks if you can spare a few dollars for the bus.', where: ['downtown', 'mainstreet', 'park'] },
   { id: 'drunk', text: '{name} has had way too much and is talking to everyone.', where: ['club', 'bar', 'roadhouse', 'casino'], adult: true },
   { id: 'chat', text: '{name} strikes up a conversation.' },
+  // Update 0.12 — admirers (never picked at random: see ADMIRER_LOCS)
+  { id: 'admirer', text: '{name} keeps glancing at you. Finally {they} walk{s} over, blushing.', where: [] },
+  { id: 'yandere', text: '{name} has been watching you for a while. When you look up, {they} smile{s} — perfectly.', where: [] },
+  // Update 0.12 — hospital staff (never picked at random: see staffEncounter)
+  { id: 'doctor', text: 'Dr. {name} checks your chart between patients and actually asks how you’re doing.', where: [] },
+  { id: 'nurse', text: 'Nurse {name} takes your blood pressure and cracks a joke to calm you down.', where: [] },
+  { id: 'doctor_love', text: 'Dr. {name} walks in, looks up from your chart — and forgets what {they} were about to say. {They} can’t stop smiling at you.', where: [] },
 ];
 
+/** Update 0.12 — places where people who are into you find you. */
+export const ADMIRER_LOCS = ['library', 'club', 'bar', 'roadhouse', 'park', 'work', 'campus', 'college'];
+
+/** Someone attracted to you walks up (adults: sometimes a yandere). */
+export function admirerEncounter(g: Game, loc: string, act?: string): boolean {
+  const pool = POOLS[loc];
+  if (!pool || !ADMIRER_LOCS.includes(loc) || g.s.events.length) return false;
+  const where = LOC_BY_ID[loc]?.name(g) ?? loc;
+  const [lo, hi] = pool.ages(g);
+  const ylo = Math.max(18, lo);
+  let p: Person | null = g.age >= 18 && g.chance(0.18) ? makeYandere(g, 'acquaintance', where) : null;
+  if (p && (g.ageOf(p) < ylo || g.ageOf(p) > Math.max(ylo, hi))) p.bornMonths = g.s.clock - g.rand(ylo, Math.max(ylo, Math.min(hi, g.age + 6))) * 12;
+  if (!p) {
+    p = makeMatch(g, 'acquaintance', [lo, hi], { rel: 10, met: g.dateLabel, where });
+    if (!isRomanceEligible(g, p)) p.bornMonths = g.s.clock - g.age * 12;
+    setPersona(p, rollPersona(g, g.ageOf(p), p.gender, false, biasFor(loc, act)));
+    p.attraction = g.rand(55, 80);
+  }
+  p.tags.push('stranger');
+  if (pool.label) addLabel(p, pool.label);
+  g.queue('encounter', { pid: p.id, kind: p.persona === 'yandere' ? 'yandere' : 'admirer', where: `${g.pick(pool.contexts)}, ${where}` });
+  return true;
+}
+
+/** Update 0.12 — doctors and nurses (25–60) at the hospital. Adults can meet ones who are into them;
+ *  sometimes a doctor falls for you at first sight. */
+export const STAFF_ODDS = 0.45;
+export const LOVE_AT_FIRST_SIGHT = 0.2;
+export function staffEncounter(g: Game): boolean {
+  const where = LOC_BY_ID.hospital?.name(g) ?? 'Hospital';
+  const doctor = g.chance(0.5);
+  const p = g.age >= 18 ? makeMatch(g, 'acquaintance', [25, 60], { rel: 8, met: g.dateLabel, where }) : g.addPerson('acquaintance', { age: g.rand(25, 60), rel: 8, met: g.dateLabel, where });
+  p.subject = doctor ? 'Doctor' : 'Nurse';
+  p.archetype = g.pick(['mature', 'sweetheart', 'overachiever'] as Archetype[]);
+  p.tags.push('stranger', doctor ? 'doctor' : 'nurse');
+  const love = doctor && g.age >= 18 && isRomanceEligible(g, p) && g.chance(LOVE_AT_FIRST_SIGHT);
+  if (love) {
+    p.attraction = g.rand(90, 100);
+    p.romance = 30;
+    p.tags.push('loveAtFirstSight');
+    p.memory.unshift({ clock: g.s.clock, text: 'Love at first sight', tone: 'good' });
+  } else if (g.age >= 18 && isRomanceEligible(g, p)) p.attraction = g.rand(30, 70);
+  g.queue('encounter', { pid: p.id, kind: love ? 'doctor_love' : doctor ? 'doctor' : 'nurse', where: `${g.pick(['Exam room', 'Hallway', 'Nurses’ station'])}, ${where}` });
+  return true;
+}
+
+/** Update 0.12 — who you'd expect to meet here (by place or by what you're doing). */
+export const PLACE_PERSONAS: Record<string, Persona[]> = {
+  mall: ['gyaru', 'golddigger'], shopping: ['gyaru', 'golddigger'], makeover: ['gyaru', 'golddigger'],
+  arcade: ['gamer', 'otaku'], coffee: ['booknerd', 'otaku'], library: ['booknerd', 'otaku'],
+  campus: ['gyaru', 'booknerd', 'gamer'], college: ['booknerd', 'gamer'], club: ['gyaru', 'golddigger'], casino: ['golddigger'],
+};
+const biasFor = (loc: string, act?: string): Persona[] => PLACE_PERSONAS[(act ?? '').replace(/_c$/, '')] ?? PLACE_PERSONAS[loc] ?? [];
+
 /** After an activity: maybe meet someone. Returns true if an encounter was queued. */
-export function rollEncounter(g: Game, loc: string): boolean {
+export function rollEncounter(g: Game, loc: string, act?: string): boolean {
   const pool = POOLS[loc];
   if (!pool || g.s.events.length || g.jailed || (pool.minPlayerAge && g.age < pool.minPlayerAge)) return false;
   if (!g.chance(0.14)) return false;
+  if (loc === 'hospital' && g.chance(STAFF_ODDS)) return staffEncounter(g);
   const where = LOC_BY_ID[loc]?.name(g) ?? loc;
+  // Update 0.12 — sometimes it's someone who's into you
+  if (ADMIRER_LOCS.includes(loc) && g.age >= 14 && g.chance(0.3)) return admirerEncounter(g, loc, act);
   const kinds = KINDS.filter((k) => (!k.where || k.where.includes(loc)) && (!k.adult || g.age >= legalAge(g, 'alcohol')));
   const kind = g.pick(kinds);
   const [lo, hi] = pool.ages(g);
@@ -71,6 +138,7 @@ export function rollEncounter(g: Game, loc: string): boolean {
     p = g.addPerson('acquaintance', { age: g.rand(lo, hi), rel: 6, met: g.dateLabel, where, how: kind.id, archetype });
     p.tags.push('stranger');
     if (pool.label) addLabel(p, pool.label);
+    setPersona(p, rollPersona(g, g.ageOf(p), p.gender, true, biasFor(loc, act)));
   }
   g.queue('encounter', { pid: p.id, kind: kind.id, where: `${g.pick(pool.contexts)}, ${where}` });
   return true;

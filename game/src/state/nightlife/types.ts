@@ -2,8 +2,9 @@ import type { Person } from '../types';
 
 // Update 0.8 — a night out (saved while it lasts).
 
-export type Venue = 'bar' | 'club' | 'roadhouse';
-export type VenueType = 'dive' | 'pub' | 'karaoke' | 'trivia' | 'techno' | 'eighteen' | 'gay' | 'rooftop' | 'country';
+// Update 0.12 — 'house': a college house party
+export type Venue = 'bar' | 'club' | 'roadhouse' | 'house';
+export type VenueType = 'dive' | 'pub' | 'karaoke' | 'trivia' | 'techno' | 'eighteen' | 'gay' | 'rooftop' | 'country' | 'houseparty';
 export type Zone = 'bar' | 'dance' | 'booths' | 'smoking' | 'restrooms' | 'vip';
 export type Vibe = 'fun' | 'friends' | 'looking' | 'alone';
 
@@ -55,9 +56,12 @@ export interface Incident {
 }
 
 export const ZONE_LABEL: Record<Zone, string> = { bar: '🍸 Bar', dance: '💃 Dance floor', booths: '🛋️ Booths', smoking: '🚬 Smoking area', restrooms: '🚻 Restrooms', vip: '👑 VIP' };
+/** Update 0.12 — the same zones, inside a house. */
+export const HOUSE_ZONE_LABEL: Record<Zone, string> = { bar: '🍺 Kitchen', dance: '💃 Living room', booths: '🛋️ The couch', smoking: '🌙 Backyard', restrooms: '🚻 Bathroom', vip: '🛏️ Upstairs' };
+export const zoneLabel = (venue: Venue, z: Zone) => (venue === 'house' ? HOUSE_ZONE_LABEL[z] : ZONE_LABEL[z]);
 export const VIBE_LABEL: Record<Vibe, string> = { fun: 'having fun', friends: 'waiting for friends', looking: 'looking for someone', alone: 'wants to be left alone' };
 export const TYPE_LABEL: Record<VenueType, string> = {
-  dive: 'Dive bar', pub: 'Pub night', karaoke: 'Karaoke night', trivia: 'Trivia night', techno: 'Techno night', eighteen: '18+ night', gay: 'Pride night', rooftop: 'Rooftop party', country: 'Honky-tonk',
+  dive: 'Dive bar', pub: 'Pub night', karaoke: 'Karaoke night', trivia: 'Trivia night', techno: 'Techno night', eighteen: '18+ night', gay: 'Pride night', rooftop: 'Rooftop party', country: 'Honky-tonk', houseparty: 'House party',
 };
 export const STAGES = ['Stranger', 'Chatting', 'Friendly', 'Flirty', 'Connected'] as const;
 export const stageOf = (conn: number) => STAGES[Math.min(4, Math.floor(conn / 20))];

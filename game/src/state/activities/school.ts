@@ -1,7 +1,8 @@
 import { DAY, EVE, LATE, NOT_NIGHT, type ActivityDef } from './types';
 import { riskCatch } from '../systems/trouble';
-import { settings } from '../settings';
-import { makeMatch } from '../npc/match';
+import { startNight } from '../nightlife/night';
+import { takeMini } from '../minigames/types';
+import { codeLearn } from '../minigames/code';
 import { consume } from '../systems/addiction';
 import { maybeMeet, pct, studyPerf } from './helpers';
 
@@ -158,32 +159,26 @@ export const SCHOOL_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'campus_party', loc: 'campus', name: 'Campus Party', icon: '🥳', desc: 'College experience™.', cat: 'social', energy: 20, phases: LATE,
+    // Update 0.12 — a house party is a night out: drinks, dancing, talking to people (the nightlife scene)
+    id: 'campus_party', loc: 'campus', name: 'House Party', icon: '🥳', desc: 'Drinks, music, people. ~12 actions.', cat: 'social', energy: 10, phases: LATE,
     when: (g) => !!g.s.education.current && g.s.education.current.program !== 'hs',
+    preview: () => ['House party'],
     run: (g) => {
-      g.stat('mood', 10);
-      g.stat('charm', 1.5);
-      g.stat('health', -1);
-      maybeMeet(g, 0.15, 'a campus party');
-      // Update 0.4 — party hookup chance (adults only, Mature Content on)
-      if (settings.mature && g.age >= 18 && !g.queued('party_hookup') && g.chance(0.18)) {
-        const p = makeMatch(g, 'acquaintance', [18, 24], { rel: 30, met: g.dateLabel, where: 'Campus party' });
-        p.attraction = 55;
-        const intox = g.pick(['sober', 'tipsy', 'tipsy', 'very']);
-        g.queue('party_hookup', { pid: p.id, intox });
-      }
-      if (g.chance(0.25)) g.addPerson('friend', { rel: 42, met: 'Campus party' });
-      return g.pick(['Legendary night.', 'You played the game everyone plays and won.', 'Someone brought a fog machine.']);
+      g.stat('mood', 4);
+      return startNight(g, 'house');
     },
   },
   {
-    id: 'hackathon', loc: 'campus', name: 'Hackathon', icon: '🏁', desc: '24 hours. One idea.', cat: 'study', energy: 30, cooldown: 24,
+    id: 'hackathon', loc: 'campus', name: 'Hackathon', icon: '🏁', desc: '24 hours. One idea. You write the code.', cat: 'study', energy: 30, cooldown: 24, mini: 'code',
     when: (g) => !!g.s.education.current && ['uni_cs', 'uni_eng', 'grad_ms'].includes(g.s.education.current.program),
     risk: (g) => pct(g.statOdds('smarts', 65)),
     run: (g) => {
+      // Update 0.12 — your code (minigame) counts as much as your smarts
+      const m = takeMini(g, 'code');
       g.stat('smarts', 2);
       g.stat('creativity', 2);
-      if (g.check('smarts', 65)) {
+      codeLearn(g, m);
+      if (m.played ? m.score >= 1 || (m.score >= 0.5 && g.check('smarts', 65)) : g.check('smarts', 65)) {
         g.money(1500);
         g.burst('coins');
         if (!g.flag('startupIdea')) g.queue('startup_idea');

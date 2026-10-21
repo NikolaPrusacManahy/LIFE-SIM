@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { nextProfile, swipe, swipesLeft } from '../../../state/systems/dating';
 import type { AppProps } from './types';
 import { Portrait } from '../../../components/Portrait';
+import { personaShown } from '../../../state/npc/persona';
 
 /** Update 0.3 — swipe cards. Adults only (gated in the app list and in swipe()). */
 export function DatingApp({ game, done }: AppProps) {
@@ -20,6 +21,8 @@ export function DatingApp({ game, done }: AppProps) {
         <div className="dat-face"><Portrait look={profile.look} age={profile.age} size={110} seed={profile.id} mood={75} /></div>
         <b>{profile.name}, {profile.age}</b>
         <small>{profile.gender === 'male' ? 'Man' : profile.gender === 'female' ? 'Woman' : 'Non-binary'}</small>
+        {profile.persona && <span className="psn-chip">{personaShown(profile)}</span>}
+        {profile.persona === 'yandere' && <span className="psn-chip psn-stun">✨ Stunning</span>}
         <p>“{profile.bio}”</p>
       </div>
       <div className="dat-buttons">

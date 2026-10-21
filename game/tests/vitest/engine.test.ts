@@ -43,7 +43,8 @@ describe('time', () => {
 
 describe('simulation', () => {
   it('a whole life ends in death with a cause', () => {
-    const g = simulateLife('rich', 'country', 12000);
+    // the budget counts every simulator step; computer sittings are 12 actions since Update 0.12 (was 6)
+    const g = simulateLife('rich', 'country', 20000);
     expect(g.s.dead?.cause).toBeTruthy();
   });
 });

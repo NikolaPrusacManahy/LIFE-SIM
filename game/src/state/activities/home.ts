@@ -6,6 +6,9 @@ import { consume } from '../systems/addiction';
 import { settings } from '../settings';
 import { askForPhone } from '../systems/phone';
 import { legalAge } from '../rules/us';
+import { takeMini } from '../minigames/types';
+import { LANGS, codeLearn, type Lang } from '../minigames/code';
+import { FOODS, type FoodId } from '../minigames/cook';
 
 export const HOME_ACTS: ActivityDef[] = [
   {
@@ -93,12 +96,18 @@ export const HOME_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'code', loc: 'home', name: 'Code a Side Project', icon: '👨‍💻', desc: 'Become a self-taught dev.', cat: 'study', energy: 15,
+    id: 'code', loc: 'home', name: 'Code a Side Project', icon: '👨‍💻', desc: 'Pick a language, write it, build it.', cat: 'study', energy: 15, mini: 'code',
     lock: (g) => (g.has('laptop') ? null : 'Needs a laptop'),
     run: (g) => {
-      g.stat('smarts', 2);
-      g.stat('creativity', 1.5);
-      const c = g.inc('coder', 3);
+      // Update 0.12 — you write the code yourself (minigame); a clean build teaches more
+      const m = takeMini(g, 'code');
+      g.stat('smarts', 1 + 2 * m.score);
+      g.stat('creativity', 0.5 + 1.5 * m.score);
+      if (m.lang) g.inc(`lang:${m.lang}`);
+      g.inc('coder', Math.max(1, Math.round(4 * m.score)));
+      const bonus = codeLearn(g, m);
+      const c = g.flag('coder');
+      if (m.played && m.score < 0.5) return `The build failed. You learned something anyway. (${LANGS[m.lang as Lang]?.name ?? 'code'})`;
       if (c >= 30 && !g.flag('coderUnlocked')) {
         g.setFlag('coderUnlocked');
         g.milestone('Became a self-taught programmer');
@@ -110,6 +119,7 @@ export const HOME_ACTS: ActivityDef[] = [
         g.burst('coins');
         return `A freelance client paid you ${fmt(amt)} for a website.`;
       }
+      if (bonus) return `${m.note ?? 'It built.'}${bonus}`;
       return g.pick(['You fixed one bug and made three.', 'Built a little game.', 'Stack Overflow saved you again.']);
     },
   },
@@ -124,11 +134,14 @@ export const HOME_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'write', loc: 'home', name: 'Write', icon: '✍️', desc: 'Stories, journals, poems.', cat: 'fun', energy: 10,
+    id: 'write', loc: 'home', name: 'Write', icon: '✍️', desc: 'A journal page or a story. Saved to your notebook.', cat: 'fun', energy: 10, mini: 'write',
     run: (g) => {
-      g.stat('creativity', 2);
+      // Update 0.12 — you write it yourself (minigame); fuller pages count more
+      const m = takeMini(g, 'write');
+      g.stat('creativity', 1 + 2 * m.score);
       g.stat('smarts', 0.5);
       g.stat('mood', 2);
+      if (m.played) return m.note ?? 'You saved a page to your notebook.';
       return g.pick(['You filled ten pages.', 'A short story came together.', 'You journaled about your life.']);
     },
   },
@@ -206,10 +219,14 @@ export const HOME_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'learn_cook', loc: 'home', name: 'Learn to Cook', icon: '🍳', desc: 'Cheaper food once you live alone.', cat: 'study', energy: 10,
+    id: 'learn_cook', loc: 'home', name: 'Learn to Cook', icon: '🍳', desc: 'Cook a dish on the pan. Learn as you go.', cat: 'study', energy: 10, mini: 'cook',
     run: (g) => {
-      const n = g.inc('cook');
-      g.stat('creativity', 1);
+      // Update 0.12 — you cook it yourself (minigame): a great dish teaches you twice as much
+      const m = takeMini(g, 'cook');
+      const n = g.inc('cook', m.score >= 0.8 ? 2 : 1);
+      g.stat('creativity', 0.5 + m.score);
+      g.stat('mood', Math.round(4 * m.score));
+      if (m.played && n < 10) return `${FOODS[m.food as FoodId]?.icon ?? '🍳'} ${m.note ?? 'Dinner is served.'} (${Math.min(n, 10)}/10)`;
       if (n === 10) {
         g.milestone('Became a confident home cook');
         return 'You can actually cook now. Your grocery bill will thank you.';

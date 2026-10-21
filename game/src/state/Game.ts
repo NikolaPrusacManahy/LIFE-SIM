@@ -60,6 +60,8 @@ export class Game {
   private fxq: FxKind[] = [];
   private listeners = new Set<() => void>();
   private monthFlag = false;
+  /** Update 0.12 — the result of the minigame played for the next activity (not saved) */
+  mini: import('./minigames/types').MiniResult | null = null;
   /** set by systems to request saving; UI wires this */
   onSave: ((g: Game) => void) | null = null;
 
@@ -318,7 +320,7 @@ export class Game {
     // Update 0.8 — free activities (a computer sitting) don't use the time slot
     if (def.free) return this.result(def.name, def.icon, text);
     recordSkips(this, obligations, def.id);
-    if (def.loc !== 'home' && !def.panel) rollEncounter(this, def.loc);
+    if (def.loc !== 'home' && !def.panel) rollEncounter(this, def.loc, def.id);
     this.endPhase();
     return this.result(def.name, def.icon, text);
   }

@@ -1,3 +1,4 @@
+import { MiniHost } from '../mini/MiniHost';
 import { useCallback, useEffect, useReducer, useState, type RefObject } from 'react';
 import type { ActionResult, Game } from '../../state/Game';
 import type { ActivityDef, PanelId } from '../../state/activities';
@@ -54,6 +55,8 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const [report, setReport] = useState<MonthReport | null>(null);
   const [people, setPeople] = useState<{ pid: string | null } | null>(null);
   const [build, setBuild] = useState(false);
+  // Update 0.12 — an activity's minigame (coding, cooking, writing, the gym)
+  const [mini, setMini] = useState<ActivityDef | null>(null);
 
   useEscape(() => setPaused((p) => !p));
 
@@ -74,6 +77,10 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const act = (def: ActivityDef) => {
     if (def.panel === 'pcbuild') return setBuild(true);
     if (def.panel) return setKiosk({ app: PANEL_APP[def.panel], title: def.name, icon: def.icon });
+    if (def.mini && game.activityStatus(def).ok) return setMini(def);
+    runAct(def);
+  };
+  const runAct = (def: ActivityDef) => {
     const r = game.doActivity(def.id);
     if (r) {
       sfxForText(r.text);
@@ -169,6 +176,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
         <DateScreen game={game} onChange={() => onResult(game.flush('', '', ''), false)} onEnd={(summary) => onResult(game.flush('Date', '🕯️', summary))} />
       )}
       {build && !showEvent && <BuildScreen game={game} onClose={() => setBuild(false)} onResult={onResult} />}
+      {mini && !showEvent && <MiniHost game={game} def={mini} onCancel={() => setMini(null)} onDone={(r) => { const d = mini; setMini(null); game.mini = r; runAct(d); }} />}
       {paused && <PauseMenu onResume={() => setPaused(false)} onTitle={onTitle} onRestart={onRestart} />}
     </div>
   );

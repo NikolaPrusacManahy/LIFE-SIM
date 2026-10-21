@@ -1,9 +1,12 @@
 import type { Game } from '../Game';
 import type { Appeal, Building, IdeaId, SkillBranch, Startup, Status } from './types';
-import { APPEAL, BUILDINGS, BUILDING_ORDER, IDEAS, INVESTOR_NAMES, ROUNDS, SKILLS, STATUS, STATUS_ORDER, WAGES, type RoundId } from './data';
+import { APPEAL, BUILDINGS, BUILDING_ORDER, IDEAS, INVESTOR_NAMES, ROUNDS, SKILLS, SKILL_ORDER, STATUS, STATUS_ORDER, STATUS_POINTS, WAGES, skillCost, type RoundId } from './data';
 import { fmt } from '../systems/finance';
 
 // Update 0.11 — START-UP: found it, fund it, grow it. Every management move is one computer action.
+
+/** Update 0.12 — every branch at 0 (also fills new branches into older saves). */
+export const blankSkills = (): Startup['skills'] => Object.fromEntries(SKILL_ORDER.map((k) => [k, 0])) as Startup['skills'];
 
 export const startup = (g: Game) => (g.s.startup && !g.s.startup.closed ? g.s.startup : null);
 export const headcount = (c: Startup) => c.staff.employees + c.staff.supervisors + (c.staff.manager ? 1 : 0) + (c.staff.hr ? 1 : 0);
@@ -23,7 +26,7 @@ export function found(g: Game, name: string, idea: IdeaId, appeal: Appeal, inves
     name: name.trim() || `${IDEAS[idea].name} Inc.`, idea, appeal, founded: g.s.clock, building: 'room', cash: invest,
     hype: appeal === 'easy' ? 25 : appeal === 'normal' ? 15 : 10, progress: 0, quality: 40, version: 0, revenue: 0, profit: 0,
     staff: { employees: 0, supervisors: 0, manager: false, hr: false }, investors: [], stake: 1,
-    skills: { profit: 0, speed: 0, payroll: 0, pitch: 0 }, points: 0, status: 'founder', redMonths: 0, greenMonths: 0, paid: 0, closed: false,
+    skills: blankSkills(), points: 0, status: 'founder', redMonths: 0, greenMonths: 0, paid: 0, closed: false,
   };
   g.milestone(`Founded ${g.s.startup.name}`);
   return `🚀 ${g.s.startup.name} is born — in your bedroom, with ${fmt(invest)} and a dream.`;
@@ -49,6 +52,10 @@ export const costsOf = (c: Startup) => wagesOf(c) + BUILDINGS[c.building].rent;
 /** It's a real business: a quarter of each month's profit is paid out, your share lands in your bank account (taxed). */
 export const DIVIDEND = 0.25;
 export const DIVIDEND_TAX = 0.25;
+/** Update 0.12 — the Dividend skill pays out more. */
+export const dividendRate = (c: Startup) => DIVIDEND + 0.05 * c.skills.dividend;
+/** Update 0.12 — the Office space skill fits more people in each building. */
+export const capOf = (c: Startup) => Math.floor(BUILDINGS[c.building].cap * (1 + 0.1 * c.skills.space));
 
 /** Development per month, in progress points (100 = a launch). */
 export function outputOf(c: Startup): number {
@@ -82,6 +89,7 @@ export function refreshStatus(g: Game) {
   const next = statusOf(c);
   if (STATUS_ORDER.indexOf(next) > STATUS_ORDER.indexOf(c.status)) {
     c.status = next;
+    c.points += STATUS_POINTS;
     g.banner(`${STATUS[next].icon} ${STATUS[next].name.toUpperCase()}`, 0xffd166);
     g.milestone(`Became a ${STATUS[next].name} (${c.name})`);
     if (next === 'diplomatic') {
@@ -107,7 +115,7 @@ export function marketing(g: Game, id: string): string {
   const m = MARKETING.find((x) => x.id === id);
   if (!c || !m || need(c, m.cost)) return '';
   c.cash -= m.cost;
-  const gain = Math.round(m.hype * (1 - c.hype / 150));
+  const gain = Math.round(m.hype * (1 - c.hype / 150) * (1 + 0.2 * c.skills.marketing));
   c.hype = Math.min(100, c.hype + gain);
   return `${m.icon} ${m.name}: hype +${gain}.`;
 }
@@ -118,8 +126,8 @@ export function hireLock(c: Startup, kind: HireKind, n = 1): string | null {
   if (kind === 'supervisor' && c.staff.employees < (c.staff.supervisors + 1) * 5) return 'Needs 5 employees per supervisor';
   if (kind === 'manager' && (c.staff.manager || c.building === 'room')) return c.staff.manager ? 'Already hired' : 'Needs an office';
   if (kind === 'hr' && (c.staff.hr || headcount(c) < 10)) return c.staff.hr ? 'Already hired' : 'Needs 10+ staff';
-  const room = BUILDINGS[c.building].cap - headcount(c);
-  if (room < n) return `No room (${BUILDINGS[c.building].name} fits ${BUILDINGS[c.building].cap})`;
+  const room = capOf(c) - headcount(c);
+  if (room < n) return `No room (${BUILDINGS[c.building].name} fits ${capOf(c)})`;
   return null;
 }
 
@@ -146,9 +154,9 @@ export function layOff(g: Game, n: number): string {
 export function crunch(g: Game): string {
   const c = startup(g);
   if (!c || c.progress >= 100) return '';
-  const pts = Math.round(4 + g.s.stats.smarts / 12 + g.s.stats.creativity / 20);
+  const pts = Math.round(4 + g.s.stats.smarts / 12 + g.s.stats.creativity / 20 + 2 * c.skills.crunch);
   c.progress = Math.min(100, c.progress + pts);
-  g.stat('energy', -12);
+  g.stat('energy', -(12 - 2 * c.skills.crunch));
   return `☕ You worked through the night. Development +${pts}%.`;
 }
 
@@ -157,7 +165,7 @@ export function launch(g: Game): string {
   if (!c || c.progress < 100) return '';
   c.version++;
   c.progress = 0;
-  c.quality = Math.min(100, c.quality + 5);
+  c.quality = Math.min(100, c.quality + 5 + 2 * c.skills.quality);
   c.hype = Math.min(100, c.hype + 10);
   c.revenue = revenueOf(c);
   c.points++;
@@ -194,7 +202,7 @@ export function pitch(g: Game, round: RoundId): string {
   }
   const val = valuationOf(c);
   const amount = Math.round(Math.max(r.min, Math.min(r.max, Math.max(val, r.min) * (0.15 + Math.random() * 0.2))));
-  const share = amount / (val + amount);
+  const share = (amount / (val + amount)) * (1 - 0.08 * c.skills.terms);
   c.stake *= 1 - share;
   for (const inv of c.investors) inv.stake *= 1 - share;
   c.investors.push({ name: g.pick(INVESTOR_NAMES), amount, stake: share });
@@ -244,8 +252,8 @@ export function upgradeBuilding(g: Game): string {
 /** Skill points are spent freely (no action). */
 export function learnSkill(g: Game, b: SkillBranch): string {
   const c = startup(g);
-  if (!c || c.points <= 0 || c.skills[b] >= SKILLS[b].max) return '';
-  c.points--;
+  if (!c || c.skills[b] >= SKILLS[b].max || c.points < skillCost(c.skills[b])) return '';
+  c.points -= skillCost(c.skills[b]);
   c.skills[b]++;
   return `${SKILLS[b].icon} ${SKILLS[b].name} ${c.skills[b]}/${SKILLS[b].max}: ${SKILLS[b].per}.`;
 }

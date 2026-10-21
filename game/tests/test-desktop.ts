@@ -1,11 +1,11 @@
 // Update 0.8 — computers: sessions, site gates, online safety, Nile, PC building, mini-game rules.
-import { check, done } from './harness';
+import { check, done, resolveAll } from './harness';
 import { simulateLife } from './sim';
 import { applySettings } from '../src/state/settings';
 import { createLife, randomLook } from '../src/state/newGame';
 import type { Game } from '../src/state/Game';
 import { openSession, closeSession, SESSION_ACTIONS } from '../src/state/pc/session';
-import { SITES, SITE_BY_ID, siteLock, siteVisible, webAct, download, canPlay } from '../src/state/web/sites';
+import { SITES, SITE_BY_ID, siteLock, siteVisible, webAct, download, canPlay, sessionDo, energyDo } from '../src/state/web/sites';
 import { meetOnline, onlineFriends, FRIEND_ACTIONS, isVerified } from '../src/state/web/discorb';
 import { isRomanceEligible } from '../src/state/npc/identity';
 import { canBeIntimate } from '../src/state/systems/intimacy';
@@ -35,15 +35,17 @@ const mk = (age = 25): Game => {
   const g = mk();
   openSession(g, 'library');
   check('library sittings give 4 actions', g.s.session!.left === SESSION_ACTIONS.library && SESSION_ACTIONS.library === 4);
+  check('your own laptop or PC gives 12 (Update 0.12)', SESSION_ACTIONS.laptop === 12 && SESSION_ACTIONS.pc === 12);
   check('a sitting blocks other actions', !g.canAct());
   webAct(g, 'viewtube', 'watch');
-  check('a site action uses one action', g.s.session!.left === 3);
   webAct(g, 'weathernerds', 'forecast');
-  check('free actions cost nothing', g.s.session!.left === 3);
+  check('site actions use no computer energy (Update 0.12: only Hackr and START-UP do)', g.s.session!.left === 4 && g.s.session!.log.length === 2);
   check('no downloads on a library PC', download(g, 'blocks').includes('library') && !g.s.web.installed.includes('blocks'));
   check('library only runs browser games', canPlay(g, 'mines') && !canPlay(g, 'flappy'));
-  for (let i = 0; i < 6; i++) webAct(g, 'viewtube', 'watch');
-  check('the sitting runs out', g.s.session!.left === 0 && webAct(g, 'viewtube', 'watch').includes('Session over'));
+  check('job applications, orders and game runs are free too', sessionDo(g, () => 'did a thing') === 'did a thing' && g.s.session!.left === 4);
+  for (let i = 0; i < 4; i++) energyDo(g, () => 'START-UP work');
+  check('START-UP work uses energy until it runs out', g.s.session!.left === 0 && energyDo(g, () => 'more').includes('energy'));
+  check('the web still works with no energy left', !webAct(g, 'viewtube', 'watch').includes('Session over'));
   check('shutting down returns a summary and frees you', closeSession(g).length > 0 && g.canAct());
 }
 
@@ -56,7 +58,9 @@ const mk = (age = 25): Game => {
   closeSession(g);
   check('…one sitting per time of day', g.activityStatus(ACT_BY_ID.laptop_home).reason === 'Once per time of day');
   g.autopilot();
-  check('…available again next slot', g.activityStatus(ACT_BY_ID.laptop_home).ok || g.activityStatus(ACT_BY_ID.laptop_home).reason === 'Too tired');
+  // a random event can land in that slot: deal with it first
+  resolveAll(g);
+  check('…available again next slot', g.activityStatus(ACT_BY_ID.laptop_home).ok || g.activityStatus(ACT_BY_ID.laptop_home).reason === 'Too tired', String(g.activityStatus(ACT_BY_ID.laptop_home).reason));
 }
 
 // ---------- 18+ & darknet gates

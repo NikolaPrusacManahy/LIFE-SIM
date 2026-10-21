@@ -1,6 +1,38 @@
 # HANDOVER.md
 
-## Current patch: Update 0.11 — START-UP
+## Current patch: Update 0.12 — Personas
+Built from your chat request. The name "Personas" is my placeholder. All of `npm run verify` passes; the new test is `test-personas.ts`.
+- **Personas** (`npc/persona.ts`, `Person.persona`): shy, otaku, tech nerd, yandere. Rolled for new encounters, admirers, night-out crowds and Spark profiles (shy 12%, otaku 7%, nerd 7%; yandere only for adults of the opposite sex).
+  - **Their voice** (`phone/voice.ts`): replies in character (70%), their own openers (`p_shy` / `p_otaku` / `p_nerd` / `p_yandere` with contextual replies), and two favourite-topic chips each (anime, manga, PC builds, tech news, "no pressure to reply", "you're the only one"…). Mature lines are never rewritten.
+  - **Their chat design** (`theme-19-personas.css`): shy = soft pastel italics, otaku = sakura pink with sparkles, nerd = green terminal, yandere = hot pink hearts.
+  - **Profiles** show the persona chip. A yandere shows only "💗 Maybe a bit passionate" plus "✨ Stunning".
+- **Yandere partner** (`systems/yandere.ts`): text one person of *their* sex 2 times in a month → "who's she? ♡"; 4 times → that person is gone. With Dark Crime on they're found dead; with it off they're scared out of town. Nobody is ever caught (no heat). Never minors or family.
+- **The unknown number** (`systems/stalker.ts`, `screens/phone/apps/AnonChat.tsx`): a yandere admirer who isn't with you (8% a month) starts texting anonymously: your recent activity, your bank balance, your record, your ex, photos of you.
+  - Its own replies (3 a month): who is this, leave me alone, block (40%), police (35%), move ($3,000, 60%), or "…I'm listening" (give in).
+  - After 4 months (or when you give in), the reveal: accept and you're dating, or refuse: 50/50 they kill you or end their own life (Dark Crime on). With Dark Crime off they just vanish. Escaping makes them move away, never caught. Adults only.
+- **Shy confessions** (`systems/shy.ts`): a shy person who's into you confesses and faints. Yes → dating, and they're in hospital for 2 months (no outings). No → heartbroken for 3 months.
+- **Admirer encounters** (`encounters/pools.ts` `admirerEncounter`): 30% of encounters at the library, clubs, bars, the roadhouse, the park, work and college are someone into you; adults sometimes meet a yandere (18%).
+- **End of the date** (`datenight/after.ts`, `events/dateafter.ts`): ending a date (not at home) by spark: 40+ ask for a second date (plans one), 60+ friends with benefits, 70+ a one-night stand (adults, not already committed). Odds come from the spark and their feelings.
+- **House parties**: the campus party is now the night-out scene in a house (`venue: 'house'`): kitchen, living room, couch, backyard, bathroom, upstairs; crowd 18–25; drinking follows your laws (wristband under age). The old one-click party hook-up card is removed.
+- **College is twice as fast**: university 2 years, master's/MBA 1 year, PhD/MD 2 years, JD 18 months, associate 1 year (night 15 months). High school, trade school and the police academy are unchanged. Degrees under way are shortened on load. Monthly tuition is unchanged, so college costs half as much in total.
+- **Fix:** Stats on steroids no longer sells health or energy levels, only their max.
+- **START-UP skill tree** (your request): 13 branches × 5 levels (`startup/data.ts` `SKILLS`). New: Marketing (+20% campaign hype), Brand (hype fades 15% slower), Quality (+2 per launch), Stability (−20% bug scandals), Viral (+2% viral chance), Investor terms (−8% dilution), Dividend (+5% of profit to you), Office space (+10% staff per building), Crunch (+2 dev, −2 energy). Levels 1–3 cost 1 point, 4–5 cost 2; each new status rank gives +2 points. Older companies get the new branches at 0.
+- **Computer energy** (designer correction): only Hackr and START-UP use it (`energyDo` / `spendAction`). Websites, Discorb, JobHunt, Nile orders, Bitstore games, the wallet and Stats on steroids are free (`webAct` / `sessionDo` only log the line). 12 a sitting on your laptop/PC, 4 at the library.
+- **Activity minigames** (`ActivityDef.mini`, `state/minigames/*`, `screens/mini/*`, test `test-minigames.ts`). The minigame plays first, its result goes to `g.mini`, and the activity reads it with `takeMini` (autopilot / sim use an average result).
+  - **Coding** (Code a Side Project, Free Coding Course, Hackathon): always pick a language: C++ (Visual Studio look, purple), Python (yellow), HTML/JS (VS Code look, blue), Java (IntelliJ, orange), C# (Rider, green), Rust (RustRover, rust red). 4 guided projects each (24 total): the guide tells you what to type in each blank, then ▶ Build shows success or compiler errors. `codeLearn` (`minigames/code.ts`): a clean build adds +2 smarts / +3 coder; the first time a project ships adds +2 smarts, +1 creativity, +3 coder more (`shipped:<id>`); shipping all 4 in a language masters it (+5 smarts, +10 coder, milestone, `mastered:<lang>`). Languages are counted (`lang:cpp` etc.).
+  - **Cooking** (Learn to Cook): eggs, bacon, steak, fish, chicken legs, pancakes on a live pan: oil, into the pan, mix (eggs) or flip (both sides), season once or twice, plate it inside the green window. A great dish counts as 2 lessons.
+  - **Writing** (Write, Write a Novel): a book: journal or story, from presets (2 each) with choices per blank, or free typing. Saved to `s.notebook`; the 📓 Notebook appears in the bag with a Read button.
+  - **Gym** (Lift Weights, Boxing, Swim Laps): a PixiJS ring (`fx/minigame/gymGauge.ts`) for 20 seconds; the key (W/A/S/D/SPACE) changes every 2 seconds; the ring fills and loops with no combo cap. Gains up to +12 fitness and +6 looks (140 correct presses = full; they still pass through `Game.stat`, so high fitness gains less).
+- **More personas:** 📚 book nerd (rich vocabulary), 🎮 gamer (gamer slang; asks to call on Discorb), 💅 gyaru (college-age women only, always blonde with tinted glasses, judgmental), 💰 gold digger (adults; asking out costs $200, a date $150, official $2,000, a proposal $25,000; paying makes a yes much likelier). Each has a voice, openers with their own replies, two topic chips and a chat style.
+  - **Gamers on Discorb:** they appear in your Discorb friends; 📞 Video call: voice-only without a webcam, a date with one; the first webcam call is a face reveal.
+  - **Who you meet where** (`PLACE_PERSONAS`): mall / shopping / salon → gyaru & gold diggers; arcade → gamers & otaku; coffee shop & library → book nerds & otaku; campus → gyaru, book nerds, gamers; clubs → gyaru & gold diggers.
+  - Personas show on profiles and Spark (a gyaru is blonde on Spark too).
+- **Bitcons wallet** (`systems/bitcons.ts`, `screens/desktop/wallet/WalletApp.tsx`, `theme-21-wallet.css`, test `test-bitcons.ts`): a desktop app. `s.wallet` {coins, price, history}. Starts at $40,000/₿; each month a random walk (about ±12%, 3% crash to 55–70%, 3% moon to 140–170%, floor $1,500), 24 months of chart. Buy/sell with a 1% fee, no computer action spent. PC mining now deposits coins (the electricity bill stays cash). Net worth counts the wallet.
+- **Hospital encounters** (`staffEncounter` in `encounters/pools.ts`, test `test-hospital.ts`): 45% of hospital encounters are staff: a doctor or nurse aged 25–60 (`subject` shows on the profile). Adults: 20% of doctors fall for you at first sight (attraction 90+, 💘 chip); they ask you out (☕ yes → their number, `talking`) or you gently say no. Never for minors.
+- **Hackr** (crime; `web/hack.ts`, `screens/desktop/hack/HackApp.tsx`, `theme-22-hack.css`, test `test-hack.ts`): needs 18+, a non-library computer and the GhostTunnel VPN ($60, Bitstore; `web.installed` 'vpn'). 4 fictional leaked accounts a month (`s.hack`, all adults 18–75), each with a riddle hint and the letter count; 3 guesses (the first uses a computer action). Crack → their profile (name, age, job, city) and maybe loot: 35% a credit card ($200–3,000 cash, heat +8, karma −3, 15% chance of a fraud case), 12% a Bitcons wallet ($800–12,000 in coins, heat +5, karma −3). 3 wrong → locked, heat +3.
+- **Webhook:** `webhook_patchnotes/update-0.12-personas.json` (10/10 embeds).
+
+## Update 0.11 — START-UP
 Built from your chat request. The name "START-UP" is the app's name, reused as the version name. All of `npm run verify` passes; the new test is `test-startup.ts`.
 - **Where:** Computer (PC, laptop or library) → 🚀 START-UP. Each management move is one computer action (`sessionDo`). Skill points are free.
 - **Founding** (`startup/company.ts` `found`): 16+, one company at a time. Pick an idea (11 in `startup/data.ts` `IDEAS`: AAA game, AI model, factory, smartwatch, phone brand, social app, EVs, biotech, fashion, food delivery, rockets), a custom name, appeal, and your own starting money.
@@ -168,7 +200,7 @@ Built from `MD_UPDATES/UPDATE_0.8_CONNECTED.md` in one delivery, as you chose. A
 
 ### Choices I made (tell me to change any)
 - **Night scene:** built in the DOM (zones, chips, CSS light beat) over the existing Pixi venue backdrop, **not** a new side-on Pixi room.
-- **Desktop time:** 6 actions per sitting (library 4). See 0.9 for the time rule.
+- **Desktop time:** 12 actions per sitting on your own laptop/PC since 0.12 (was 6; library 4). See 0.9 for the time rule.
 - **Nile:** a whole cart checkout costs one action.
 - **Online age mix** for adult players: 5% minors claiming 18–20, 7% adults lying about age.
 - **No new audio:** the three notification sounds are pitched copies of `notify.mp3`.

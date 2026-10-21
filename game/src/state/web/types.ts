@@ -1,6 +1,6 @@
 import type { Game } from '../Game';
 
-// Update 0.8 — parody websites. Each action uses one of the session's actions unless `free`.
+// Update 0.8 — parody websites. Update 0.12: site actions no longer use computer energy (`free` is kept for the label).
 
 export interface WebAction {
   id: string;

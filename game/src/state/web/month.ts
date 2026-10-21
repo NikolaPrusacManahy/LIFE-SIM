@@ -1,5 +1,6 @@
 import type { Game } from '../Game';
 import { pcMonth } from '../pc/build';
+import { bitconsMonth } from '../systems/bitcons';
 
 // Update 0.8 — the web keeps going between sessions.
 
@@ -21,5 +22,6 @@ export function webMonth(g: Game) {
     g.take('laptop');
     g.log('💻 Your laptop was stolen from a café table.', 'bad');
   }
+  bitconsMonth(g);
   pcMonth(g);
 }

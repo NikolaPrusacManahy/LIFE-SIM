@@ -9,6 +9,7 @@ import { newId } from '../Game';
 import { isRomanceEligible } from '../npc/identity';
 import { expireInvites, pushMsg } from './convo';
 import { todaySlot } from './plans';
+import { personaOpener } from './voice';
 import { pushNote } from './notify';
 import { soberUp } from '../nightlife/night';
 import { legalAge } from '../rules/us';
@@ -60,6 +61,11 @@ export function textsTick(g: Game) {
   const weighted = contacts.flatMap((p) => (hasTrait(p, 'clingy') || hasTrait(p, 'partyanimal') ? [p, p, p] : [p]));
   const p = weighted[Math.floor(Math.random() * weighted.length)];
   const roll = Math.random();
+  // Update 0.12 — personas text like who they are
+  if (p.persona && roll < 0.4) {
+    sendText(g, p, `p_${p.persona}`, `${p.name}: "${personaOpener(g, p)}"`);
+    return;
+  }
   // Update 0.5 — trait/role-driven incoming texts
   if (g.phase === 'morning' && (hasTrait(p, 'clingy') || hasTrait(p, 'romantic')) && ROMANTIC.includes(p.role) && roll < 0.5) {
     sendText(g, p, 'goodmorning', `${p.name}: "good morning ☀️ thinking of you"`);

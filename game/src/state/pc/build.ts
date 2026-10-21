@@ -1,4 +1,5 @@
 import type { Game } from '../Game';
+import { depositUsd, fmtCoins } from '../systems/bitcons';
 import type { PartDef, PartSlot } from './parts';
 import { BUILD_ORDER, PART_BY_ID, PARTS, REQUIRED, SLOT_LABEL } from './parts';
 import { addItem, itemCount, spendItem } from '../inventory/items';
@@ -113,8 +114,10 @@ export function pcMonth(g: Game) {
   if (pc.mining && pc.parts.gpu) {
     const income = Math.round(pc.score * 4 * (0.6 + Math.random() * 0.8));
     const bill = 60 + Math.round(pc.score * 1.2);
-    g.money(income - bill);
-    g.log(`⛏️ Mining: +$${income} coins, −$${bill} electricity.`, 'money');
+    // Update 0.12 — mined coins land in the Bitcons wallet; the bill is paid in cash
+    const coins = depositUsd(g, income);
+    g.money(-bill);
+    g.log(`⛏️ Mining: +${fmtCoins(coins)} to your wallet, −$${bill} electricity.`, 'money');
   }
 }
 

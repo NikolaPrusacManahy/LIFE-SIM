@@ -5,7 +5,8 @@ export type IdeaId = 'game' | 'llm' | 'factory' | 'watch' | 'phone' | 'social' |
 export type Appeal = 'easy' | 'normal' | 'moonshot';
 export type Building = 'room' | 'office' | 'facility' | 'hq' | 'skyscraper';
 export type Status = 'founder' | 'ceo' | 'tycoon' | 'magnate' | 'diplomatic';
-export type SkillBranch = 'profit' | 'speed' | 'payroll' | 'pitch';
+// Update 0.12 — 9 more branches
+export type SkillBranch = 'profit' | 'speed' | 'payroll' | 'pitch' | 'marketing' | 'brand' | 'quality' | 'stability' | 'viral' | 'terms' | 'dividend' | 'space' | 'crunch';
 
 export interface Investor {
   name: string;

@@ -16,6 +16,8 @@ import type { PlanKind } from './types';
 import { clearMad, npcState, setMad } from '../npc/mood';
 import { isRomanticDate } from '../datenight/date';
 import { hostLock } from '../datenight/venues';
+import { PERSONA_CHIPS, voiced } from './voice';
+import { yandereNotices } from '../systems/yandere';
 
 // Update 0.5 — real messenger. Update 0.8 — free, capped at 10 messages per contact per month; odds only on real gambles.
 
@@ -97,6 +99,19 @@ export const CHIPS: ChipDef[] = [
   { id: 'tellme', tab: 'talk', label: 'Tell me something about yourself', pool: 'talk', reveals: 'asklife', run: (_g, p, ok) => bump(p, 'trust', ok ? 3 : 0) },
   { id: 'upto', tab: 'talk', label: 'What are you up to?', pool: 'talk', reveals: 'chat' },
   { id: 'meme', tab: 'talk', label: 'Send a meme', pool: 'meme', odds: (g, p) => base(g, p, hasTrait(p, 'funny') ? 0.8 : 0.55), run: (g, p, ok) => { bump(p, 'rel', ok ? 3 : 0); if (ok) g.stat('mood', 2); } },
+  // Update 0.12 — what each persona loves to talk about
+  ...PERSONA_CHIPS.map((c) => ({
+    id: c.id, tab: 'talk' as ChatTab, label: c.label, pool: 'talk', when: (_g: Game, p: Person) => p.persona === c.persona,
+    req: c.id === 'p_gift' ? (g: Game) => (g.canAfford(100) ? null : 'Need $100') : undefined,
+    run: (g: Game, p: Person) => {
+      bump(p, 'rel', 6);
+      bump(p, 'trust', 2);
+      if (c.persona === 'yandere') bump(p, 'romance', 4);
+      // gold diggers: money talks
+      if (c.id === 'p_gift') { g.money(-100); bump(p, 'attraction', 8); bump(p, 'romance', 4); }
+      if (c.id === 'p_rich') bump(p, 'attraction', Math.min(10, Math.floor(g.s.money / 20000)));
+    },
+  })),
   { id: 'song', tab: 'talk', label: 'Share a song', pool: 'talk', reveals: 'hang_music' },
   { id: 'gossip', tab: 'talk', label: 'Gossip about someone', pool: 'gossip', reveals: 'gossip', run: (g, p, ok) => { g.karma(-1); bump(p, 'rel', ok ? 3 : -2); } },
   { id: 'vent', tab: 'talk', label: 'Vent about your day', pool: 'vent', run: (g, p, ok) => { if (ok) g.stat('mood', 5); bump(p, 'trust', ok ? 2 : 0); } },
@@ -220,7 +235,9 @@ function replyLine(g: Game, p: Person, pool: string, ok: boolean): string {
     if (!canBeIntimate(g, p)) throw new Error(`mature chat line ${pool} outside the 18+ gate`);
   }
   const lines = ok ? P.ok : P.fail;
-  return say(lines[Math.floor(Math.random() * lines.length)], p, g.s.name);
+  const line = say(lines[Math.floor(Math.random() * lines.length)], p, g.s.name);
+  // Update 0.12 — personas answer in their own voice (mature lines are never rewritten)
+  return P.mature ? line : voiced(g, p, pool, ok, line);
 }
 
 export interface SendResult {
@@ -252,6 +269,7 @@ export function sendChip(g: Game, pid: string, chipId: string, burner = false): 
   if (!allowed || allowed.reason) return { error: allowed?.reason ?? 'Not available', reply: null, delay: 0 };
   countMessage(g, pid);
   p.lastContact = g.s.clock;
+  yandereNotices(g, p);
 
   // a fake number bounces on the first message (this used to be the "Text hi" button)
   if (p.fakeNumber) {

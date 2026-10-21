@@ -1,7 +1,9 @@
 /* Update 0.8 — the "Doors" desktop, browser, Nile, Bitstore, mini-games, PC build */
 
 .dsk-screen { position: absolute; inset: 0; z-index: 35; overflow: hidden; font-family: var(--font); }
-.dsk-icons { position: absolute; top: 18px; left: 18px; display: grid; grid-template-columns: 84px; gap: 10px; }
+/* Update 0.12 — icons fill a column top to bottom, then start the next one (never under the taskbar) */
+.dsk-icons { position: absolute; top: 18px; bottom: 64px; left: 18px; display: grid; grid-auto-flow: column; grid-template-rows: repeat(auto-fill, 96px); grid-auto-columns: 84px; gap: 6px 10px; align-content: start; }
+.dsk-icon { height: 96px; justify-content: flex-start; }
 .dsk-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; border: 0; background: transparent; color: #fff; cursor: pointer; padding: 6px; border-radius: 12px; }
 .dsk-icon span { font-size: 34px; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35)); }
 .dsk-icon small { font: 700 12px var(--font); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); }

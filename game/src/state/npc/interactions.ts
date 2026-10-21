@@ -23,6 +23,8 @@ import { cannotConsent } from '../crime/consent';
 import { VENUES, VENUE_ORDER, venueCost, venueLock } from '../datenight/venues';
 import { isFriendDate, isRomanticDate, startDate } from '../datenight/date';
 import { canAskSpouse, startDesire } from '../datenight/desire';
+import { inHospital } from '../systems/shy';
+import { goldLock, goldPay } from '../npc/golddigger';
 import type { DateVenue } from '../datenight/types';
 import { hostLock } from '../datenight/venues';
 
@@ -757,7 +759,8 @@ export function interactionsFor(g: Game, p: Person): ResolvedInteraction[] {
     if (def.crime && !isValidCrimeTarget(g, p, !!def.dark)) continue;
     if (!def.when(g, p)) continue;
     if (def.romance && def.id !== 'flirt' && !isRomanceEligible(g, p)) continue;
-    const reason = def.req?.(g, p) ?? (!usesSlot(def) && g.usedNow(onceKey(p.id, def.id)) ? 'Once per time of day' : null);
+    // Update 0.12 — in hospital (a shy confession): no outings with them
+    const reason = (usesSlot(def) && inHospital(g, p) ? 'In hospital' : null) ?? goldLock(g, p, def.id) ?? def.req?.(g, p) ?? (!usesSlot(def) && g.usedNow(onceKey(p.id, def.id)) ? 'Once per time of day' : null);
     out.push({ def, ok: !reason && g.canAct(), reason: reason ?? undefined, options: def.options?.(g, p) });
   }
   return out;
@@ -797,9 +800,11 @@ export function interact(g: Game, pid: string, id: string, opt?: string): string
     if (g.usedNow(onceKey(pid, id))) return '';
     g.markUsed(onceKey(pid, id));
   }
+  if (goldLock(g, p, id)) return '';
   if (def.energy) g.stat('energy', -def.energy);
   touch(g, p);
-  const text = def.run(g, p, opt);
+  const paid = goldPay(g, p, id);
+  const text = paid + def.run(g, p, opt);
   // Update 0.8 — hostile in-person actions leave them upset, so their texts make sense
   if (MAD_AFTER[def.id]) setMad(g, p, MAD_AFTER[def.id]);
   relabel(g, p);

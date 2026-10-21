@@ -41,6 +41,8 @@ export interface ActivityDef {
   kind?: LogKind;
   /** opens a UI panel instead of spending a turn */
   panel?: PanelId;
+  /** Update 0.12 — play this minigame first; its result shapes the rewards (see minigames/types.ts) */
+  mini?: import('../minigames/types').MiniKind;
   run: (g: Game) => string;
 }
 

@@ -8,6 +8,8 @@ import { TRAIT_BY_ID } from './data/traits';
 import { firstName, lastName } from './data/names';
 import { ensureRoommate, netWorth } from './systems/finance';
 import { randomAvatar } from './npc/generator';
+import { blankWallet } from './systems/bitcons';
+import { blankHack } from './web/hack';
 
 export const SAVE_VERSION = 4;
 export const START_AGE = 14;
@@ -61,6 +63,10 @@ export function blankState(): GameState {
     date: null,
     startup: null,
     statCaps: { health: 100, energy: 100 },
+    stalker: null,
+    notebook: [],
+    wallet: blankWallet(),
+    hack: blankHack(),
     groups: [],
     background: 'middle',
     rules: 'us',

@@ -1,7 +1,7 @@
 import type { Game } from '../Game';
 import type { SiteDef, WebAction } from './types';
 import { settings } from '../settings';
-import { isPublic, spendAction } from '../pc/session';
+import { isPublic, noteAction, spendAction } from '../pc/session';
 import { VIEWTUBE, TWITCHY } from './media';
 import { CHIRP, GAMEHUB, JOBHUNT_EXTRA, LEARNHUB, OTAKU, SPICY, WEATHER } from './social';
 import { DISCORB, FRIEND_ACTIONS } from './discorb';
@@ -43,11 +43,10 @@ export const siteLock = (g: Game, s: SiteDef) => (siteVisible(g, s) ? s.gate?.(g
 
 export function actionLock(g: Game, a: WebAction): string | null {
   if (!g.s.session) return 'Not at a computer';
-  if (!a.free && g.s.session.left <= 0) return 'Session over — shut down';
   return a.lock?.(g) ?? null;
 }
 
-/** Do something on a site. Uses one session action (unless free). */
+/** Do something on a site. Update 0.12 — free: computer energy is only for Hackr and START-UP. */
 export function webAct(g: Game, siteId: string, actionId: string, arg?: string): string {
   const site = SITE_BY_ID[siteId];
   const a = site?.actions.find((x) => x.id === actionId) ?? (siteId === 'discorb' ? FRIEND_ACTIONS.find((x) => x.id === actionId) : undefined);
@@ -55,13 +54,21 @@ export function webAct(g: Game, siteId: string, actionId: string, arg?: string):
   const lock = actionLock(g, a);
   if (lock) return lock;
   const text = a.run(g, arg);
-  if (!a.free) spendAction(g, text);
+  if (text) noteAction(g, text);
   return text;
 }
 
-/** A session action spent outside a site's action list (applying to a job, ordering, a game run). */
+/** Something done outside a site's action list (applying to a job, ordering, a game run). Free. */
 export function sessionDo(g: Game, run: () => string): string {
-  if (!g.s.session || g.s.session.left <= 0) return 'Session over — shut down';
+  if (!g.s.session) return 'Not at a computer';
+  const text = run();
+  if (text) noteAction(g, text);
+  return text;
+}
+
+/** Update 0.12 — START-UP work: uses one computer action. */
+export function energyDo(g: Game, run: () => string): string {
+  if (!g.s.session || g.s.session.left <= 0) return 'No computer energy left — shut down';
   const text = run();
   if (text) spendAction(g, text);
   return text;

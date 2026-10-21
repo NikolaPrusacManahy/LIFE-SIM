@@ -23,7 +23,8 @@ export function unreadThreads(g: Game): string[] {
 }
 
 /** The single badge number used everywhere (HUD phone, Messages tile, inbox). */
-export const badgeCount = (g: Game) => unreadThreads(g).length;
+// Update 0.12 — the unknown number counts too
+export const badgeCount = (g: Game) => unreadThreads(g).length + (g.s.stalker && !g.s.stalker.read ? 1 : 0);
 
 export const unreadIn = (g: Game, threadId: string) => (g.s.chats[threadId] ?? []).filter((m) => m.from !== 'me' && !m.read && arrived(g, m.turn)).length;
 

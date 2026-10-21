@@ -1,0 +1,41 @@
+/* Update 0.12 — personas: chips, their chat styles, and the unknown number */
+.psn-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; font: 700 11px var(--font); background: #f1ecfb; color: #5b4a8a; }
+.psn-shy { background: #ffe9f1; color: #b5466e; }
+.psn-otaku { background: #fff0f6; color: #d63384; }
+.psn-nerd { background: #e8f7ee; color: #1f7a4a; }
+.psn-hidden { background: #ffe3ea; color: #c2273c; }
+.psn-stun { background: #fff6d8; color: #9a6b00; }
+.dat-card .psn-chip { margin: 2px auto; }
+
+/* shy: soft pastel, small and quiet */
+.cht-wrap.psn-shy .cht-log { background: linear-gradient(180deg, #fff6fa, #fdeff5); }
+.cht-wrap.psn-shy .cht-bub:not(.me) { background: #ffe3ee; color: #8a3a5c; font-size: 12px; font-style: italic; }
+
+/* otaku: sakura pink with sparkles */
+.cht-wrap.psn-otaku .cht-log { background: radial-gradient(circle at 20% 10%, #ffe0f0 0 8%, transparent 9%), radial-gradient(circle at 80% 60%, #ffe0f0 0 6%, transparent 7%), linear-gradient(180deg, #fff2f8, #ffe6f2); }
+.cht-wrap.psn-otaku .cht-bub:not(.me) { background: #ff8fc4; color: #fff; border-radius: 18px 18px 18px 4px; }
+.cht-wrap.psn-otaku .cht-bub:not(.me)::after { content: ' ✨'; }
+
+/* tech nerd: a terminal */
+.cht-wrap.psn-nerd .cht-log { background: #0d1a12; }
+.cht-wrap.psn-nerd .cht-bub:not(.me) { background: #122a1b; color: #6dff9e; font-family: ui-monospace, Consolas, monospace; font-size: 12px; border: 1px solid #1f5a35; }
+.cht-wrap.psn-nerd .cht-bub:not(.me)::before { content: '> '; opacity: 0.6; }
+
+/* yandere: sweet… too sweet */
+.cht-wrap.psn-yandere .cht-log { background: linear-gradient(180deg, #fff0f3, #ffd9e2); }
+.cht-wrap.psn-yandere .cht-bub:not(.me) { background: #ff4f7b; color: #fff; box-shadow: 0 0 0 2px #ffc2d1; }
+.cht-wrap.psn-yandere .cht-bub:not(.me)::after { content: ' ♡'; }
+
+/* the unknown number */
+.anon-row .msg-grp { background: #1a1a22; color: #fff; }
+.anon-wrap .cht-head { background: #14141b; color: #e9e6f2; }
+.anon-name { font: 600 14px var(--display); }
+.anon-sub { font: 700 10px var(--font); color: #8f8aa6; margin-left: auto; }
+.anon-log { background: #0b0b10; }
+.anon-bub { background: #23232e; color: #f0e8ff; border: 1px solid #3a2a40; }
+.anon-photo { display: block; padding: 18px 10px; border-radius: 8px; background: repeating-linear-gradient(45deg, #2a2a35 0 6px, #24242e 6px 12px); color: #cfc7e6; font-style: italic; margin-bottom: 4px; }
+.anon-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 6px; background: #14141b; }
+.anon-choice { display: flex; flex-direction: column; gap: 1px; border: 1px solid #2c2c38; border-radius: 10px; padding: 6px 8px; background: #1d1d27; color: #e9e6f2; text-align: left; cursor: pointer; }
+.anon-choice small { font: 700 10px var(--font); color: #8f8aa6; }
+.anon-choice.give { border-color: #ff4f7b; color: #ff9ab4; }
+.anon-choice:disabled { opacity: 0.45; cursor: not-allowed; }

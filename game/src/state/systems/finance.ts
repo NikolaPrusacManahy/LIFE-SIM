@@ -5,6 +5,7 @@ import { PROGRAM_BY_ID } from '../data/programs';
 import { phoneLock } from './phone';
 import { tuitionFor } from '../rules/us';
 import { stakeValue } from '../startup/company';
+import { walletValue } from './bitcons';
 
 export interface AssetDef {
   id: string;
@@ -44,6 +45,8 @@ export function netWorth(g: Game) {
   if (h.owned && h.price) w += h.price[g.s.region];
   // Update 0.11 — your share of your company
   w += stakeValue(g);
+  // Update 0.12 — Bitcons at today's price
+  w += walletValue(g);
   return Math.round(w);
 }
 

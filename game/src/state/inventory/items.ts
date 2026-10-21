@@ -33,6 +33,8 @@ export interface ItemDef {
 }
 
 export const ITEMS: ItemDef[] = [
+  // Update 0.12 — everything you write (given the first time you save a page)
+  { id: 'notebook', name: 'Notebook', icon: '📓', desc: 'Your journal and stories. Open it from the bag.', price: 0, shop: false, legality: 'legal', consumable: false },
   { id: 'textbooks', name: 'Textbooks', icon: '📗', desc: 'Studying works better.', price: 40, shop: true, legality: 'legal', consumable: false },
   { id: 'gympass', name: 'Gym Membership', icon: '🎫', desc: 'Gym visits are free.', price: 60, shop: true, legality: 'legal', consumable: false },
   { id: 'flowers', name: 'Flowers', icon: '💐', desc: 'Romantic gift.', price: 25, shop: true, legality: 'legal', consumable: true, gift: 10, romantic: true },

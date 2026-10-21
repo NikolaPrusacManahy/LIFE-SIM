@@ -6,6 +6,7 @@ import { newId } from '../Game';
 import { legalAge } from '../rules/us';
 import { consume } from '../systems/addiction';
 import { underageCatch } from '../systems/trouble';
+import { rollPersona, setPersona } from '../npc/persona';
 
 // Update 0.8 — a night out at a bar, club or roadhouse. One time slot, ~12 actions until closing.
 // Ages follow this life's laws: bars/clubs = drinking age (US 21 / EU 18); 18+ nights let 18+ in with a wristband.
@@ -14,6 +15,7 @@ const ROTATION: Record<Venue, VenueType[]> = {
   bar: ['dive', 'pub', 'karaoke', 'trivia'],
   club: ['techno', 'eighteen', 'gay', 'rooftop'],
   roadhouse: ['country'],
+  house: ['houseparty'],
 };
 
 /** What's on tonight (stable for the month). */
@@ -23,7 +25,7 @@ export function venueType(g: Game, v: Venue): VenueType {
 }
 
 /** Youngest person through the door tonight. */
-export const minAgeFor = (g: Game, t: VenueType) => (t === 'eighteen' ? 18 : Math.max(18, legalAge(g, 'alcohol')));
+export const minAgeFor = (g: Game, t: VenueType) => (t === 'eighteen' || t === 'houseparty' ? 18 : Math.max(18, legalAge(g, 'alcohol')));
 
 const ZONES: Zone[] = ['bar', 'dance', 'booths', 'smoking', 'restrooms'];
 const VIBES: Vibe[] = ['fun', 'fun', 'friends', 'looking', 'looking', 'alone'];
@@ -32,10 +34,12 @@ const VIBES: Vibe[] = ['fun', 'fun', 'friends', 'looking', 'looking', 'alone'];
 export function makeCrowd(g: Game, t: VenueType, minAge: number): NightNpc[] {
   const n = g.rand(15, 25);
   const out: NightNpc[] = [];
-  const top = t === 'eighteen' ? 26 : t === 'country' ? 60 : 45;
+  const top = t === 'eighteen' ? 26 : t === 'houseparty' ? 25 : t === 'country' ? 60 : 45;
   for (let i = 0; i < n; i++) {
     const age = g.rand(minAge, Math.max(minAge + 2, top));
-    const p = makeNpc(newId(), { role: 'acquaintance', age, clock: g.s.clock, met: 'A night out', where: g.s.region === 'city' ? 'downtown' : 'the roadhouse' });
+    const p = makeNpc(newId(), { role: 'acquaintance', age, clock: g.s.clock, met: t === 'houseparty' ? 'A house party' : 'A night out', where: t === 'houseparty' ? 'a house party' : g.s.region === 'city' ? 'downtown' : 'the roadhouse' });
+    // Update 0.12 — some of them have a persona
+    setPersona(p, rollPersona(g, age, p.gender));
     if (t === 'gay') p.sexuality = g.pick(['gay', 'gay', 'bi', 'pan']);
     out.push({ p, vibe: g.pick(VIBES), zone: i < 2 && t !== 'eighteen' ? 'vip' : g.pick(ZONES), intox: g.rand(0, 55), conn: 0, done: false });
   }

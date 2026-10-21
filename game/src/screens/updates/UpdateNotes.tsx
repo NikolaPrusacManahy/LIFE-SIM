@@ -4,6 +4,29 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.12 — Personas',
+    [
+      ['🎭', 'Personas', ['Shy, otaku, tech nerd… and “maybe a bit passionate”.', 'Each has its own voice, chat style and favourite topics.']],
+      ['💗', 'Yanderes', ['Stunning. Devoted. Text someone of their sex too much', 'and that person is gone. Nobody is ever caught.']],
+      ['📵', 'The unknown number', ['Photos of you. Things only you know.', 'Block, report, move — or give in. Refusing them ends badly.']],
+      ['🙈', 'Shy confessions', ['They say it… and faint. Yes: 2 months in hospital.', 'No: heartbroken for a while.']],
+      ['👀', 'Admirers', ['People who are into you walk up: library, clubs,', 'bars, the park, work, college.']],
+      ['🌙', 'End of the date', ['How it went decides what you can ask:', 'second date (40), friends with benefits (60), one night (70).']],
+      ['🥳', 'House parties', ['College parties are a night out now:', 'kitchen, living room, backyard, upstairs.']],
+      ['🎓', 'Faster college', ['Degrees take half as long.', 'Fix: Stats on steroids — health & energy only via max.']],
+      ['🌳', 'START-UP skill tree', ['13 branches, 5 levels: marketing, brand, quality,', 'viral, investor terms, dividend, office space…']],
+      ['💻', 'Computer energy', ['Web, games, shopping, jobs: free.', 'Energy (12 a sitting) is only for Hackr and START-UP.']],
+      ['👨‍💻', 'Real coding', ['C++, Python, HTML/JS, Java, C#, Rust — 4 projects each.', 'Ship one: big learning boost. Ship all 4: mastered.']],
+      ['🍳', 'Real cooking', ['Eggs, bacon, steak, fish, chicken, pancakes.', 'Oil, mix or flip, season — plate it in time.']],
+      ['📓', 'Write it yourself', ['Journal or story: pick the words or type your own.', 'Saved to a notebook in your bag.']],
+      ['🏋️', 'Gym minigame', ['20 seconds, spam the key — it changes every 2s.', 'Up to +12 fitness and +6 looks.']],
+      ['🎮', 'More personas', ['Book nerd, gamer (Discorb video dates), gyaru,', 'gold digger (money first). Met where you’d expect.']],
+      ['₿', 'Bitcons wallet', ['Computer app: buy & sell (1% fee), the price moves monthly.', 'PC mining now pays in coins.']],
+      ['🕶️', 'Hackr (crime)', ['Leaked accounts: a password hint, 3 tries.', 'Find cards or Bitcons wallets. Needs a VPN (Bitstore).']],
+      ['🩺', 'Hospital encounters', ['Meet doctors and nurses.', 'Sometimes a doctor falls for you at first sight.']],
+    ],
+  ],
+  [
     'Update 0.11 — START-UP',
     [
       ['🚀', 'Start a real company', ['Computer → START-UP. Pick an idea, name it,', 'put in your own money. Starts in your bedroom.']],

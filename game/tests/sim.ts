@@ -18,7 +18,8 @@ import { DRINKS, drinkLock, endNight, orderDrink } from '../src/state/nightlife/
 import { approach, chipsFor as nightChips, current, talk } from '../src/state/nightlife/talk';
 import { chooseLeave, leaveOptions } from '../src/state/nightlife/leave';
 import { INCIDENT_CHOICES, NIGHT_ACTIONS, nightAct, resolveIncident } from '../src/state/nightlife/extras';
-import { actionLock as dateLock, actionsFor, answerOffer, dateAct, doMoment, endDate, momentLock } from '../src/state/datenight/date';
+import { actionLock as dateLock, actionsFor, answerOffer, dateAct, doMoment, endDate, finishDate, momentLock } from '../src/state/datenight/date';
+import { ANON_REPLIES, anonLock, anonReply } from '../src/state/systems/stalker';
 import type { Moment } from '../src/state/datenight/types';
 
 export interface SimOptions {
@@ -64,6 +65,11 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
       g.resolveChoice(pick(choices).idx);
       continue;
     }
+    // Update 0.12 — the unknown number: sometimes answer it
+    if (g.s.stalker && Math.random() < 0.1) {
+      const opts = ANON_REPLIES.filter((r) => !anonLock(g, r.id));
+      if (opts.length) anonReply(g, pick(opts).id);
+    }
     // Update 0.10 — on a date: do things, take the moments that open up, then say goodnight
     if (g.s.date) {
       playDateStep(g);
@@ -79,7 +85,7 @@ export function simulateLife(bg: Background, home: Region, opts: SimOptions | nu
       const sites = SITES.filter((x) => !siteLock(g, x) && x.actions.length);
       const site = sites.length && Math.random() < 0.8 ? pick(sites) : null;
       const a = site ? pick(site.actions.filter((x) => !actionLock(g, x))) : null;
-      if (site && a && g.s.session.left > 0) webAct(g, site.id, a.id);
+      if (site && a) webAct(g, site.id, a.id);
       else closeSession(g);
       continue;
     }
@@ -200,7 +206,7 @@ export function playDateStep(g: Game) {
     return;
   }
   if (d.time <= 0) {
-    endDate(g);
+    finishDate(g);
     return;
   }
   const open = (['hands', 'kiss', 'french', 'yours', 'restroom', 'spot'] as Moment[]).filter((m) => !momentLock(g, m));

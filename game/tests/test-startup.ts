@@ -7,7 +7,9 @@ import {
   upgradeBuilding, valuationOf, wagesOf, refreshStatus, stakeValue,
 } from '../src/state/startup/company';
 import { startupMonth } from '../src/state/startup/month';
-import { BUILDINGS, IDEAS } from '../src/state/startup/data';
+import { BUILDINGS, IDEAS, SKILLS, SKILL_ORDER, STATUS_POINTS } from '../src/state/startup/data';
+import { capOf, dividendRate, marketing } from '../src/state/startup/company';
+import { hydrate } from '../src/state/save';
 import { untouchable } from '../src/state/systems/immunity';
 import { sendToJail } from '../src/state/systems/crime';
 import { riskCatch } from '../src/state/systems/trouble';
@@ -128,8 +130,10 @@ const mk = (money = 200000): Game => {
   startupMonth(g);
   const expect = Math.round(Math.round(Math.min(c.cash + Math.round(c.profit * 0.25), c.profit * 0.25)) * c.stake * 0.75);
   check('profit pays your share into your own account', c.profit > 0 && g.s.money - m0 === c.paid && Math.abs(c.paid - expect) <= 1, `${g.s.money - m0} vs ${expect}`);
+  // no product on sale (a viral month can't create revenue out of nothing)
   c.staff.employees = 0;
   c.hype = 0;
+  c.version = 0;
   const m1 = g.s.money;
   startupMonth(g);
   check('no profit, no payout', g.s.money === m1);
@@ -194,6 +198,39 @@ const mk = (money = 200000): Game => {
   check('…or caught', !riskCatch(g, 1, { name: 'x', sev: 3, kind: 'other' }));
   sellCompany(g);
   check('immunity stays once earned', untouchable(g) && !startup(g));
+}
+
+// ---------- Update 0.12 — a bigger skill tree: 13 branches, 5 levels, levels 4–5 cost 2 points
+{
+  const g = mk();
+  found(g, '', 'factory', 'normal', 60000);
+  const c = startup(g)!;
+  check('13 skill branches, 5 levels each', SKILL_ORDER.length === 13 && SKILL_ORDER.every((b) => SKILLS[b].max === 5));
+  c.points = 7;
+  for (let i = 0; i < 5; i++) learnSkill(g, 'profit');
+  check('levels 1–3 cost 1 point, 4–5 cost 2 (7 points = level 5)', c.skills.profit === 5 && c.points === 0);
+  c.points = 1;
+  check('can’t go past the max', learnSkill(g, 'profit') === '' && c.points === 1);
+  c.skills.space = 2;
+  check('Office space: +10% staff per level', capOf(c) === Math.floor(BUILDINGS.room.cap * 1.2));
+  c.skills.dividend = 3;
+  check('Dividend: +5% of profit paid out per level', Math.abs(dividendRate(c) - 0.4) < 1e-9);
+  c.version = 2; c.hype = 40; c.quality = 50;
+  const h0 = c.hype;
+  c.cash = 100000;
+  c.skills.marketing = 0;
+  marketing(g, 'social');
+  const plain = c.hype - h0;
+  c.hype = h0;
+  c.skills.marketing = 5;
+  marketing(g, 'social');
+  check('Marketing: campaigns bring more hype', c.hype - h0 > plain);
+  const pts = c.points;
+  c.cash = 5000000;
+  refreshStatus(g);
+  check('a new status rank gives 2 skill points', c.points >= pts + STATUS_POINTS && STATUS_POINTS === 2);
+  const old = hydrate(JSON.parse(JSON.stringify({ ...g.s, startup: { ...c, skills: { profit: 2, speed: 1, payroll: 0, pitch: 0 } } })));
+  check('older companies get the new branches at 0', old?.startup?.skills.viral === 0 && old?.startup?.skills.profit === 2);
 }
 
 check('every idea has numbers', Object.values(IDEAS).every((i) => i.found > 0 && i.potential > 0 && i.work > 0));

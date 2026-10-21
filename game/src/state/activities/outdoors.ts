@@ -6,6 +6,9 @@ import { settings } from '../settings';
 import { canBeIntimate } from '../systems/intimacy';
 import { curfew, maybeMeet, pct, studyPerf } from './helpers';
 import { legalAge } from '../rules/us';
+import { takeMini } from '../minigames/types';
+import { codeLearn } from '../minigames/code';
+import { gymGains } from '../minigames/gym';
 
 /** Park, gym, library, hospital, church, and the countryside outdoors. */
 export const OUTDOOR_ACTS: ActivityDef[] = [
@@ -60,18 +63,26 @@ export const OUTDOOR_ACTS: ActivityDef[] = [
 
   // ---- gym (both)
   {
-    id: 'workout', loc: 'gym', name: 'Lift Weights', icon: '🏋️', desc: 'Get strong.', cat: 'fitness', energy: 22, cost: 12,
+    id: 'workout', loc: 'gym', name: 'Lift Weights', icon: '🏋️', desc: 'Spam the keys. Up to +12 fitness.', cat: 'fitness', energy: 22, cost: 12, mini: 'gym',
     run: (g) => {
-      g.stat('fitness', 4);
-      g.stat('looks', 0.8);
+      // Update 0.12 — the gym minigame: more presses, more gains (up to +12 fitness, +6 looks)
+      const m = takeMini(g, 'gym');
+      const gain = m.played ? gymGains(m.presses ?? 0) : { fitness: 4, looks: 0.8 };
+      g.stat('fitness', gain.fitness);
+      g.stat('looks', gain.looks);
       g.stat('health', 0.5);
+      if (m.played) return `${m.presses ?? 0} reps. ${m.note ?? ''}`.trim();
       return g.pick(['New personal record!', 'Leg day. You can’t feel your legs.', 'Someone asked for your routine.']);
     },
   },
   {
-    id: 'boxing', loc: 'gym', name: 'Boxing Class', icon: '🥊', desc: 'Fitness + confidence.', cat: 'fitness', energy: 26, cost: 20, minAge: 14,
+    id: 'boxing', loc: 'gym', name: 'Boxing Class', icon: '🥊', desc: 'Spam the keys. Fitness + confidence.', cat: 'fitness', energy: 26, cost: 20, minAge: 14, mini: 'gym',
     run: (g) => {
-      g.stat('fitness', 3.5);
+      const m = takeMini(g, 'gym');
+      const gain = m.played ? gymGains(m.presses ?? 0) : { fitness: 3.5, looks: 0 };
+      g.stat('fitness', gain.fitness);
+      if (gain.looks) g.stat('looks', gain.looks);
+      if (m.played) { g.stat('street', 1); return `${m.presses ?? 0} punches thrown. ${m.note ?? ''}`.trim(); }
       g.stat('street', 1);
       g.stat('mood', 3);
       return 'Jab, jab, cross. You’re getting fast.';
@@ -87,10 +98,14 @@ export const OUTDOOR_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'swim_pool', loc: 'gym', name: 'Swim Laps', icon: '🏊', desc: 'Low impact, high reward.', cat: 'fitness', energy: 18, cost: 8,
+    id: 'swim_pool', loc: 'gym', name: 'Swim Laps', icon: '🏊', desc: 'Spam the keys. Low impact, high reward.', cat: 'fitness', energy: 18, cost: 8, mini: 'gym',
     run: (g) => {
-      g.stat('fitness', 3);
+      const m = takeMini(g, 'gym');
+      const gain = m.played ? gymGains(m.presses ?? 0) : { fitness: 3, looks: 0 };
+      g.stat('fitness', gain.fitness);
+      if (gain.looks) g.stat('looks', gain.looks);
       g.stat('health', 1.5);
+      if (m.played) return `${m.presses ?? 0} strokes. ${m.note ?? ''}`.trim();
       return '40 laps. You’re basically a dolphin.';
     },
   },
@@ -137,10 +152,15 @@ export const OUTDOOR_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'learn_code', loc: 'library', name: 'Free Coding Course', icon: '⌨️', desc: 'Self-taught path.', cat: 'study', energy: 15, phases: NOT_NIGHT, minAge: 12,
+    id: 'learn_code', loc: 'library', name: 'Free Coding Course', icon: '⌨️', desc: 'Guided lessons in 6 languages.', cat: 'study', energy: 15, phases: NOT_NIGHT, minAge: 12, mini: 'code',
     run: (g) => {
-      g.stat('smarts', 2);
-      g.inc('coder', 2);
+      // Update 0.12 — a guided lesson (minigame)
+      const m = takeMini(g, 'code');
+      g.stat('smarts', 1 + 2 * m.score);
+      g.inc('coder', Math.max(1, Math.round(3 * m.score)));
+      if (m.lang) g.inc(`lang:${m.lang}`);
+      const bonus = codeLearn(g, m);
+      if (m.played) return m.score >= 1 ? `Lesson complete. It built first try!${bonus}` : m.score >= 0.5 ? 'Lesson complete, with a few compiler errors.' : 'The build failed. The instructor sighed.';
       return 'You wrote your first loops. Then your first bug.';
     },
   },
@@ -419,9 +439,10 @@ export const OUTDOOR_ACTS: ActivityDef[] = [
     },
   },
   {
-    id: 'write_novel', loc: 'library', name: 'Write a Novel', icon: '📖', desc: 'A long project — 12 sessions.', cat: 'fun', energy: 18, phases: NOT_NIGHT,
+    id: 'write_novel', loc: 'library', name: 'Write a Novel', icon: '📖', desc: 'A long project — 12 sessions. Saved to your notebook.', cat: 'fun', energy: 18, phases: NOT_NIGHT, mini: 'write',
     run: (g) => {
-      g.stat('creativity', 2.5);
+      const m = takeMini(g, 'write');
+      g.stat('creativity', 1.5 + 2 * m.score);
       const n = g.inc('novel');
       if (n >= 12) {
         g.setFlag('novel', 0);

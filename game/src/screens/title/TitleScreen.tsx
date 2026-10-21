@@ -23,7 +23,7 @@ export function TitleScreen({ hasSave, onContinue, onNew }: Props) {
         <button className={`btn btn-lg ${hasSave ? '' : 'btn-primary'}`} onClick={onNew}>✦ New Life</button>
       </div>
       <p className="ttl-foot ttl-anim">
-        v0.11 · <button className="ttl-notes" onClick={() => setNotes(true)}>Update 0.11 — START-UP</button>
+        v0.12 · <button className="ttl-notes" onClick={() => setNotes(true)}>Update 0.12 — Personas</button>
       </p>
       {notes && <UpdateNotes onClose={() => setNotes(false)} />}
     </div>

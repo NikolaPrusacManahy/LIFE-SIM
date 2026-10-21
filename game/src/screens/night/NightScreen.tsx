@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Game } from '../../state/Game';
-import { STAGES, TYPE_LABEL, VIBE_LABEL, ZONE_LABEL, stageOf, INTOX_LIMIT, type Zone } from '../../state/nightlife/types';
+import { STAGES, TYPE_LABEL, VIBE_LABEL, zoneLabel, stageOf, INTOX_LIMIT, type Zone } from '../../state/nightlife/types';
 import { DRINKS, drinkLock, endNight, orderDrink } from '../../state/nightlife/night';
 import { approach, chipsFor, current, talk, CHIP_LABEL, type TalkChip } from '../../state/nightlife/talk';
 import { LEAVE_LABEL, chooseLeave, leaveOptions } from '../../state/nightlife/leave';
@@ -20,7 +20,7 @@ export function NightScreen({ game, onEnd, onChange }: { game: Game; onEnd: (sum
   const [showDarts, setShowDarts] = useState(false);
   const [, bump] = useState(0);
   const n = game.s.night!;
-  const where = LOC_BY_ID[n.venue]?.name(game) ?? 'the bar';
+  const where = n.venue === 'house' ? 'A house party' : LOC_BY_ID[n.venue]?.name(game) ?? 'the bar';
   const say = (t: string) => {
     if (t) setLine(t);
     onChange();
@@ -51,7 +51,7 @@ export function NightScreen({ game, onEnd, onChange }: { game: Game; onEnd: (sum
           const locked = z === 'vip' && !n.vip;
           return (
             <section key={z} className={`ngt-zone ${n.zone === z ? 'on' : ''} ${locked ? 'locked' : ''}`}>
-              <button className="ngt-zone-head" onClick={() => say(moveTo(game, z))}>{ZONE_LABEL[z]}{locked ? ' 🔒' : ''}{n.zone === z ? ' · you' : ''}</button>
+              <button className="ngt-zone-head" onClick={() => say(moveTo(game, z))}>{zoneLabel(n.venue, z)}{locked ? ' 🔒' : ''}{n.zone === z ? ' · you' : ''}</button>
               <div className="ngt-people">
                 {here.map(({ p, i }) => (
                   <button key={p.p.id} className={`ngt-npc vibe-${p.vibe}`} disabled={out || !!n.incident || locked} onClick={() => say(approach(game, i))} title={VIBE_LABEL[p.vibe]}>

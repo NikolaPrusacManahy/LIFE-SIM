@@ -3,6 +3,8 @@ import { MONTHS } from './types';
 import { blankState, SAVE_VERSION } from './newGame';
 import { fitHairStyle, migrateNpc } from './npc/generator';
 import { pronounsFor } from './npc/identity';
+import { PROGRAM_BY_ID } from './data/programs';
+import { blankSkills } from './startup/company';
 
 
 /**
@@ -39,6 +41,13 @@ export function hydrate(raw: unknown): GameState | null {
       m.free = true;
     }
   }
+  // Update 0.12 — college takes half as long: shorten a degree already under way; the old party hook-up card is gone
+  const e = s.education?.current;
+  const prog = e ? PROGRAM_BY_ID[e.program] : null;
+  if (e && prog && ['uni', 'grad', 'cc'].includes(prog.kind) && e.length > prog.length) e.length = prog.length;
+  s.events = s.events.filter((x) => x.id !== 'party_hookup');
+  // Update 0.12 — new START-UP skill branches start at 0
+  if (s.startup) s.startup.skills = { ...blankSkills(), ...s.startup.skills };
   s.v = SAVE_VERSION;
   return s;
 }

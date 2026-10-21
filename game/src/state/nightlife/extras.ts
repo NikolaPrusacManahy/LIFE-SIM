@@ -51,7 +51,7 @@ export const NIGHT_ACTIONS: NightAction[] = [
     run: (g) => { if (g.check('smarts', 55)) { g.money(50); g.stat('smarts', 0.5); return 'Your team won! $50 bar tab.'; } return 'Second-to-last. You knew the answer to question 7, though.'; },
   },
   {
-    id: 'pool', label: 'Shoot pool ($10 bet)', icon: '🎱', desc: 'Fitness/Smarts', zone: 'bar', lock: (g) => (night(g).venue === 'club' ? 'No table here' : g.canAfford(10) ? null : 'Need $10'),
+    id: 'pool', label: 'Shoot pool ($10 bet)', icon: '🎱', desc: 'Fitness/Smarts', zone: 'bar', lock: (g) => (night(g).venue === 'club' || night(g).venue === 'house' ? 'No table here' : g.canAfford(10) ? null : 'Need $10'),
     run: (g) => { if (g.check('smarts', 45)) { g.money(10); return 'Bank shot on the eight. Won the $10.'; } g.money(-10); night(g).spent += 10; return 'Scratched on the eight ball. Lost $10.'; },
   },
   {

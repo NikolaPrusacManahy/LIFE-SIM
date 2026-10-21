@@ -212,6 +212,14 @@ export function calmNight(g: Game): string {
   return `${say('🛋️ A calm night in. {name} fell asleep on your shoulder halfway through the movie.', p, g.s.name)} ${text}`;
 }
 
+/** Update 0.12 — the player ends the date: what you can ask for depends on how it went (events/dateafter.ts). */
+export function finishDate(g: Game): string {
+  const d = g.s.date;
+  const text = endDate(g);
+  if (d && d.spark >= 40 && d.venue !== 'home' && d.venue !== 'theirs') g.queue('date_after', { pid: d.pid, spark: d.spark });
+  return text;
+}
+
 /** The date is over: how well it went shows in the relationship. */
 export function endDate(g: Game): string {
   const d = g.s.date;

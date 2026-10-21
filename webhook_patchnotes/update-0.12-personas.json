@@ -1,0 +1,56 @@
+{
+  "username": "LIFE//SIM",
+  "content": "**Update 0.12 — Personas** is out! 🎭",
+  "embeds": [
+    {
+      "title": "🎭 Personas",
+      "color": 13715036,
+      "description": "Some people are shy, some are otaku, some are tech nerds, and some are… maybe a bit passionate. Each one has their own voice, their own chat look and their own favourite topics. Talk anime with an otaku or PC builds with a nerd, and watch them light up."
+    },
+    {
+      "title": "💗 Yanderes",
+      "color": 16735370,
+      "description": "Always stunning, always devoted. Date one, then text someone of their sex a little too much… and that person is gone. The police never find a thing."
+    },
+    {
+      "title": "📵 The unknown number",
+      "color": 1710618,
+      "description": "Photos of you. What you did today. Things only you know. Block them, call the police, move out, or give in to their very special way of showing love. Refusing them at the end is a coin flip, and you won't like either side."
+    },
+    {
+      "title": "🙈 Shy confessions",
+      "color": 16761035,
+      "description": "When a shy person finally says \"I l-l-love you\", they faint. Say yes and they spend two happy months in hospital. Say no and they're heartbroken for a while."
+    },
+    {
+      "title": "👀 Admirers",
+      "color": 3843302,
+      "description": "People who are into you now walk up to you at the library, clubs, bars, the park, work and college."
+    },
+    {
+      "title": "🌙 The end of the date",
+      "color": 16765802,
+      "description": "Everything you do on a date counts. At the end, the spark decides what you can ask for: a second date, friends with benefits, or one night together."
+    },
+    {
+      "title": "🥳 House parties & faster college",
+      "color": 4177780,
+      "description": "College parties are a full night out now, in a house: kitchen, living room, backyard, upstairs. Degrees take half as long. Fixed: Stats on steroids only raises max health and energy."
+    },
+    {
+      "title": "🌳 START-UP skills & computer energy",
+      "color": 3843302,
+      "description": "The START-UP skill tree now has 13 branches with 5 levels each: marketing, brand, quality, stability, viral, investor terms, dividend, office space, crunch and more. Every new status rank gives 2 extra points. Computer energy (12 a sitting) is now only for Hackr and START-UP. Browsing, games, shopping and job hunting are free."
+    },
+    {
+      "title": "🎮 Activity additions",
+      "color": 10181046,
+      "description": "Coding is real now: six languages (C++, Python, HTML/JS, Java, C#, Rust), four guided projects each; ship a project for a big learning boost, ship all four to master the language. Cook on a live pan: oil, flip, season, plate it in time. Write journals and stories into a notebook you carry. The gym is a 20-second key-spam challenge for up to +12 fitness. New personas: book nerds, gamers (Discorb video-call dates and face reveals), gyaru and gold diggers, and you meet them where you'd expect."
+    },
+    {
+      "title": "₿ Bitcons, Hackr & hospital romance",
+      "color": 16225306,
+      "description": "New computer apps. Bitcons wallet: buy and sell (1% fee), the price swings month to month, and PC mining now pays in coins. Hackr (crime, 18+, needs a VPN from Bitstore): leaked accounts, a hint for each password, 3 tries. Crack one and you might find a credit card or a Bitcons wallet, but it brings heat. At the hospital you meet doctors and nurses, and sometimes a doctor falls for you at first sight and asks you out."
+    }
+  ]
+}

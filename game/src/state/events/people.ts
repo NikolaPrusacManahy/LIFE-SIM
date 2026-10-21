@@ -53,6 +53,9 @@ export const PEOPLE_EVENTS: EventDef[] = [
         { label: '🛡️ Stand up for them', when: () => c.kind === 'bullied', hint: checkHint('fitness', 45), run: (gg) => { met(p); gg.karma(4); bump(p, 'rel', 15); bump(p, 'trust', 10); if (!gg.check('fitness', 45)) gg.stat('health', -5); return say('The bullies backed off. {name} won’t forget this.', p); } },
         { label: '💵 Give $5', when: () => c.kind === 'money', run: (gg) => { gg.money(-5); gg.karma(2); forget(gg, p); return 'They thanked you and caught the bus.'; } },
         { label: '💧 Get them water and a ride', when: () => c.kind === 'drunk', run: (gg) => { met(p); gg.karma(4); bump(p, 'rel', 8); return say('You made sure {name} got home safe.', p); } },
+        // Update 0.12 — a doctor who fell for you asks first (partner-led)
+        { label: '☕ Say yes to coffee after their shift', when: () => c.kind === 'doctor_love' && isRomanceEligible(g, p), run: (gg) => { met(p); p.hasNumber = true; p.theyHaveNumber = true; p.role = 'talking'; bump(p, 'romance', 15); bump(p, 'rel', 10); gg.burst('hearts'); return say('{name} scribbles {their} number on your discharge papers. “Coffee. Tonight. Doctor’s orders.”', p); } },
+        { label: '🙂 Gently say no', when: () => c.kind === 'doctor_love', run: (gg) => { met(p); bump(p, 'romance', -20); p.tags = p.tags.filter((t) => t !== 'loveAtFirstSight'); gg.stat('mood', 2); return say('{name} blushes. “Of course. Sorry — that was unprofessional.” Still flattering.', p); } },
         { label: '😘 Flirt', when: () => isRomanceEligible(g, p), hint: `Looks/Charm · ${Math.round(Math.min(0.95, socialOdds(g, p, 'charm', 0.35) + (s.looks - 50) / 200) * 100)}%`, run: (gg) => { met(p); return run('flirt', gg, p); } },
         { label: '📱 Ask for their number', run: (gg) => { met(p); return run('number', gg, p); } },
         { label: 'Ignore', run: (gg) => { forget(gg, p); return 'You kept walking.'; } },
@@ -298,28 +301,6 @@ export const PEOPLE_EVENTS: EventDef[] = [
       { label: 'Go with the moment', req: (g, c) => (adultsOnly(g, who(g, c)) ? null : 'Not available'), run: (g, c) => { g.queue('protection_choice', { pid: c.pid, theirs: c.theirs ?? 0 }, true); return 'Your heart is pounding.'; } },
       { label: 'Wait until you’re ready', run: (g, c) => { const p = who(g, c); if (p) bump(p, 'trust', 3); return 'You decided to wait. That’s okay.'; } },
     ],
-  },
-  {
-    id: 'party_hookup', title: 'Late at the Party', icon: '🍻', mature: true,
-    text: (g, c) => {
-      const p = who(g, c);
-      return say(c.intox === 'very' ? '{name} is very drunk and leaning on you, slurring that {they} like{s} you.' : `{name} pulls you aside, ${c.intox === 'tipsy' ? 'a little tipsy,' : ''} and asks if you want to get out of here.`, p);
-    },
-    who: (_g, c) => c.pid,
-    choices: (g, c) => {
-      const p = who(g, c);
-      if (c.intox === 'very') {
-        return [
-          { label: 'Get them water and a safe ride home', run: (gg) => { gg.karma(5); if (p) bump(p, 'trust', 12); return 'You made sure they got home safe. That’s what decent people do.'; } },
-          { label: 'Find their friends', run: (gg) => { gg.karma(3); return 'Their friends took it from there.'; } },
-        ];
-      }
-      return [
-        { label: 'Go somewhere private', req: (gg) => (adultsOnly(gg, p) ? null : 'Not available'), run: (gg) => beginNight(gg, p!) },
-        { label: 'Swap numbers instead', run: (gg) => { if (p) { p.hasNumber = true; p.theyHaveNumber = true; bump(p, 'rel', 6); } gg.stat('mood', 3); return 'Maybe another time, sober.'; } },
-        { label: 'Head home', run: () => 'You called it a night.' },
-      ];
-    },
   },
   {
     id: 'sexile', title: 'Can I Have the Room?', icon: '🚪', mature: true, who: (g) => g.s.people.find((p) => p.labels.includes('roommate') && p.status === 'alive')?.id ?? null,

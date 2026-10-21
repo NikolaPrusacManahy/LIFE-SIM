@@ -4,7 +4,8 @@ import { pcReady } from './build';
 
 // Update 0.8 — sitting at a computer takes no time, but you get one sitting (a few actions) per time slot.
 
-export const SESSION_ACTIONS: Record<Device, number> = { library: 4, laptop: 6, pc: 6 };
+/** Update 0.12 — your own laptop / PC: 12 actions a sitting (was 6). */
+export const SESSION_ACTIONS: Record<Device, number> = { library: 4, laptop: 12, pc: 12 };
 export const DEVICE_NAME: Record<Device, string> = { library: 'Library PC', laptop: 'Laptop', pc: 'Your PC' };
 
 export function deviceLock(g: Game, d: Device): string | null {
@@ -24,7 +25,12 @@ export function openSession(g: Game, d: Device): string {
 export const inSession = (g: Game) => !!g.s.session;
 export const isPublic = (g: Game) => g.s.session?.device === 'library';
 
-/** Spend one action of the session. Returns false if none are left. */
+/** Update 0.12 — computer energy is only for Hackr and START-UP; everything else is free and just logged. */
+export function noteAction(g: Game, line: string) {
+  g.s.session?.log.push(line);
+}
+
+/** Spend one action of the session (Hackr and START-UP only). Returns false if none are left. */
 export function spendAction(g: Game, line: string): boolean {
   const s = g.s.session;
   if (!s || s.left <= 0) return false;

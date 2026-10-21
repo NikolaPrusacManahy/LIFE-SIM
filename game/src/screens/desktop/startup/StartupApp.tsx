@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { DeskProps } from '../types';
 import type { Appeal, IdeaId, SkillBranch } from '../../../state/startup/types';
-import { APPEAL, BUILDINGS, IDEAS, IDEA_ORDER, ROUNDS, SKILLS, STATUS, STATUS_ORDER } from '../../../state/startup/data';
+import { APPEAL, BUILDINGS, IDEAS, IDEA_ORDER, ROUNDS, SKILLS, SKILL_ORDER, STATUS, STATUS_ORDER, STATUS_POINTS, skillCost } from '../../../state/startup/data';
 import {
-  MARKETING, costsOf, crunch, found, foundLock, headcount, hire, hireLock, investOwn, launch, layOff, learnSkill, marketing, nextBuilding,
+  MARKETING, capOf, costsOf, crunch, found, foundLock, headcount, hire, hireLock, investOwn, launch, layOff, learnSkill, marketing, nextBuilding,
   outputOf, payYourself, pitch, pitchLock, pitchOdds, sellCompany, startup, upgradeBuilding, valuationOf, wagesOf, type HireKind,
 } from '../../../state/startup/company';
-import { sessionDo } from '../../../state/web/sites';
+import { energyDo } from '../../../state/web/sites';
 import { fmt } from '../../../state/systems/finance';
 import { HoldButton } from '../../../components/HoldButton';
 import { HQView } from './HQView';
@@ -18,7 +18,7 @@ export function StartupApp(props: DeskProps) {
   const { game, notify } = props;
   const c = startup(game);
   const [tab, setTab] = useState<Tab>('overview');
-  const act = (fn: () => string) => notify(sessionDo(game, fn));
+  const act = (fn: () => string) => notify(energyDo(game, fn));
   if (!c) return <Founding {...props} />;
   const val = valuationOf(c);
   const next = nextBuilding(c);
@@ -69,7 +69,7 @@ export function StartupApp(props: DeskProps) {
         )}
         {tab === 'team' && (
           <div className="sup-list">
-            <p className="app-note">{headcount(c)}/{BUILDINGS[c.building].cap} staff · payroll {fmt(wagesOf(c))}/mo</p>
+            <p className="app-note">{headcount(c)}/{capOf(c)} staff · payroll {fmt(wagesOf(c))}/mo</p>
             {([['employee', 1, '👩‍💻 Hire 1 employee'], ['employee', 5, '👩‍💻 Hire 5 employees'], ['employee', 25, '👩‍💻 Hire 25 employees'], ['supervisor', 1, '🧑‍🏫 Hire a supervisor'], ['manager', 1, '🧑‍💼 Hire a manager'], ['hr', 1, '🗂️ Hire a head of HR']] as [HireKind, number, string][]).map(([k, n, label]) => (
               <Row key={label} icon="" title={label} sub={k === 'employee' ? '$4k/mo each · development +' : k === 'supervisor' ? '$7k/mo · quality + · dev +' : k === 'manager' ? '$12k/mo · dev +20%, quality +' : '$8k/mo · wages −5%'} lock={hireLock(c, k, n)} onClick={() => act(() => hire(game, k, n))} />
             ))}
@@ -99,16 +99,17 @@ export function StartupApp(props: DeskProps) {
             ) : <p className="app-note">🌆 The top of the skyline.</p>}
             <div className="ph-section">Skill tree · {c.points} point{c.points === 1 ? '' : 's'}</div>
             <div className="sup-skills">
-              {(Object.keys(SKILLS) as SkillBranch[]).map((b) => (
-                <button key={b} className="sup-skill" disabled={!c.points || c.skills[b] >= SKILLS[b].max} onClick={() => notify(learnSkill(game, b))}>
+              {SKILL_ORDER.map((b: SkillBranch) => (
+                <button key={b} className="sup-skill" disabled={c.skills[b] >= SKILLS[b].max || c.points < skillCost(c.skills[b])} title={c.skills[b] >= SKILLS[b].max ? 'Maxed' : `Next level: ${skillCost(c.skills[b])} point${skillCost(c.skills[b]) > 1 ? 's' : ''}`} onClick={() => notify(learnSkill(game, b))}>
                   <span>{SKILLS[b].icon}</span>
                   <b>{SKILLS[b].name}</b>
                   <small>{SKILLS[b].per}</small>
                   <i>{'●'.repeat(c.skills[b])}{'○'.repeat(SKILLS[b].max - c.skills[b])}</i>
+                  {c.skills[b] < SKILLS[b].max && <em className="sup-cost">{skillCost(c.skills[b])} pt</em>}
                 </button>
               ))}
             </div>
-            <p className="app-note">Points: each launch, each move to a bigger building, every 6 profitable months.</p>
+            <p className="app-note">Points: each launch, each move to a bigger building, every 6 profitable months, +{STATUS_POINTS} per new status. Levels 4–5 cost 2 points.</p>
           </div>
         )}
       </div>
@@ -145,7 +146,7 @@ function Founding({ game, notify }: DeskProps) {
         Your starting investment: <b>{fmt(invest)}</b>
         <input type="range" min={IDEAS[idea].found} max={Math.max(IDEAS[idea].found, Math.min(game.s.money, IDEAS[idea].found * 20))} step={1000} value={invest} onChange={(e) => setInvest(Number(e.target.value))} />
       </label>
-      <button className="btn btn-primary" disabled={!!lock} title={lock ?? ''} onClick={() => notify(sessionDo(game, () => found(game, name, idea, appeal, invest)))}>{lock ?? 'Found it (1 action)'}</button>
+      <button className="btn btn-primary" disabled={!!lock} title={lock ?? ''} onClick={() => notify(energyDo(game, () => found(game, name, idea, appeal, invest)))}>{lock ?? 'Found it (1 action)'}</button>
     </div>
   );
 }
