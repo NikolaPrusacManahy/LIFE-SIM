@@ -4,6 +4,7 @@ import { ORG_BY_ID, type OrgDef } from '../data/orgs';
 import { CAREER_BY_ID } from '../data/careers';
 import { fmt } from './finance';
 import { dropOut } from './education';
+import { untouchable } from './immunity';
 
 export interface CrimeSpec {
   name: string;
@@ -64,8 +65,8 @@ export const JAIL_AUDIT: { age: number; juvie: boolean; months: number }[] = [];
 
 export function sendToJail(g: Game, months: number, crime: string) {
   const s = g.s;
-  // Update 0.6 — no cell holds a god
-  if (s.god) {
+  // Update 0.6 — no cell holds a god (0.11: or a diplomat)
+  if (untouchable(g)) {
     g.log('⛓️ The cuffs fell off your wrists. Nobody tried again.', 'crime');
     return;
   }

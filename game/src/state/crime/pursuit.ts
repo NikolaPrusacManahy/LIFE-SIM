@@ -1,6 +1,7 @@
 import type { Game } from '../Game';
 import { itemCount, spendItem } from '../inventory/items';
 import { recomputeWanted } from './investigation';
+import { untouchable } from '../systems/immunity';
 
 // Update 0.5 — pursuit mode (fugitive). Wanted ★★★★+ or escaping custody. Surrender is always available.
 
@@ -8,7 +9,7 @@ export const inPursuit = (g: Game) => !!g.s.underworld.pursuit && !g.s.underworl
 
 export function startPursuit(g: Game) {
   const u = g.s.underworld;
-  if (g.s.god || (u.pursuit && !u.pursuit.settled)) return;
+  if (untouchable(g) || (u.pursuit && !u.pursuit.settled)) return;
   u.pursuit = { since: g.s.clock, zone: 25 + u.wanted * 8, disguise: 0, settled: false };
   g.s.crime.fugitive = true;
   g.s.location = 'onrun';

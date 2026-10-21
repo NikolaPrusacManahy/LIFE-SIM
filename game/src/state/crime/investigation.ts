@@ -3,6 +3,7 @@ import type { Person } from '../types';
 import type { CrimeCase, CrimeScene, EvidenceTag } from './types';
 import { CRIME_BY_ID } from './catalog';
 import { newId } from '../Game';
+import { untouchable } from '../systems/immunity';
 
 // Update 0.5 — cases, the Detective, wanted stars, cold cases, the podcast.
 
@@ -103,7 +104,7 @@ export function investigationMonth(g: Game) {
     if (c.found.length && !c.open.length && c.progress < 60 && g.s.clock - c.clock > 36) c.status = 'cold';
   }
   recomputeWanted(g);
-  if (g.s.god) return; // Update 0.6 — they investigate; nobody comes for a god
+  if (untouchable(g)) return; // Update 0.6 / 0.11 — they investigate; nobody comes for a god or a diplomat
   const hot = u.cases.find((c) => c.status === 'open' && c.suspect && c.progress >= 60);
   if (hot && !u.pursuit && !g.jailed) {
     if (u.wanted >= 4) g.queue('manhunt', { caseId: hot.id });

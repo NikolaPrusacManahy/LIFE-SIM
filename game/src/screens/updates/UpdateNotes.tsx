@@ -4,6 +4,17 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.11 — START-UP',
+    [
+      ['🚀', 'Start a real company', ['Computer → START-UP. Pick an idea, name it,', 'put in your own money. Starts in your bedroom.']],
+      ['💼', 'It pays you', ['Profitable months pay you a dividend:', '25% of profit × your share, taxed 25%.']],
+      ['👥', 'Build the team', ['Employees, supervisors, a manager, head of HR.', 'Room → office → facility → HQ → skyscraper.']],
+      ['🦈', 'Investors', ['Angels, VCs, mega funds. Cash for a share.', 'Safe pitch is easy to fund, moonshot has the higher ceiling.']],
+      ['🌳', 'Skill tree', ['Profit, speed, payroll, pitch.', 'Three red months in a row and it folds.']],
+      ['🕊️', 'Diplomatic', ['$1B and a skyscraper: police and scandals', 'can’t touch you anymore. For life.']],
+    ],
+  ],
+  [
     'Update 0.10 — Date Night',
     [
       ['🕯️', 'Dates are a scene', ['Raise the spark with actions. Romantic dates only.', 'Your date reacts out loud: “Idiot! That was my shin!”']],

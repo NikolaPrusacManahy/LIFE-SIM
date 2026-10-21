@@ -296,6 +296,8 @@ export interface GameState {
   usedThisSlot: { turn: number; ids: string[] };
   /** Update 0.10 — a date in progress */
   date: import('./datenight/types').DateScene | null;
+  /** Update 0.11 — START-UP: your company */
+  startup: import('./startup/types').Startup | null;
   background: Background;
   /** Update 0.5.1 — legal system this life plays under */
   rules: 'us' | 'eu';

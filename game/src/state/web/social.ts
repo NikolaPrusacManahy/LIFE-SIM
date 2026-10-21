@@ -4,6 +4,7 @@ import { consume } from '../systems/addiction';
 import { weatherAt } from '../systems/weather';
 import { MONTHS } from '../types';
 import { meetOnline } from './discorb';
+import { untouchable } from '../systems/immunity';
 
 // Update 0.8 — Chirp (satire of toxic social media: no slurs, no real people), OtakuPit, GameHub,
 // WeatherNerds, LearnHub, JobHunt CV, SpicyHub (a blurred placeholder only).
@@ -22,7 +23,8 @@ export const CHIRP: WebAction[] = [
       c.posts++;
       const take = g.pick(HOT_TAKES);
       const roll = Math.random();
-      if (roll < 0.12 + g.s.fame / 400) {
+      // Update 0.11 — diplomats can't be cancelled
+      if (!untouchable(g) && roll < 0.12 + g.s.fame / 400) {
         c.cancelledUntil = g.s.clock + 2;
         g.stat('mood', -12);
         g.fame(3);

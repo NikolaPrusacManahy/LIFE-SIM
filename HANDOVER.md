@@ -1,6 +1,23 @@
 # HANDOVER.md
 
-## Current patch: Update 0.10 — Date Night
+## Current patch: Update 0.11 — START-UP
+Built from your chat request. The name "START-UP" is the app's name, reused as the version name. All of `npm run verify` passes; the new test is `test-startup.ts`.
+- **Where:** Computer (PC, laptop or library) → 🚀 START-UP. Each management move is one computer action (`sessionDo`). Skill points are free.
+- **Founding** (`startup/company.ts` `found`): 16+, one company at a time. Pick an idea (11 in `startup/data.ts` `IDEAS`: AAA game, AI model, factory, smartwatch, phone brand, social app, EVs, biotech, fashion, food delivery, rockets), a custom name, appeal, and your own starting money.
+- **Appeal at creation:** Safe pitch (investor odds +20%, revenue ceiling ½×), Balanced, Moonshot (−15%, ceiling 2×).
+- **It's a real business that pays you** (your correction): each profitable month, 25% of profit is paid out; your share lands in your bank account after 25% tax (`DIVIDEND`, `DIVIDEND_TAX`, `startup/month.ts`). You can also pay yourself on demand, and selling the company pays your share of the valuation. Your share counts in net worth.
+- **Monthly** (`startupMonth`, called from `systems/monthly.ts`): development toward the next version, hype fades (faster when high), 5% viral / 4% bug news, revenue − wages − rent. Three months in the red → it folds.
+- **Revenue** = idea potential × appeal ceiling × hype^1.5 × quality × version × skills. Each new version needs 60% more work than the last.
+- **Team:** employees ($4k), supervisors ($7k, 1 per 5 employees), a manager ($12k, needs an office), head of HR ($8k, 10+ staff).
+- **Buildings:** your room (3 staff) → office (15, $50k) → facility (60, $500k) → HQ (200, $5M) → skyscraper (1,000, $50M). The view (`screens/desktop/startup/HQView.tsx`, SVG) goes from a bedroom desk to office floors to a penthouse meeting table over the city.
+- **Investors** (`pitch`): angel / VC ($1M valuation) / mega fund ($25M) / sovereign fund ($250M). They put in cash for a share, so your stake shrinks. One pitch per round per month.
+- **Skill tree:** Profit +15% revenue, Speed +20% development, Payroll −10% wages, Pitch +5% odds (3 levels each). Points come from launches, building moves and every 6 profitable months.
+- **Status by valuation:** Founder → CEO ($1M) → Tycoon ($25M) → Magnate ($250M) → **Diplomatic** ($1B + skyscraper).
+- **Diplomatic immunity** (`systems/immunity.ts` `untouchable`): no jail, no getting caught, no police pursuit or investigation, no Chirp cancellation. It's permanent once earned. The hard safety rules (consent, minors, Mature/Dark Crime toggles) are unchanged.
+- **Balance (scripted careful play):** about $3–7M valuation by year 1–3, about $15–30M by year 10. Tycoon is hard and the billion needs investors plus a moonshot. Companies that grow too fast fold.
+- **Webhook:** `webhook_patchnotes/update-0.11-start-up.json`.
+
+## Update 0.10 — Date Night
 Built from your chat request. The name "Date Night" is my placeholder. All of `npm run verify` passes, and the new test is `test-date.ts` (400 simulated dates).
 - **Romantic dates only:** crush, talking, dating, partner, engaged, spouse, fling or FWB, and someone who could be into you (`isRomanticDate`).
   - Start one from their profile ("Go on a date", which uses the slot) or from a date plan.

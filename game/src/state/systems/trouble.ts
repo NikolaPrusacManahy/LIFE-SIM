@@ -3,6 +3,7 @@ import { sendToJail } from './crime';
 import { fmt } from './finance';
 import { confiscatePhone } from './phone';
 import { legalAge } from '../rules/us';
+import { untouchable } from './immunity';
 
 // Update 0.3 — getting caught. Minors go through the juvenile system (parents, grounding,
 // community service, probation, juvenile hall); adults get fines, records and jail.
@@ -22,7 +23,7 @@ export const onProbation = (g: Game) => g.flag('probationUntil') > g.s.clock;
 
 /** Roll a catch chance; on a catch, queue the bust event. Returns true if caught. */
 export function riskCatch(g: Game, chance: number, o: Offense): boolean {
-  if (g.s.god || !g.chance(chance)) return false;
+  if (untouchable(g) || !g.chance(chance)) return false;
   g.fx({ type: 'police' });
   g.queue('busted', { ...o }, true);
   return true;

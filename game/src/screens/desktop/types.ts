@@ -4,7 +4,7 @@ import type { GameId } from '../../state/games/catalog';
 
 // Update 0.8 — the Doors desktop: shared window/app props.
 
-export type DeskApp = 'browser' | 'bitstore' | 'files' | 'settings' | 'trash' | 'game';
+export type DeskApp = 'browser' | 'bitstore' | 'files' | 'settings' | 'trash' | 'game' | 'startup';
 
 export interface DeskProps {
   game: Game;

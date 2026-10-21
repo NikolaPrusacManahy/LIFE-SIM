@@ -68,7 +68,7 @@ export function PhoneDevice({ mode, initial = null, ...host }: Props) {
                 </button>
               ))}
             </div>
-            <div className="dev-foot">v0.10 · LIFE//SIM</div>
+            <div className="dev-foot">v0.11 · LIFE//SIM</div>
           </div>
         )}
         {mode === 'phone' && <div className="dev-bar" />}

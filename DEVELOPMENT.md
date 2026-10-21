@@ -41,6 +41,8 @@ fx/StageCanvas ──▶ fx/stage/Stage (PixiJS, presentation only; never reads 
 | `npc/mood.ts` | Upset / busy state behind replies (`setMad`, `npcState`). |
 | `pipeline.ts` | Pure reducer: result card → events → banners. `PlayScreen` uses it; sessions and nights hold the queue. |
 | `pc/*` · `web/*` · `games/*` | Update 0.8 computers: parts, compatibility, assembly, sessions · sites + gates (`siteVisible` / `siteLock`), Nile / Onion orders, Discorb (verification), monthly web · mini-game rules. |
+| `startup/*` | Update 0.11 START-UP company: ideas/buildings/status data, actions (`company.ts`), the monthly tick and dividend (`month.ts`). |
+| `systems/immunity.ts` | `untouchable(g)`: god mode or Diplomatic status. Jail, catches, pursuit, investigations and cancellation check it. |
 | `datenight/*` | Update 0.10 dates as a scene: venues and their actions, spark, moments (`momentLock` = the hard gates), `DATE_AUDIT`. |
 | `nightlife/*` | Update 0.8 nights out: venue types and ages (`legalAge`), crowd, talk mini-game, leave-together gate (`INTOX_LIMIT`), extras and incidents. |
 | `phone/chat.ts` | Update 0.5 messenger: `tabsFor` / `chipsFor` (18+ gates), `sendChip`, groups (`ensureGroups`, `groupChips` = no photos/mature), `CHAT_MATURE_AUDIT`. |

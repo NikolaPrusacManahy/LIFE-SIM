@@ -1,0 +1,36 @@
+{
+  "username": "LIFE//SIM",
+  "content": "**Update 0.11 — START-UP** is out! 🚀",
+  "embeds": [
+    {
+      "title": "🚀 Start a real company",
+      "color": 16735370,
+      "description": "New computer app: START-UP. Pick an idea (AAA game studio, AI model, factory, smartwatch, phone brand, social app, electric cars, biotech, fashion, food delivery, space rockets), give it your own name and put in your own money. Day one is your bedroom."
+    },
+    {
+      "title": "💼 It pays you real money",
+      "color": 4177780,
+      "description": "Every profitable month the company pays a dividend: 25% of profit, times your share, taxed 25%, straight into your bank account. Pay yourself more when you need it, or sell the company for your share."
+    },
+    {
+      "title": "👥 Team & buildings",
+      "color": 3843302,
+      "description": "Hire employees, supervisors, a manager and a head of HR. Move from your room to an office, a facility, a headquarters, and finally a skyscraper with a meeting table over the whole city."
+    },
+    {
+      "title": "🦈 Investors",
+      "color": 13715036,
+      "description": "Pitch angels, VCs, mega funds and sovereign funds. They bring cash and take a share. At creation, choose how it appeals: a safe pitch is easy to fund but caps out low, a moonshot is a hard sell with double the ceiling."
+    },
+    {
+      "title": "🌳 Skill tree",
+      "color": 16765802,
+      "description": "Profit, speed, payroll and pitch, 3 levels each. Earned with launches, bigger buildings and steady profits. Three months in the red and the company folds. Millions are possible, but not easy."
+    },
+    {
+      "title": "🕊️ Diplomatic status",
+      "color": 16753468,
+      "description": "Founder → CEO → Tycoon → Magnate → Diplomatic. A billion-dollar company in a skyscraper makes you untouchable: no police, no jail, no cancellations. For life."
+    }
+  ]
+}

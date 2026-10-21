@@ -1,0 +1,52 @@
+/* Update 0.11 — START-UP tycoon app (Doors desktop window) */
+.dsk-win-startup { width: 1060px; max-height: 760px; }
+.sup-wrap { display: grid; grid-template-columns: 440px 1fr; gap: 12px; }
+.sup-left { display: flex; flex-direction: column; gap: 8px; }
+.sup-hq { width: 100%; border-radius: 14px; display: block; box-shadow: 0 8px 24px rgba(20, 10, 40, 0.25); }
+.sup-status { display: flex; align-items: center; gap: 6px; font: 700 13px var(--font); }
+.sup-rank { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: #e9e6f2; filter: grayscale(1); opacity: 0.5; }
+.sup-rank.on { filter: none; opacity: 1; background: #fff1c2; box-shadow: 0 0 0 2px #ffd36b; }
+.sup-status b { margin-left: 6px; font: 600 15px var(--display); }
+.sup-right { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sup-tabs { display: flex; gap: 4px; }
+.sup-tabs button { border: 0; padding: 6px 12px; border-radius: 99px; background: #fff; font: 700 12px var(--font); text-transform: capitalize; cursor: pointer; }
+.sup-tabs button.on { background: #1b2350; color: #fff; }
+.sup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.sup-stat { background: #fff; border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; }
+.sup-stat small { font: 800 10px var(--font); color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.5px; }
+.sup-stat b { font: 600 15px var(--display); }
+.sup-stat.bad b { color: #c2273c; }
+.sup-bar { grid-column: span 3; display: flex; flex-direction: column; gap: 3px; }
+.sup-bar small { font: 700 11px var(--font); color: var(--ink-dim); }
+.sup-bar i { display: block; height: 10px; border-radius: 99px; background: #e4e0ee; overflow: hidden; }
+.sup-bar em { display: block; height: 100%; }
+.sup-warn { grid-column: span 3; font: 700 12px var(--font); color: #c2273c; }
+.sup-list { display: flex; flex-direction: column; gap: 5px; max-height: 560px; overflow-y: auto; }
+.sup-row { display: flex; align-items: center; gap: 8px; border: 0; border-radius: 12px; padding: 8px 10px; background: #fff; text-align: left; color: var(--ink); cursor: pointer; }
+.sup-row > span:first-child { font-size: 18px; }
+.sup-row-mid { display: flex; flex-direction: column; min-width: 0; }
+.sup-row-mid b { font: 600 13px var(--display); }
+.sup-row-mid small { font: 700 10.5px var(--font); color: var(--ink-faint); }
+.sup-row:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px #3aa8e6; }
+.sup-row:disabled { opacity: 0.5; cursor: not-allowed; }
+.sup-skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.sup-skill { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; border-radius: 12px; padding: 10px 6px; background: #fff; cursor: pointer; color: var(--ink); }
+.sup-skill span { font-size: 22px; }
+.sup-skill b { font: 600 13px var(--display); }
+.sup-skill small { font: 700 10px var(--font); color: var(--ink-faint); text-align: center; }
+.sup-skill i { font-style: normal; color: #ff9d3c; letter-spacing: 2px; }
+.sup-skill:disabled { opacity: 0.6; cursor: default; }
+.sup-found { display: flex; flex-direction: column; gap: 8px; }
+.sup-found h3 { margin: 0; font: 600 18px var(--display); }
+.sup-name { font: 600 15px var(--display); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); }
+.sup-ideas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.sup-idea { display: flex; flex-direction: column; gap: 2px; border: 0; border-radius: 12px; padding: 8px; background: #fff; text-align: left; cursor: pointer; color: var(--ink); }
+.sup-idea span { font-size: 22px; }
+.sup-idea b { font: 600 12.5px var(--display); }
+.sup-idea small { font: 700 10px var(--font); color: var(--ink-faint); }
+.sup-idea.on, .sup-appeal button.on { box-shadow: inset 0 0 0 2px #3aa8e6; }
+.sup-appeal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.sup-appeal button { display: flex; flex-direction: column; gap: 2px; border: 0; border-radius: 12px; padding: 8px 10px; background: #fff; text-align: left; cursor: pointer; }
+.sup-appeal b { font: 600 13px var(--display); }
+.sup-appeal small { font: 700 10.5px var(--font); color: var(--ink-faint); }
+.sup-invest { display: flex; flex-direction: column; gap: 4px; font: 700 12.5px var(--font); }
