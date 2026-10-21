@@ -60,6 +60,7 @@ export function blankState(): GameState {
     usedThisSlot: { turn: -1, ids: [] },
     date: null,
     startup: null,
+    statCaps: { health: 100, energy: 100 },
     groups: [],
     background: 'middle',
     rules: 'us',

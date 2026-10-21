@@ -2,7 +2,8 @@
 // One observer rewrites "$1,234" in the UI's text (and tooltips) to euros at the set rate, and restores the
 // originals when the life uses US laws again. Elements marked data-cur="fixed" format their own money.
 
-export const USD_PER_EUR = 1.12;
+import { USD_PER_EUR } from '../state/rules/us';
+export { USD_PER_EUR };
 const MONEY = /\$(\d[\d,]*(?:\.\d+)?)/g;
 
 let eur = false;

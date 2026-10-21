@@ -31,8 +31,8 @@ export function StatsCard({ game }: { game: Game }) {
         {STAT_ROWS.map(([k, icon, color]) => (
           <div key={k} className="me-bar" title={k}>
             <span>{icon}</span>
-            <i className="stc-name">{k}</i>
-            <div className="me-track"><div style={{ width: `${s.stats[k]}%`, background: color }} /></div>
+            <i className="stc-name">{k}{game.maxOf(k) > 100 && <small> /{game.maxOf(k)}</small>}</i>
+            <div className="me-track"><div style={{ width: `${(s.stats[k] / game.maxOf(k)) * 100}%`, background: color }} /></div>
             <b>{Math.round(s.stats[k])}</b>
           </div>
         ))}

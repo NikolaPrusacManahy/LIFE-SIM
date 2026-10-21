@@ -298,6 +298,8 @@ export interface GameState {
   date: import('./datenight/types').DateScene | null;
   /** Update 0.11 — START-UP: your company */
   startup: import('./startup/types').Startup | null;
+  /** Update 0.11 — max health / energy (100, raised up to 300 with Stats on steroids) */
+  statCaps: { health: number; energy: number };
   background: Background;
   /** Update 0.5.1 — legal system this life plays under */
   rules: 'us' | 'eu';

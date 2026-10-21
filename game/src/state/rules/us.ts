@@ -1,6 +1,9 @@
 import type { Game } from '../Game';
 import type { Region } from '../types';
 
+/** Update 0.10 — EU lives see euros at this rate. Update 0.11 — euro-priced things use it too. */
+export const USD_PER_EUR = 1.12;
+
 // Update 0.3 — United States ruleset. Every legal age lives here; activity files never hardcode them.
 // Update 0.5.1 — rules/eu.ts supplies the same shape; each life picks one (`s.rules`).
 import { EU } from './eu';

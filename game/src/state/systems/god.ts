@@ -196,7 +196,7 @@ export function godMonth(g: Game) {
   if (!isGod(g)) return;
   g.s.money = GOD_WEALTH;
   g.s.debt = 0;
-  g.s.stats.health = 100;
+  g.s.stats.health = g.maxOf('health');
   if (g.flag('ruinsUntil') && g.flag('ruinsUntil') <= g.s.clock) {
     g.s.flags.ruinsUntil = 0;
     g.log('🏗️ The city has been rebuilt. They put up a statue. It isn’t of you.', 'milestone');

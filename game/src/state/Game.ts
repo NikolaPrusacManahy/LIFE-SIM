@@ -110,7 +110,12 @@ export class Game {
     return m;
   }
 
-  /** Adjust a 0..100 stat. Learnable stats get trait multipliers & diminishing returns. */
+  /** Update 0.11 — the top of a stat: 100, or the raised max for health / energy. */
+  maxOf(k: StatKey): number {
+    return k === 'health' || k === 'energy' ? (this.s.statCaps?.[k] ?? 100) : 100;
+  }
+
+  /** Adjust a 0..max stat. Learnable stats get trait multipliers & diminishing returns. */
   stat(k: StatKey, d: number): number {
     if (!d) return 0;
     const st = this.s.stats;
@@ -120,7 +125,7 @@ export class Game {
     }
     if (k === 'health' && d < 0 && this.hasTrait('iron')) delta *= 0.7;
     const before = st[k];
-    st[k] = clamp(before + delta, 0, 100);
+    st[k] = clamp(before + delta, 0, this.maxOf(k));
     const real = st[k] - before;
     this.track(k, real);
     return real;
@@ -245,7 +250,7 @@ export class Game {
     if (this.s.dead) return;
     // Update 0.6 — gods don't die
     if (this.s.god) {
-      this.s.stats.health = 100;
+      this.s.stats.health = this.maxOf('health');
       return;
     }
     this.s.dead = { cause, age: this.age };

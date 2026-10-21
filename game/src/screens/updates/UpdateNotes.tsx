@@ -16,6 +16,8 @@ const UPDATES: [string, Card[]][] = [
       ['😏', 'Make a move on a friend', ['Same date scene, but harder:', '+10 spark per moment, and they can dodge the kiss.']],
       ['🏡', 'They ask you', ['Partners text: movie tonight? come over? my place?', 'In love (80+): they pick where & how. Spouses: you can ask.']],
       ['🎓', 'School stays in school', ['No school events or school rivals after you leave.']],
+      ['💉', 'Stats on steroids', ['Computer app: $100 / €100 per stat level, up to 100.', 'Max health & energy up to 300. Karma isn’t for sale.']],
+      ['😴', 'Sleep', ['A night in your bed fills the whole energy bar.']],
     ],
   ],
   [

@@ -123,7 +123,7 @@ export function endNight(g: Game): string {
   g.s.night = null;
   // Update 0.8 — a night that ran into the morning: you slept it off (half energy if you got drunk)
   if (n.startPhase === 'night' || n.startPhase === 'evening' && g.phase === 'morning') {
-    const target = n.intox >= 50 ? 50 : 100;
+    const target = Math.round(g.maxOf('energy') * (n.intox >= 50 ? 0.5 : 1));
     g.stat('energy', target - g.s.stats.energy);
   }
   // what tomorrow remembers

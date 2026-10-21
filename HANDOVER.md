@@ -24,6 +24,13 @@ Built from your chat request. The name "START-UP" is the app's name, reused as t
   - **The player asks only with a spouse:** "🔥 Ask for intimacy" (spouse only) → you pick where and how. Partners and dates always lead. Your existing date moments (your place, restroom) are unchanged.
   - Hard rules unchanged: every step re-checks `canBeIntimate`; fade to black.
 - **School stays in school** (your correction): a rival appears "in class" only while enrolled, otherwise at work. Admirer locker notes need high school, a teacher's "after class" talk needs enrolment, and school rivals drop the rivalry once you leave school (`retireStaff`).
+- **💉 Stats on steroids** (computer app, `systems/boost.ts`, `screens/desktop/steroids/SteroidsApp.tsx`, test `test-steroids.ts`):
+  - Buy any stat up to 100 (health, mood, energy, smarts, fitness, charm, creativity, looks, street). Karma is a meter and can't be bought.
+  - 100 per level in your currency: $100 on US lives, €100 on EU lives ($112 internally, shown as €100). A slider and a number box pick the target level; hold the button to pay.
+  - Max health and max energy can be raised from 100 to 300 at the same price per level (`s.statCaps`, `Game.maxOf`). Raising the max doesn't fill the bar; buy or rest to fill it. Nights out that end in the morning refill to the new max.
+  - Purchases don't use a computer action (my default).
+- **Sleep fills the whole energy bar** (your correction): home Sleep → energy to max (a raised max too); homeless → half. Jail, camping and sleeping rough on the run are unchanged.
+- **Stats card:** a raised max shows next to the name ("energy /300") so the number column doesn't overflow.
 - **Webhook:** `webhook_patchnotes/update-0.11-start-up.json`.
 
 ## Update 0.10 — Date Night

@@ -1,0 +1,11 @@
+/* Update 0.11 — Stats on steroids (Doors desktop window) */
+.dsk-win-steroids { width: 820px; max-height: 760px; }
+.ste-wrap { display: flex; flex-direction: column; gap: 5px; max-height: 640px; overflow-y: auto; scrollbar-width: none; }
+.ste-wrap::-webkit-scrollbar { display: none; }
+.ste-row { display: grid; grid-template-columns: 26px 110px 64px 1fr 64px 220px; align-items: center; gap: 8px; background: #fff; border-radius: 12px; padding: 7px 10px; }
+.ste-icon { font-size: 18px; }
+.ste-name { font: 600 13px var(--display); text-transform: capitalize; }
+.ste-cur { font: 700 12px var(--font); color: var(--ink-dim); }
+.ste-slide { width: 100%; }
+.ste-num { width: 60px; border: 1px solid #d8d3e6; border-radius: 8px; padding: 4px 6px; font: 700 12px var(--font); }
+.ste-row .btn-sm { width: 100%; }

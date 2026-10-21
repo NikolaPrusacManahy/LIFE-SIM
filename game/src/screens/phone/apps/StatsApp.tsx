@@ -28,7 +28,7 @@ export function StatsApp({ game }: AppProps) {
       </div>
       <div className="app-box">
         {STAT_ROWS.map(([k, icon, color]) => (
-          <Bar key={k} label={k[0].toUpperCase() + k.slice(1)} icon={icon} value={s.stats[k]} color={color} />
+          <Bar key={k} label={k[0].toUpperCase() + k.slice(1)} icon={icon} value={s.stats[k]} max={game.maxOf(k)} color={color} />
         ))}
         <Bar label="Karma" icon="☯️" value={s.karma} min={-100} max={100} color={s.karma >= 0 ? '#3cbfc4' : '#ff5d6c'} />
         <Bar label="Fame" icon="🌟" value={s.fame} color="#f5b53a" />

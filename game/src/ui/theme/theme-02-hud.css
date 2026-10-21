@@ -14,6 +14,7 @@
 .me-bar { display: flex; align-items: center; gap: 8px; }
 .me-bar span { width: 18px; text-align: center; font-size: 13px; }
 .stc-name { width: 66px; font: 700 12px var(--font); font-style: normal; color: var(--ink-dim); text-transform: capitalize; }
+.stc-name small { font-size: 10px; color: var(--ink-faint); }
 .me-bar b { width: 26px; text-align: right; font: 800 12px var(--font); color: var(--ink); }
 .me-track { position: relative; flex: 1; height: 9px; border-radius: 99px; background: #f1edf6; overflow: hidden; }
 .me-track > div { height: 100%; border-radius: 99px; transition: width 0.5s ease, left 0.5s ease; }

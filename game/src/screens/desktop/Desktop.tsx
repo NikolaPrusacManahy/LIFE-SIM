@@ -10,6 +10,7 @@ import { Files, DeskSettings, Trash } from './Files';
 import { GameWindow } from './games/GameWindow';
 import { GAME_BY_ID, type GameId } from '../../state/games/catalog';
 import { StartupApp } from './startup/StartupApp';
+import { SteroidsApp } from './steroids/SteroidsApp';
 
 // Update 0.8 — "Doors": a fake OS. Windows open, close, drag and stack. One sitting = one time slot.
 
@@ -19,6 +20,7 @@ const APPS: { app: DeskApp; name: string; icon: string; arg?: string }[] = [
   { app: 'browser', name: 'Browser', icon: '🌐' },
   { app: 'browser', name: 'JobHunt', icon: '💼', arg: 'jobhunt' },
   { app: 'startup', name: 'START-UP', icon: '🚀' },
+  { app: 'steroids', name: 'Stats on steroids', icon: '💉' },
   { app: 'bitstore', name: 'Bitstore', icon: '🛍️' },
   { app: 'browser', name: 'Discorb', icon: '💬', arg: 'discorb' },
   { app: 'files', name: 'Files', icon: '📁' },
@@ -35,7 +37,7 @@ interface Win {
   z: number;
 }
 
-const TITLE: Record<DeskApp, string> = { browser: 'Browser', bitstore: 'Bitstore', files: 'Files', settings: 'Settings', trash: 'Trash', game: 'Game', startup: 'START-UP' };
+const TITLE: Record<DeskApp, string> = { browser: 'Browser', bitstore: 'Bitstore', files: 'Files', settings: 'Settings', trash: 'Trash', game: 'Game', startup: 'START-UP', steroids: 'Stats on steroids' };
 
 export function Desktop({ game, host, onShutdown }: { game: Game; host: AppHostProps; onShutdown: (summary: string) => void }) {
   const [wins, setWins] = useState<Win[]>([]);
@@ -115,6 +117,7 @@ export function Desktop({ game, host, onShutdown }: { game: Game; host: AppHostP
             {w.app === 'browser' && <Browser {...props} site={w.arg} />}
             {w.app === 'bitstore' && <Bitstore {...props} />}
             {w.app === 'startup' && <StartupApp {...props} />}
+            {w.app === 'steroids' && <SteroidsApp {...props} />}
             {w.app === 'files' && <Files {...props} />}
             {w.app === 'settings' && <DeskSettings {...props} />}
             {w.app === 'trash' && <Trash />}

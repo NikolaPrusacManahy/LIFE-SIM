@@ -9,11 +9,13 @@ import { legalAge } from '../rules/us';
 
 export const HOME_ACTS: ActivityDef[] = [
   {
-    id: 'sleep', loc: 'home', name: 'Sleep', icon: '😴', desc: 'Recharge for tomorrow.', cat: 'rest', energy: 0, phases: NIGHT,
+    id: 'sleep', loc: 'home', name: 'Sleep', icon: '😴', desc: 'Full energy.', cat: 'rest', energy: 0, phases: NIGHT,
     run: (g) => {
       const homeless = g.s.housing === 'homeless';
       const lux = ['loft', 'mansion', 'ranch'].includes(g.s.housing);
-      g.stat('energy', homeless ? 45 : lux ? 85 : 70);
+      // Update 0.11 — a night in your own bed fills the whole bar (a raised max too); the street gives half
+      const full = g.maxOf('energy');
+      g.stat('energy', (homeless ? Math.round(full / 2) : full) - g.s.stats.energy);
       g.stat('health', homeless ? -1 : 1);
       if (homeless) g.stat('mood', -3);
       if (lux) g.stat('mood', 2);
