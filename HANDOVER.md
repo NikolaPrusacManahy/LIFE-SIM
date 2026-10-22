@@ -60,6 +60,7 @@
   - **Tests:** `test-engines.ts`.
   - **Still one-click (by design):** medical, paperwork, sleep and the computer.
 - **Title screen (designer request):** back to the classic flat skyline (`StageView.classic`, set on `TITLE_VIEW` and the character-creation preview). The footer links "Update 0.13 — Infinite Lives" and has ⚙️ Settings (`screens/title/TitleSettings.tsx`: Mature Content, Dark Crime, Music, Sound). Title and phone show v0.13.
+- **Spark update** (designer request; `systems/dating.ts`, `DatingApp.tsx`, also embedded in Spark Web on the PC; test `test-spark.ts`): `SWIPES_PER_MONTH` = 30 (was 10). `s.spark` profile: bio, show (any or one gender you're attracted to), age range (18+), tag (persona). A chosen tag shows on 30% of profiles when `personaOk` allows it (gyaru forces a woman of 18–24 when you see women). A finished profile gives +5% match.
 - **Still to do in 0.13:** stages A–G (Wanderlust first).
 
 ## Current patch: Update 0.12 — Personas

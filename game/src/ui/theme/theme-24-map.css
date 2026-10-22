@@ -22,3 +22,21 @@
 .tst-card.mdl-card { width: 480px; }
 .tst-list { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 14px; text-align: left; }
 .tst-label { font: 800 11px var(--font); letter-spacing: 1.5px; text-transform: uppercase; color: #8e6bd8; margin-top: 4px; }
+/* Update 0.13 — Spark profile */
+.spk-tabs { display: flex; gap: 6px; }
+.spk-tabs button { flex: 1; border: 0; border-radius: 99px; padding: 7px 10px; background: rgba(255, 255, 255, 0.7); font: 700 13px var(--font); color: var(--ink); cursor: pointer; }
+.spk-tabs button.on { background: #ff4f8b; color: #fff; }
+.spk-nudge { border: 0; border-radius: 14px; padding: 9px 12px; background: linear-gradient(90deg, #ff4f8b, #8e6bd8); color: #fff; font: 700 13px var(--font); cursor: pointer; text-align: left; }
+.spk-me { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 18px; background: rgba(255, 255, 255, 0.92); }
+.spk-head { display: flex; align-items: center; gap: 12px; }
+.spk-head .por-dice { border-radius: 50%; }
+.spk-head b { display: block; font: 700 17px var(--display); }
+.spk-head small { font: 600 12px var(--font); color: #6a6880; }
+.spk-label { font: 800 11px var(--font); letter-spacing: 1px; text-transform: uppercase; color: #ff4f8b; margin-top: 4px; }
+.spk-label small { text-transform: none; letter-spacing: 0; color: #6a6880; font-weight: 600; }
+.spk-bio { min-height: 54px; resize: none; border: 1px solid #e4e0ee; border-radius: 12px; padding: 8px 10px; font: 500 14px var(--font); color: var(--ink); outline: none; }
+.spk-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.spk-chips button { border: 1px solid #f1d3e0; border-radius: 99px; padding: 4px 10px; background: #fff; font: 600 12px var(--font); color: var(--ink); cursor: pointer; }
+.spk-chips button.on { background: #ff4f8b; border-color: #ff4f8b; color: #fff; }
+.spk-ages { display: flex; flex-direction: column; gap: 2px; }
+.spk-ages input { accent-color: #ff4f8b; }

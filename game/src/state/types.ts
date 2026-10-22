@@ -312,6 +312,8 @@ export interface GameState {
   wallet: import('./systems/bitcons').Wallet;
   /** Update 0.12 — Hackr: this month's leaked accounts */
   hack: import('./web/hack').HackState;
+  /** Update 0.13 — your Spark dating profile and preferences */
+  spark: import('./systems/dating').SparkProfile;
   background: Background;
   /** Update 0.5.1 — legal system this life plays under */
   rules: 'us' | 'eu';

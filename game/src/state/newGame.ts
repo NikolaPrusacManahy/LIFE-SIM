@@ -1,3 +1,4 @@
+import { blankSpark } from './systems/dating';
 import { GOD_WEALTH, Game } from './Game';
 import type { Appearance, Background, GameState, Gender, Person, Pronouns, Region, Sexuality, StatKey } from './types';
 import { pronounsFor } from './npc/identity';
@@ -67,6 +68,7 @@ export function blankState(): GameState {
     notebook: [],
     wallet: blankWallet(),
     hack: blankHack(),
+    spark: blankSpark(),
     groups: [],
     background: 'middle',
     rules: 'us',

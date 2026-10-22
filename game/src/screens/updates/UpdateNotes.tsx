@@ -17,6 +17,7 @@ const UPDATES: [string, Card[]][] = [
       ['📜', 'Credits', ['Title screen and pause menu.']],
       ['🎮', 'Every activity is a game', ['76 activities, 14 kinds: rhythm, quizzes, conversations, runner,', 'real blackjack & poker, fishing, stealth, driving, gardening, drawing…']],
       ['⭐', 'Play well, gain more', ['Great run: 1.5× the gains. Poor run: 0.6×.', '⏩ Skip any game: normal results.']],
+      ['💘', 'Spark update', ['30 swipes a month. Make your profile: bio, who to show, ages.', 'Pick a type (gamer, shy…): it shows on up to 30% of profiles.']],
       ['🃏', 'Real casino, real tests', ['Your hand decides the casino. Your quiz and your drive', 'decide the permit and road tests. The SAT section counts.']],
     ],
   ],
