@@ -1,3 +1,4 @@
+import { ItemIcon } from '../../components/ItemIcon';
 import { useState } from 'react';
 import type { DeskProps } from './types';
 import { ITEM_BY_ID, itemCount, itemLock } from '../../state/inventory/items';
@@ -34,7 +35,7 @@ export function NileView({ game, notify, dark }: DeskProps & { dark: boolean }) 
           const lock = dark ? null : itemLock(game, it);
           return (
             <button key={it.id} className="shp-item" disabled={!!lock} title={lock ?? it.desc} onClick={() => setCart((c) => [...c, it.id])}>
-              <span>{it.icon}</span>
+              <ItemIcon id={it.id} emoji={it.icon} />
               <b>{it.name}</b>
               <small>{lock ?? `${fmt(price(it.id))}${itemCount(game, it.id) ? ` · own ${itemCount(game, it.id)}` : ''}`}</small>
             </button>

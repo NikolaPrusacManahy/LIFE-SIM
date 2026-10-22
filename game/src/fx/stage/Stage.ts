@@ -11,6 +11,8 @@ import { Particles } from './particles';
 import { Weather, type WeatherKind } from './weather';
 import { Ambient } from './ambient';
 import { fade } from './gfx';
+import { buildIso, isoReady, preloadIso } from '../iso/IsoView';
+import type { Member } from '../iso/layout-core';
 
 export interface StageView {
   region: Region;
@@ -25,6 +27,14 @@ export interface StageView {
   prison?: boolean;
   /** Update 0.6 — a levelled city: scorched sepia */
   ruins?: boolean;
+  /** Update 0.13 — who's home with you (shown in the home scene) */
+  household?: Member[];
+  /** Update 0.13 — Reduced effects: fewer people, no club lights */
+  reduced?: boolean;
+  /** Update 0.13 — contacts who are here (clickable) */
+  people?: Member[];
+  /** Update 0.13 — the classic flat scene (title and character creation) */
+  classic?: boolean;
 }
 
 const DELTA_COLOR = { up: 0x5be37d, down: 0xff6b7a, money: 0xffcf4a, energy: 0x6fd3ff };
@@ -74,6 +84,10 @@ export class Stage {
   private backdrop: Backdrop | null = null;
   private scene: SceneBuild | null = null;
   private view: StageView | null = null;
+  /** Update 0.13 — indoors: no sky tint, no weather */
+  private indoor = false;
+  /** Update 0.13 — someone you know was clicked on the stage */
+  onPick: ((pid: string) => void) | null = null;
   private time = 0;
   private mouse = { x: 0, y: 0, tx: 0, ty: 0 };
   private onMove = (e: PointerEvent) => {
@@ -90,21 +104,25 @@ export class Stage {
   async init(host: HTMLElement) {
     // signs and floating text are Pixi Text: wait for webfonts so they don't bake in a fallback face
     await Promise.race([document.fonts?.ready, new Promise((r) => setTimeout(r, 1500))]);
+    // Update 0.13 — the isometric atlases (a failed load just keeps the old scenes)
+    await preloadIso();
     await this.app.init({ width: W, height: H, backgroundAlpha: 0, antialias: true, resolution: Math.min(2, window.devicePixelRatio || 1), autoDensity: true });
     if (this.dead) {
-      this.app.destroy(true);
+      this.app.destroy({ removeView: true });
       return;
     }
     host.appendChild(this.app.canvas);
     this.sceneGroup.addChild(this.sceneBody, this.sceneLights, this.sceneNeon, this.ambient.traffic, this.ambient.trafficLights, this.npcAvatar.view, this.avatar.view);
     this.npcAvatar.view.visible = false;
-    this.npcAvatar.place(SCENE_X + 60, GROUND_Y + 10);
+    this.npcAvatar.place(SCENE_X + 60, GROUND_Y - 8); // Update 0.13 — feet inside the stage window
     this.root.addChild(this.sky.view, this.ambient.birds, this.backLayer, this.haze, this.sceneGroup, this.ambient.front, this.weather.view, this.vignette, this.particles.view);
     this.app.stage.addChild(this.root);
-    this.avatar.place(SCENE_X + 210, GROUND_Y + 10);
+    this.avatar.place(SCENE_X + 210, GROUND_Y - 8);
     this.app.ticker.add((t) => this.update(Math.min(0.05, t.deltaMS / 1000)));
     window.addEventListener('pointermove', this.onMove);
     this.ready = true;
+    // Update 0.13 — the Kenney sky art (clouds, sun, moon)
+    if (isoReady()) this.sky.useArt(this.view?.month ?? 0);
     if (this.view) {
       const v = this.view;
       this.view = null;
@@ -122,7 +140,9 @@ export class Stage {
     const season = seasonOf(v.month);
     const prevSeason = prev ? seasonOf(prev.month) : null;
     if (!prev || prev.region !== v.region || prevSeason !== season) this.rebuildBackdrop(v.region, season);
-    const sceneChanged = !prev || prev.scene !== v.scene || prev.region !== v.region || prevSeason !== season || (prev.weather === 'rain') !== (v.weather === 'rain');
+    const sceneChanged = !prev || prev.scene !== v.scene || prev.region !== v.region || prevSeason !== season || (prev.weather === 'rain') !== (v.weather === 'rain')
+      || JSON.stringify(prev.household ?? []) !== JSON.stringify(v.household ?? []) || JSON.stringify(prev.people ?? []) !== JSON.stringify(v.people ?? []) || !!prev.reduced !== !!v.reduced || !!prev.classic !== !!v.classic;
+    if (prev && prev.month !== v.month) this.sky.useArt(v.month);
     if (sceneChanged) this.rebuildScene(v, season, !instant && !!prev && prev.scene !== v.scene);
     if (!prev || prev.phase !== v.phase) this.sky.setPhase(v.phase, instant || !prev);
     this.weather.set(v.weather);
@@ -169,7 +189,7 @@ export class Stage {
     if (this.ready) {
       gsap.killTweensOf(this.root);
       gsap.killTweensOf(this.sceneGroup);
-      this.app.destroy(true, { children: true });
+      this.app.destroy({ removeView: true }, { children: true }); // not `true`: that also releases Pixi's global pools and blacks out the other canvases
       this.ready = false;
     }
   }
@@ -202,7 +222,14 @@ export class Stage {
   private rebuildScene(v: StageView, season: ReturnType<typeof seasonOf>, animate: boolean) {
     const swap = () => {
       for (const c of [this.sceneBody, this.sceneLights, this.sceneNeon]) c.removeChildren().forEach((x) => x.destroy({ children: true }));
-      this.scene = buildScene(v.scene, v.region, season, v.weather === 'rain');
+      // Update 0.13 — places with an isometric diorama draw that instead (the flat skyline hides behind it)
+      const iso = isoReady() && !v.classic ? buildIso(v.scene, season, v.weather === 'rain', { household: v.household, people: v.people, reduced: v.reduced, onPick: (pid) => this.onPick?.(pid) }) : null;
+      this.scene = iso ?? buildScene(v.scene, v.region, season, v.weather === 'rain');
+      this.indoor = !!iso?.indoor;
+      this.backLayer.visible = !iso;
+      this.haze.visible = !iso;
+      this.weather.view.visible = !this.indoor;
+      this.ambient.birds.visible = !this.indoor;
       this.sceneBody.addChild(this.scene.body);
       this.sceneLights.addChild(this.scene.lights.view);
       this.sceneNeon.addChild(this.scene.neon.view);
@@ -245,7 +272,7 @@ export class Stage {
     this.sceneGroup.position.set(-m.x * PARALLAX, -m.y * 5);
 
     // sky-lit surfaces take the sky tint; lights fade in with darkness
-    this.sceneBody.tint = key.tint;
+    this.sceneBody.tint = this.indoor ? 0xffffff : key.tint;
     this.ambient.traffic.tint = key.tint;
     this.avatar.view.tint = key.tint === 0xffffff ? 0xffffff : mixTint(key.tint);
     this.sceneLights.alpha = lightA;

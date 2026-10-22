@@ -1,3 +1,4 @@
+import { ItemIcon } from '../../../components/ItemIcon';
 import { ITEMS, blackPrice, buyItem, itemCount } from '../../../state/inventory/items';
 import { darkCrimeOn } from '../../../state/crime/consent';
 import { fmt } from '../../../state/systems/finance';
@@ -14,7 +15,7 @@ export function BlackMarketApp({ game, done }: AppProps) {
         const price = blackPrice(it);
         return (
           <div key={it.id} className={`ph-row ${game.canAfford(price) ? '' : 'dim'}`}>
-            <span className="ph-row-icon">{it.icon}</span>
+            <ItemIcon id={it.id} emoji={it.icon} className="ph-row-icon" />
             <span className="ph-row-main"><b>{it.name}{itemCount(game, it.id) ? ` (${itemCount(game, it.id)})` : ''}</b><small>{it.desc}</small></span>
             <button className="btn btn-sm" disabled={!game.canAfford(price)} onClick={() => done(buyItem(game, it.id, true), 'The Back Room', '🕶️')}>{fmt(price)}</button>
           </div>

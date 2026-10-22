@@ -18,7 +18,8 @@ import { installCurrency, setCurrency } from './ui/currency';
 
 type Screen = 'title' | 'create' | 'play';
 
-const TITLE_VIEW: StageView = { region: 'city', scene: 'downtown', phase: 'night', month: 5, weather: 'clear', look: null };
+// Update 0.13 — the title and character creation keep the classic flat skyline
+const TITLE_VIEW: StageView = { region: 'city', scene: 'downtown', phase: 'night', month: 5, weather: 'clear', look: null, classic: true };
 
 export function App() {
   const [screen, setScreen] = useState<Screen>('title');
@@ -83,12 +84,13 @@ export function App() {
       month: 5,
       weather: 'clear',
       look: { ...preview.look, gender: preview.gender, age: preview.age, mood: 70, outfit: 'casual' },
+      classic: true,
     };
   }
 
   return (
-    <div className="app-frame">
-      <StageCanvas ref={stage} view={view} />
+    <div className={`app-frame ${screen === 'play' ? 'is-play' : ''}`}>
+      <StageCanvas ref={stage} view={view} framed={screen === 'play'} onPick={(pid) => window.dispatchEvent(new CustomEvent('lifesim:pick', { detail: pid }))} />
       <div className="app-ui">
         {screen === 'title' && <TitleScreen hasSave={anySave()} onContinue={() => setPicker('continue')} onNew={() => setPicker('new')} />}
         {screen === 'title' && picker && <SlotPicker mode={picker} onPick={pick} onClose={() => setPicker(null)} />}

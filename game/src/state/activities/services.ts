@@ -37,7 +37,8 @@ export const SERVICE_ACTS: ActivityDef[] = [
     when: (g) => !g.flag('permit'),
     risk: (g) => pct(g.statOdds('smarts', 25)),
     run: (g) => {
-      if (g.check('smarts', 25)) { g.setFlag('permit'); g.burst('sparkle'); return 'Passed! You have a learner’s permit.'; }
+      // Update 0.13 — the quiz decides it when you played it
+      if (g.playScore !== null ? g.playScore >= 0.6 : g.check('smarts', 25)) { g.setFlag('permit'); g.burst('sparkle'); return 'Passed! You have a learner’s permit.'; }
       return 'Failed by two questions. Study the handbook and retry.';
     },
   },
@@ -47,7 +48,8 @@ export const SERVICE_ACTS: ActivityDef[] = [
     lock: (g) => (g.flag('driveLessons') >= 3 ? null : 'Take 3 lessons first'),
     risk: (g) => pct(g.odds((g.s.stats.smarts + g.s.stats.fitness) / 2, 30)),
     run: (g) => {
-      if (Math.random() < g.odds((g.s.stats.smarts + g.s.stats.fitness) / 2, 30)) {
+      // Update 0.13 — the drive decides it when you played it
+      if (g.playScore !== null ? g.playScore >= 0.6 : Math.random() < g.odds((g.s.stats.smarts + g.s.stats.fitness) / 2, 30)) {
         g.setFlag('license');
         g.burst('confetti');
         g.banner('🚗 Licensed!', 0x34c3c9);

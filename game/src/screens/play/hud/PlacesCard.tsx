@@ -10,7 +10,7 @@ const TILE: Record<string, string> = {
 };
 
 /** Right-hand list of places, like rooms in a house. */
-export function PlacesCard({ game, tab, setTab }: { game: Game; tab: string; setTab: (id: string) => void }) {
+export function PlacesCard({ game, tab, setTab, onMap }: { game: Game; tab: string; setTab: (id: string) => void; onMap?: () => void }) {
   const locs = visibleLocations(game);
   const obs = currentObligations(game);
   const plans = upcomingPlans(game);
@@ -26,7 +26,11 @@ export function PlacesCard({ game, tab, setTab }: { game: Game; tab: string; set
           ))}
         </div>
       )}
-      <div className="hud-label">{game.s.region === 'city' ? 'THE CITY' : 'THE COUNTRYSIDE'}</div>
+      <div className="hud-label plc-head">
+        {game.s.region === 'city' ? 'THE CITY' : 'THE COUNTRYSIDE'}
+        {/* Update 0.13 — the clickable map */}
+        {onMap && <button className="plc-map" onClick={onMap} title="Open the map">🗺️ Map</button>}
+      </div>
       <div className="plc-list">
         {locs.map((l) => {
           const duty = obs.find((o) => o.loc === l.id);

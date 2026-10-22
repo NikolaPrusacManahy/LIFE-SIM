@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Texture } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { GROUND_Y, SKY, W, hexCss, lerp, lerpColor, seeded, type SkyKey } from './palette';
 import { glow } from './gfx';
 import type { Phase } from '../../state/types';
@@ -70,6 +70,32 @@ export class Sky {
     this.sunTo = SUN_POS[p];
     this.t = instant ? 1 : 0;
     this.apply(instant ? 1 : 0);
+  }
+
+  /** Update 0.13 — Kenney background art (clouds, sun, moon) once the atlases are loaded; the drawn sky stays as the fallback. */
+  useArt(month: number) {
+    if (!Assets.cache.has('sky_cloud1')) return;
+    const r = seeded(11);
+    this.clouds.removeChildren().forEach((c) => c.destroy({ children: true }));
+    for (let i = 0; i < 9; i++) {
+      const s = new Sprite(Texture.from(`sky_cloud${1 + (i % 9)}`));
+      s.anchor.set(0.5);
+      s.position.set(r() * W, 60 + (i % 4) * 55 + r() * 30);
+      s.scale.set(0.55 + r() * 0.5);
+      (s as any).speed = 5 + r() * 9;
+      this.clouds.addChild(s);
+    }
+    const art = (name: string, size: number) => {
+      const s = new Sprite(Texture.from(name));
+      s.anchor.set(0.5);
+      s.scale.set(size / Math.max(1, s.texture.width));
+      return s;
+    };
+    // keep the glows (first children), swap the discs for the art
+    while (this.sun.children.length > 2) this.sun.removeChildAt(2).destroy();
+    this.sun.addChild(art('sky_sun', 84));
+    while (this.moon.children.length > 1) this.moon.removeChildAt(1).destroy();
+    this.moon.addChild(art(month % 2 ? 'sky_moon_half' : 'sky_moon_full', 70));
   }
 
   get key() { return this.cur; }

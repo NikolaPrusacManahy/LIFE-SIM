@@ -1,3 +1,4 @@
+import { ItemIcon } from '../../../components/ItemIcon';
 import { useState } from 'react';
 import { NotebookView } from './NotebookView';
 import { ITEM_BY_ID, contrabandHeld } from '../../../state/inventory/items';
@@ -23,7 +24,7 @@ export function BagApp({ game }: AppProps) {
           if (!it) return null;
           return (
             <div key={id} className={`bag-item ${hot.has(id) ? 'hot' : ''}`} title={it.desc}>
-              <span>{it.icon}</span>
+              <ItemIcon id={id} emoji={it.icon} />
               <b>{it.name}</b>
               <small>{n > 1 ? `×${n}` : ''}{hot.has(id) ? ' · illegal for you' : ''}</small>
               {usedFor(id).length > 0 && <small className="bag-use">For: {usedFor(id).join(', ')}</small>}

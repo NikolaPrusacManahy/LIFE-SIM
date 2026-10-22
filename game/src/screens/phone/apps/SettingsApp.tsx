@@ -33,6 +33,12 @@ export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
     saveSettings({ sound: !sound });
     setSound(settings.sound);
   };
+  // Update 0.13 — a lighter stage for slower computers
+  const [reduced, setReduced] = useState(settings.reducedFx);
+  const toggleReduced = () => {
+    saveSettings({ reducedFx: !reduced });
+    setReduced(settings.reducedFx);
+  };
   const toggle = () => {
     saveSettings({ mature: !mature });
     setMature(settings.mature);
@@ -63,6 +69,13 @@ export function SettingsApp({ game, onTitle, onRestart }: AppProps) {
           <small>Clicks, texts, notifications.</small>
         </span>
         <i className={`set-switch ${sound ? 'on' : ''}`} />
+      </button>
+      <button className="app-box set-row" onClick={toggleReduced}>
+        <span>
+          <b>Reduced effects</b>
+          <small>Fewer people and cars on screen, no club lights. For slower computers.</small>
+        </span>
+        <i className={`set-switch ${reduced ? 'on' : ''}`} />
       </button>
       <button className="app-box set-row" onClick={toggle} disabled={!settings.isAdult}>
         <span>

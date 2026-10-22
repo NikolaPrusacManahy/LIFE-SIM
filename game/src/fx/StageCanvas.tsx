@@ -8,7 +8,8 @@ export interface StageHandle {
 }
 
 /** Mounts the PixiJS stage once; `view` updates are pushed to it on every render. */
-export const StageCanvas = forwardRef<StageHandle, { view: StageView }>(function StageCanvas({ view }, ref) {
+/** Update 0.13 — `framed`: during play the world shows only in its own window between the cards. */
+export const StageCanvas = forwardRef<StageHandle, { view: StageView; framed?: boolean; onPick?: (pid: string) => void }>(function StageCanvas({ view, framed, onPick }, ref) {
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<Stage | null>(null);
 
@@ -23,6 +24,7 @@ export const StageCanvas = forwardRef<StageHandle, { view: StageView }>(function
   }, []);
 
   useEffect(() => {
+    if (stage.current) stage.current.onPick = onPick ?? null;
     stage.current?.setView(view);
   });
 
@@ -31,5 +33,5 @@ export const StageCanvas = forwardRef<StageHandle, { view: StageView }>(function
     floatDeltas: (d, label) => stage.current?.floatDeltas(d, label),
   }));
 
-  return <div className="stg-host" ref={host} />;
+  return <div className={`stg-host ${framed ? 'stg-framed' : ''}`} ref={host} />;
 });

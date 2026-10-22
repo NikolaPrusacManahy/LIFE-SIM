@@ -43,8 +43,9 @@ interface Win {
 
 const TITLE: Record<DeskApp, string> = { browser: 'Browser', bitstore: 'Bitstore', files: 'Files', settings: 'Settings', trash: 'Trash', game: 'Game', startup: 'START-UP', steroids: 'Stats on steroids', wallet: 'Bitcons Wallet', hack: 'Hackr' };
 
-export function Desktop({ game, host, onShutdown }: { game: Game; host: AppHostProps; onShutdown: (summary: string) => void }) {
-  const [wins, setWins] = useState<Win[]>([]);
+export function Desktop({ game, host, onShutdown, initial }: { game: Game; host: AppHostProps; onShutdown: (summary: string) => void; initial?: DeskApp }) {
+  // Update 0.13 — open straight into an app (the company tower on the map opens START-UP)
+  const [wins, setWins] = useState<Win[]>(() => (initial ? [{ key: 0, app: initial, x: 150, y: 60, z: 10 }] : []));
   const [start, setStart] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [, bump] = useState(0);

@@ -11,9 +11,11 @@ export interface Settings {
   /** Update 0.5.1 — background music and sound effects */
   music: boolean;
   sound: boolean;
+  /** Update 0.13 — fewer people and cars on the stage, no club lights */
+  reducedFx: boolean;
 }
 
-export const settings: Settings = { ageConfirmed: false, isAdult: false, mature: false, darkCrime: false, music: true, sound: true };
+export const settings: Settings = { ageConfirmed: false, isAdult: false, mature: false, darkCrime: false, music: true, sound: true, reducedFx: false };
 
 export function applySettings(s: Partial<Settings>) {
   Object.assign(settings, s);

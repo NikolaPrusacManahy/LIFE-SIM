@@ -1,0 +1,99 @@
+/* Update 0.13 — the 14 activity minigame engines */
+.eng-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.eng-head h3 { margin: 0; font: 600 18px var(--display); white-space: nowrap; }
+.eng-head span { flex: 1; font: 600 13px var(--font); color: #6a6880; }
+.eng-wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 260px; }
+.eng-icon { font-size: 34px; }
+.eng-canvas { border-radius: 14px; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.08); max-width: 100%; }
+.eng-result { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 14px; background: var(--card-soft); font: 600 14px var(--font); }
+.eng-result b { font: 700 17px var(--display); }
+
+/* timing */
+.tim-bar { position: relative; width: 460px; max-width: 100%; height: 26px; border-radius: 99px; background: #e4e0ee; overflow: hidden; }
+.tim-zone { position: absolute; top: 0; bottom: 0; background: #5dd39e; }
+.tim-needle { position: absolute; top: -4px; bottom: -4px; width: 4px; margin-left: -2px; background: #2d2a40; border-radius: 2px; }
+.tim-dots { display: flex; gap: 8px; }
+.tim-dots i { width: 14px; height: 14px; border-radius: 50%; background: #e4e0ee; }
+.tim-dots i.great { background: #5dd39e; }
+.tim-dots i.ok { background: #ffd166; }
+.tim-dots i.miss { background: #ff6b7a; }
+
+/* quiz */
+.qz-wrap { width: 560px; max-width: 100%; }
+.qz-top { display: flex; align-items: center; gap: 12px; width: 100%; font: 700 13px var(--font); }
+.qz-time { flex: 1; height: 8px; border-radius: 99px; background: #e4e0ee; overflow: hidden; }
+.qz-time i { display: block; height: 100%; background: linear-gradient(90deg, #8e6bd8, #5aa9ff); }
+.qz-card { width: 100%; padding: 22px; border-radius: 16px; background: #2d2a40; color: #fff; font: 600 20px var(--display); text-align: center; }
+.qz-answers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.qz-a { border: 0; border-radius: 12px; padding: 12px; background: var(--card-soft); font: 600 15px var(--font); color: var(--ink); cursor: pointer; }
+.qz-a:hover { background: #e9e2fb; }
+.qz-a.right { background: #5dd39e; color: #fff; }
+.qz-a.wrong { background: #ff6b7a; color: #fff; }
+
+/* conversation duel */
+.duel-wrap { width: 560px; max-width: 100%; }
+.duel-head { display: flex; align-items: center; gap: 10px; width: 100%; }
+.duel-face { font-size: 34px; }
+.duel-bar { flex: 1; height: 10px; border-radius: 99px; background: #e4e0ee; overflow: hidden; }
+.duel-bar i { display: block; height: 100%; background: linear-gradient(90deg, #ff6b7a, #ffd166, #5dd39e); transition: width 0.3s; }
+.duel-prompt { width: 100%; padding: 16px 18px; border-radius: 16px 16px 16px 4px; background: #2d2a40; color: #fff; font: 600 16px var(--font); }
+.duel-lines { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.duel-line { border: 0; border-radius: 16px 16px 4px 16px; padding: 12px 16px; background: #e9e2fb; color: #3a2a6a; font: 600 15px var(--font); text-align: right; cursor: pointer; }
+.duel-line:hover { background: #d9cdf8; }
+
+/* sort */
+.sort-wrap { width: 560px; max-width: 100%; }
+.sort-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 26px; border-radius: 16px; background: #fff; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); transition: transform 0.15s; }
+.sort-item span { font-size: 40px; }
+.sort-item.ok { transform: scale(1.08); box-shadow: 0 0 0 4px #5dd39e; }
+.sort-item.bad { transform: rotate(-4deg); box-shadow: 0 0 0 4px #ff6b7a; }
+.sort-bins { display: flex; gap: 10px; }
+.sort-bin { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 120px; border: 0; border-radius: 14px; padding: 12px 6px; background: var(--card-soft); cursor: pointer; color: var(--ink); }
+.sort-bin span { font-size: 28px; }
+.sort-bin small { font: 700 10px var(--font); opacity: 0.6; }
+
+/* cards & slots */
+.cards-wrap { padding: 10px; border-radius: 16px; background: radial-gradient(circle at 50% 30%, #2f8a55, #1c5a37); color: #fff; }
+.cds-row { display: flex; align-items: center; gap: 8px; }
+.cds-row small { width: 76px; font: 700 13px var(--font); }
+.cds { width: 58px; height: 82px; border: 0; border-radius: 8px; background: #fff; color: #222; font: 800 20px var(--display); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); cursor: default; }
+.cds.red { color: #d63031; }
+.cds.back { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: #fff; }
+.cds.held { transform: translateY(-10px); box-shadow: 0 0 0 3px #ffd166; }
+.cds:not(:disabled) { cursor: pointer; }
+.cds-actions { display: flex; gap: 10px; }
+.cards-wrap .app-note { color: #e6ffe9; }
+.slot-reels { display: flex; gap: 10px; padding: 14px; border-radius: 16px; background: #2d2a40; }
+.slot-reels span { width: 80px; height: 90px; display: grid; place-items: center; border-radius: 12px; background: #fff; font-size: 46px; filter: blur(1px); }
+.slot-reels span.on { filter: none; box-shadow: 0 0 0 3px #ffd166; }
+
+/* aim, fishing */
+.aim-bar { position: relative; width: 460px; max-width: 100%; height: 22px; border-radius: 99px; background: #e4e0ee; overflow: hidden; }
+.aim-bar > i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #5aa9ff, #8e6bd8); opacity: 0.85; }
+.aim-bar.prog > i { background: #5dd39e; }
+.aim-zone { position: absolute; top: 0; bottom: 0; background: rgba(93, 211, 158, 0.55); }
+.aim-bar > i.fish-t { background: linear-gradient(90deg, #5aa9ff, #ff6b7a); }
+.fish-lake { width: 460px; max-width: 100%; height: 110px; display: grid; place-items: center; border-radius: 16px; background: linear-gradient(180deg, #bfe3ff, #5aa9e8); font-size: 40px; }
+
+/* gardening */
+.plant-row { display: flex; gap: 18px; }
+.plant { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.plant-ico { font-size: 34px; transition: transform 0.2s; }
+.plant-tank { position: relative; width: 26px; height: 110px; border-radius: 8px; background: #e4e0ee; overflow: hidden; }
+.plant-tank i { position: absolute; left: 0; right: 0; bottom: 0; background: #5aa9ff; }
+.plant-tank b { position: absolute; left: -2px; right: -2px; height: 3px; background: #2d2a40; }
+
+/* drawing, calm */
+.draw-canvas { border-radius: 14px; background: #fbf4e2; touch-action: none; cursor: crosshair; box-shadow: inset 0 0 0 2px #e3d3b3; }
+.draw-pal { display: flex; gap: 8px; }
+.draw-pal button { width: 28px; height: 28px; border: 0; border-radius: 50%; cursor: pointer; }
+.draw-pal button.on { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #8e6bd8; }
+.calm-wrap { cursor: pointer; }
+.calm-circle { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #bfe9ff, #8e6bd8); box-shadow: 0 0 40px rgba(142, 107, 216, 0.5); }
+.stars-sky { width: 420px; max-width: 100%; height: 260px; border-radius: 16px; background: radial-gradient(circle at 50% 20%, #2a2f6a, #0b0d24); }
+
+/* stealth */
+.stl-grid { display: grid; gap: 2px; padding: 6px; border-radius: 14px; background: #1d1f2a; }
+.stl-cell { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 4px; background: #2e3242; font-size: 20px; }
+.stl-cell.wall { background: #6b6f80; }
+.stl-cell.seen { background: rgba(255, 209, 102, 0.35); }

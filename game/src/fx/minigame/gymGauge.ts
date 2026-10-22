@@ -29,7 +29,7 @@ export class GymGauge {
   async init(host: HTMLElement) {
     await this.app.init({ width: W, height: H, backgroundAlpha: 0, antialias: true, resolution: Math.min(2, window.devicePixelRatio || 1), autoDensity: true });
     if (this.dead) {
-      this.app.destroy(true);
+      this.app.destroy({ removeView: true });
       return;
     }
     host.appendChild(this.app.canvas);
@@ -97,7 +97,7 @@ export class GymGauge {
   destroy() {
     this.dead = true;
     if (this.ready) {
-      this.app.destroy(true, { children: true });
+      this.app.destroy({ removeView: true }, { children: true }); // not `true`: that also releases Pixi's global pools and blacks out the other canvases
       this.ready = false;
     }
   }

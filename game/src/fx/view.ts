@@ -4,6 +4,18 @@ import type { StageView } from './stage/Stage';
 import type { AvatarLook, Outfit } from './stage/avatar';
 import type { WeatherKind } from './stage/weather';
 import { weatherAt } from '../state/systems/weather';
+import { householdOf, peopleAt, petsAtHome, type Seen } from '../state/systems/household';
+import { SKIN } from './look';
+import { settings } from '../state/settings';
+import type { Member } from './iso/layout-core';
+
+/** Update 0.13 — a contact as a little figure: their shirt colour comes from their id, their skin from their look. */
+const SHIRTS = [0xe8505b, 0x3a7bd5, 0xf2b134, 0x4caf7a, 0x8e6bd8, 0xff8fc4, 0x2bb3a8, 0xf5f0e6];
+function memberOf(g: Game, s: Seen): Member {
+  const p = g.personById(s.pid);
+  const h = [...s.pid].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  return { kind: s.kind, pid: s.pid, color: SHIRTS[h % SHIRTS.length], skin: p ? SKIN[p.look.skin % SKIN.length] : undefined };
+}
 
 const OUTFIT_BY_CAREER: Record<string, Outfit> = {
   doctor: 'coat', nurse: 'coat', scientist: 'coat', professor: 'suit',
@@ -43,6 +55,10 @@ export function stageViewFor(g: Game, locId: string, eventOpen = true): StageVie
     ruins: g.s.region === 'city' && g.flag('ruinsUntil') > g.s.clock,
     region: g.s.region,
     scene: loc.scene(g),
+    // Update 0.13 — who's around: your household at home, classmates/coworkers elsewhere
+    household: locId === 'home' ? [...householdOf(g).map((s) => memberOf(g, s)), ...Array.from({ length: petsAtHome(g) }, (): Member => ({ kind: 'pet', color: 0xb5864f }))] : [],
+    people: peopleAt(g, locId).map((s) => memberOf(g, s)),
+    reduced: settings.reducedFx,
     phase: g.phase,
     month: g.month,
     weather: weatherFor(g),

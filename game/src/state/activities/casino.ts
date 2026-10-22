@@ -11,7 +11,13 @@ function bet(stake: number, edge: (g: Parameters<ActivityDef['run']>[0]) => numb
   return (g) => {
     consume(g, 'gambling', stake >= 1000 ? 9 : 5);
     if (underageCatch(g, 0.25, { name: 'Underage gambling', sev: 1, kind: 'id' })) return 'Security checked your ID…';
-    if (Math.random() < edge(g)) {
+    // Update 0.13 — you played the hand: a win pays, a push (or a pair) gets your stake back
+    const played = g.playScore;
+    if (played !== null && played > 0.25 && played < 0.75) {
+      g.money(stake);
+      return `${label} — a push. You get your ${fmt(stake)} back.`;
+    }
+    if (played !== null ? played >= 0.75 : Math.random() < edge(g)) {
       const win = Math.round(stake * mult);
       g.money(win);
       g.stat('mood', 8);
@@ -32,6 +38,13 @@ export const CASINO_ACTS: ActivityDef[] = [
     run: (g) => {
       consume(g, 'gambling', 4);
       if (underageCatch(g, 0.25, { name: 'Underage gambling', sev: 1, kind: 'id' })) return 'Security checked your ID…';
+      // Update 0.13 — you stopped the reels yourself: three of a kind pays 20×, a pair 2×
+      const played = g.playScore;
+      if (played !== null) {
+        if (played >= 1) { g.money(1000); g.burst('coins'); return `Three of a kind! You won ${fmt(1000)}.`; }
+        if (played >= 0.5) { g.money(100); return `A pair! You won ${fmt(100)}.`; }
+        return 'Spin, spin, nothing.';
+      }
       const r = Math.random();
       if (r < 0.002) { g.money(25000); g.achieve('jackpot'); g.banner('🎰 JACKPOT', 0xf5b53a); g.burst('coins'); return 'JACKPOT! $25,000!'; }
       if (r < 0.3) { const w = g.rand(20, 120); g.money(w); return `Cherries! You won ${fmt(w)}.`; }

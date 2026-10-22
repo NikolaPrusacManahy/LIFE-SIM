@@ -198,3 +198,4 @@ Source assets are staged in the root folders. Look there before you say an asset
 - LIFE//SIM: canvas mini-games restart mid-run if a parent re-render hands them a new `onEnd`. Keep callbacks in a ref and start the loop only on mount/start.
 - LIFE//SIM: coverage checks over random play ("was X exercised?") flake when X is rare. Give the test a focused strategy for X instead of hoping random play reaches it.
 - A Python patch script that applies several anchors can half-apply when a later anchor is stale. Assert every anchor before writing anything, or split the script, then check the file before re-running it.
+- LIFE//SIM: in PixiJS 8, `app.destroy(true)` also releases Pixi's global pools (texture, batch and canvas pools). Any other Pixi app on the page (the main stage) breaks and goes black. Always destroy a second app with `app.destroy({ removeView: true }, { children: true })`. `test-map.ts` guards against it.

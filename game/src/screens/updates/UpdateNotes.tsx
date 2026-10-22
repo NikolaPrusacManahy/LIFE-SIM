@@ -4,6 +4,23 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.13 — Infinite Lives (in progress)',
+    [
+      ['🖼️', 'The world has its own window', ['The scene sits between your stats and the city list.', 'No more panels over the art.']],
+      ['🏙️', 'Every place is alive', ['All 37 places are isometric scenes: cars, walkers,', 'lamps at night, snow and ice in winter, corn that grows.']],
+      ['🪩', 'Inside', ['Club with a disco ball and dancers, library, bar, gym,', 'hospital, casino, church, jail, school, office and more.']],
+      ['🏠', 'Your home', ['Your room changes with where you live.', 'Your spouse, kids, family and dog are there with you.']],
+      ['👆', 'People you know', ['Classmates and coworkers appear around you.', 'Click one to open their profile.']],
+      ['⚙️', 'Reduced effects', ['Settings: fewer people and cars, no club lights.']],
+      ['🗺️', 'City map', ['🗺️ Map in the city list: the whole town, live traffic.', 'Click a place to go. Your company tower grows on it.']],
+      ['🎒', 'Item art', ['Real pictures for items and PC parts', 'in the bag, the shop and the Back Room.']],
+      ['📜', 'Credits', ['Title screen and pause menu.']],
+      ['🎮', 'Every activity is a game', ['76 activities, 14 kinds: rhythm, quizzes, conversations, runner,', 'real blackjack & poker, fishing, stealth, driving, gardening, drawing…']],
+      ['⭐', 'Play well, gain more', ['Great run: 1.5× the gains. Poor run: 0.6×.', '⏩ Skip any game: normal results.']],
+      ['🃏', 'Real casino, real tests', ['Your hand decides the casino. Your quiz and your drive', 'decide the permit and road tests. The SAT section counts.']],
+    ],
+  ],
+  [
     'Update 0.12 — Personas',
     [
       ['🎭', 'Personas', ['Shy, otaku, tech nerd… and “maybe a bit passionate”.', 'Each has its own voice, chat style and favourite topics.']],

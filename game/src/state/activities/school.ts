@@ -267,7 +267,9 @@ export const SCHOOL_ACTS: ActivityDef[] = [
     id: 'sat', loc: 'school', name: 'Take the SAT', icon: '📝', desc: 'Your score shapes college odds.', cat: 'study', energy: 20, cost: 60, minAge: 16, cooldown: 12,
     when: (g) => g.s.education.current?.program === 'hs',
     run: (g) => {
-      const score = Math.max(400, Math.min(1600, Math.round((420 + g.s.stats.smarts * 11 + g.rand(-90, 90)) / 10) * 10));
+      // Update 0.13 — how you did on the SAT section moves the score by up to ±120
+      const bonus = g.playScore !== null ? (g.playScore - 0.5) * 240 : 0;
+      const score = Math.max(400, Math.min(1600, Math.round((420 + g.s.stats.smarts * 11 + g.rand(-90, 90) + bonus) / 10) * 10));
       const best = Math.max(score, g.flag('sat'));
       g.setFlag('sat', best);
       if (score >= 1450) g.burst('confetti');

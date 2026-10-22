@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { UpdateNotes } from '../updates/UpdateNotes';
+import { Credits } from '../credits/Credits';
+import { TitleSettings } from './TitleSettings';
 
 interface Props {
   hasSave: boolean;
@@ -11,6 +13,8 @@ interface Props {
 export function TitleScreen({ hasSave, onContinue, onNew }: Props) {
   const root = useRef<HTMLDivElement>(null);
   const [notes, setNotes] = useState(false);
+  const [credits, setCredits] = useState(false);
+  const [setts, setSetts] = useState(false);
   useEffect(() => {
     gsap.fromTo(root.current!.querySelectorAll('.ttl-anim'), { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.12, duration: 0.6, ease: 'power3.out' });
   }, []);
@@ -23,9 +27,11 @@ export function TitleScreen({ hasSave, onContinue, onNew }: Props) {
         <button className={`btn btn-lg ${hasSave ? '' : 'btn-primary'}`} onClick={onNew}>✦ New Life</button>
       </div>
       <p className="ttl-foot ttl-anim">
-        v0.12 · <button className="ttl-notes" onClick={() => setNotes(true)}>Update 0.12 — Personas</button>
+        v0.13 · <button className="ttl-notes" onClick={() => setNotes(true)}>Update 0.13 — Infinite Lives</button> · <button className="ttl-notes" onClick={() => setCredits(true)}>Credits</button> · <button className="ttl-notes" onClick={() => setSetts(true)}>⚙️ Settings</button>
       </p>
       {notes && <UpdateNotes onClose={() => setNotes(false)} />}
+      {credits && <Credits onClose={() => setCredits(false)} />}
+      {setts && <TitleSettings onClose={() => setSetts(false)} />}
     </div>
   );
 }

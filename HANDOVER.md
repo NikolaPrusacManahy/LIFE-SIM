@@ -1,5 +1,67 @@
 # HANDOVER.md
 
+
+## Update 0.13 — Infinite Lives (in progress: stage V, slice 1)
+- **Plan:** `MD_UPDATES/UPDATE_0.13_PLAN.md` (stages V, A–G, decisions recorded).
+- **Stage window:** during play the canvas is clipped to the gap between the cards (x 328–1150, y 16–576; `theme-23-stage.css`, `StageCanvas` `framed`). The canvas keeps 1440×860 coordinates, so nothing else moved. Both avatars stand at `GROUND_Y - 8` so their feet stay inside the window.
+- **Isometric dioramas** (Kenney CC0 packs from `ASSETS/`):
+  - `tools/pack_iso.py` packs city tiles, buildings, landscape, 4 service vehicles and foliage into `public/iso/*.webp + .json` (Pixi atlases, about 1.4 MB). Re-run it after adding packs.
+  - `fx/iso/layout.ts` (pure): grid math (66×33 step, tiles bottom-anchored 98px under the top vertex), curated building styles (ground floor + floors 36px apart + roof), and seeded layouts for downtown, Main Street and the park, with car lanes, sidewalk walk paths, lamps and lit windows, by season.
+  - `fx/iso/IsoView.ts` builds the Pixi diorama (scale 0.6, centred at x 740, y 330), with cars (taxi/police/ambulance/garbage, 4 directions), walkers, night lights, winter snow and a rain sheen.
+  - `Stage` uses it for `downtown`, `mainstreet` and `park` (`ISO_SCENES`); every other place keeps the old scene. If the atlases fail to load, everything falls back.
+- **Visual checks without a browser:** `npx tsx tools/iso_dump.ts <kind> <season> out.json` then `py -3 tools/iso_preview.py out.json out.png [paths|stage]` draws the same layout from the real atlases.
+- **Test:** `test-iso.ts` (frames exist, the building pieces are the right types, stacking, cars on roads, walkers on paths, the street not hidden, determinism, seasons).
+- **Stage V2 done (every place has a living scene):**
+  - **New atlases** (`tools/pack_iso.py`):
+    - `interior`: the farm + library pieces, trimmed and halved, lossy webp; anchor `RENDER_ANCHOR` = the floor diamond's top vertex, scale `RENDER_SCALE` 132/128 so they sit on the city grid;
+    - `animals`: round head portraits, for the Pets app later;
+    - `sky`: clouds, sun, moons;
+    - `items`: 163 icons;
+    - 80 civilian cars, matched to directions by silhouette: frame 001=NW, 003=NE, 007=SW, 008=SE.
+  - **Modules:**
+    - `fx/iso/layout-core.ts`: shared types and helpers (`Draw` with sprites or drawn `prims`, `Path` kinds `car/walk/dance/sit/stand`, `IsoScene.view/backdrop/disco/crowd/household`);
+    - `fx/iso/furniture.ts`: about 60 code-drawn pieces as shaded isometric boxes, plus animals;
+    - `fx/iso/outdoor.ts`: campus, lake, docks, woods, back roads, farm (corn by season), homeless camp, alley, construction, station, stadium, base;
+    - `fx/iso/rooms.ts`: the room builder, with `ROOMS` (library, club, bar, roadhouse, gym, hospital, casino, church, jail, school, office, shop, diner, police, studio, warehouse, garage, hideout, mafia) and `HOMES` (home, apartment, mansion, farmhouse);
+    - `fx/iso/scenes.ts`: `SCENES: Record<SceneKind, Builder>`, so every place is covered.
+  - **`IsoView`:**
+    - drawn shapes and sprites;
+    - indoor backdrop, with no outdoor sky tint and no weather;
+    - walk/dance/sit/stand crowds;
+    - civilian traffic (72%);
+    - disco spots;
+    - winter ice;
+    - your household on the home spots;
+    - contacts who are here, with a yellow dot, clickable: `Stage.onPick` → `StageCanvas onPick` → a `lifesim:pick` window event → `PlayScreen.openPeople`.
+  - **Sky:** `Sky.useArt()` swaps in the Kenney clouds, sun and moon (full or half by month).
+  - **Rules:** `state/systems/household.ts`: `householdOf` (parents and siblings at your parents' place; otherwise spouse, fiancé(e), kids under 18, roommates), `peopleAt` (classmates at school while enrolled, coworkers at work, at most 4), `petsAtHome` (the dog asset for now).
+  - **Setting:** `settings.reducedFx` "Reduced effects" (half the crowd, 3 cars, no disco spots).
+  - **Tests:** `test-iso.ts` (all 37 places × 4 seasons have their frames, every place draws, paths stay inside, indoor/outdoor, club, household only at home, corn by season), `test-household.ts`.
+- **Stage V3 done:**
+  - **City map** (`fx/iso/cityMap.ts`, pure, with fixed area patches per region and every other place on the next free lot along a road, nearest the centre first):
+    - `MapView.ts` is a Pixi window with bobbing pins (🔒 grey = not available, 🚀 your company);
+    - `screens/map/CityMap.tsx` opens from the 🗺️ Map button in `PlacesCard`;
+    - `renderIso()` was split out of `buildIso` so the map reuses the scene renderer.
+  - **Item icons:** `tools/pack_iso.py` also writes `public/items/item_NNN.webp` (64px); `ui/itemIcon.ts` `ITEM_ICON` maps item ids to icons, used by `components/ItemIcon.tsx` (emoji fallback) in the Bag, Shop and Back Room.
+  - **Credits:** `screens/credits/Credits.tsx`, opened from the title screen and the pause menu.
+  - **Tests:** `test-map.ts`.
+  - **Moved:** the travel world map (NOVA tiles) moves to stage A1, where trips exist.
+- **Fixed (V3 follow-up):**
+  - **Black stage after using the map, and after the 0.12 gym minigame:** `app.destroy(true)` released Pixi's global pools. Every app now uses `destroy({ removeView: true }, { children: true })`, guarded by `test-map.ts`.
+  - **Company tower on the map:** it now goes home and opens your PC/laptop sitting straight into START-UP (`Desktop initial`, `PlayScreen.openStartup`). If the computer is already used this time of day, it shows a short note instead.
+- **Stage V4 done (every activity is playable):**
+  - **Themes:** `state/minigames/themes.ts` `MINI_THEMES` gives 76 activities an engine, a skin and a prompt.
+  - **Engines:** 14 (rhythm, timing, gym key spam, runner, quiz, duel, sort, cards, aim, fish, plant, draw, stealth, drive, calm). Pure rules live in `state/minigames/engines/*.ts`; screens in `screens/mini/engines/*.tsx` (shared `useLoop`/`useKeys` in `common.ts`).
+  - **Scoring:** `Game.doActivity` takes the themed result (`takeMini`), sets `playScore` and `playMul = 0.6 + 0.9·score`, and `Game.stat` multiplies positive gains (except energy/health) by it. The result note is appended to the activity text.
+  - **Outcome by play:** blackjack, poker and the high-roller room (≥ 0.75 win, 0.25–0.75 push/refund, else lose), slots (three of a kind $1,000, a pair $100), the permit test (≥ 0.6), the road test (≥ 0.6) and the SAT (±120).
+  - **Skip:** `MiniResult.skipped` counts as not played (autopilot odds, ×1). No free casino refunds.
+  - **Host:** `MiniHost` plays the themed engine with a prompt and Skip; `PlayScreen.act` opens it for themed activities.
+  - **Styles:** `theme-25-engines.css`. Card classes use `cds-`, because `crd-` belongs to Credits.
+  - **Tests:** `test-engines.ts`.
+  - **Still one-click (by design):** medical, paperwork, sleep and the computer.
+- **Title screen (designer request):** back to the classic flat skyline (`StageView.classic`, set on `TITLE_VIEW` and the character-creation preview). The footer links "Update 0.13 — Infinite Lives" and has ⚙️ Settings (`screens/title/TitleSettings.tsx`: Mature Content, Dark Crime, Music, Sound). Title and phone show v0.13.
+- **Still to do in 0.13:** stages A–G (Wanderlust first).
+
 ## Current patch: Update 0.12 — Personas
 Built from your chat request. The name "Personas" is my placeholder. All of `npm run verify` passes; the new test is `test-personas.ts`.
 - **Personas** (`npc/persona.ts`, `Person.persona`): shy, otaku, tech nerd, yandere. Rolled for new encounters, admirers, night-out crowds and Spark profiles (shy 12%, otaku 7%, nerd 7%; yandere only for adults of the opposite sex).

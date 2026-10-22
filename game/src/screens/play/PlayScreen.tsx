@@ -1,3 +1,6 @@
+import { MINI_THEMES } from '../../state/minigames/themes';
+import { ACT_BY_ID } from '../../state/activities';
+import { CityMap } from '../map/CityMap';
 import { MiniHost } from '../mini/MiniHost';
 import { useCallback, useEffect, useReducer, useState, type RefObject } from 'react';
 import type { ActionResult, Game } from '../../state/Game';
@@ -59,6 +62,10 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const [build, setBuild] = useState(false);
   // Update 0.12 — an activity's minigame (coding, cooking, writing, the gym)
   const [mini, setMini] = useState<ActivityDef | null>(null);
+  // Update 0.13 — the city map
+  const [map, setMap] = useState(false);
+  // Update 0.13 — open the desktop straight into an app (the company tower opens START-UP)
+  const [deskApp, setDeskApp] = useState<'startup' | undefined>(undefined);
 
   useEscape(() => setPaused((p) => !p));
 
@@ -79,7 +86,8 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
   const act = (def: ActivityDef) => {
     if (def.panel === 'pcbuild') return setBuild(true);
     if (def.panel) return setKiosk({ app: PANEL_APP[def.panel], title: def.name, icon: def.icon });
-    if (def.mini && game.activityStatus(def).ok) return setMini(def);
+    // Update 0.13 — themed activities are minigames too
+    if ((def.mini || MINI_THEMES[def.id]) && game.activityStatus(def).ok) return setMini(def);
     runAct(def);
   };
   const runAct = (def: ActivityDef) => {
@@ -129,6 +137,23 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
     setPeople({ pid: pid ?? null });
   };
   const host = { game, onResult, onTitle, onRestart, openPeople, openChat };
+  /** Update 0.13 — the company tower: go home and sit at your PC or laptop with START-UP open. */
+  const openStartup = () => {
+    setTab('home');
+    const def = ['use_pc', 'laptop_home'].map((id) => ACT_BY_ID[id]).find((d) => d && game.activityStatus(d).ok);
+    if (!def) {
+      onResult({ ...game.flush('START-UP', '🚀', 'Your company runs from your computer. Use your PC or laptop at home (once per time of day).') });
+      return;
+    }
+    setDeskApp('startup');
+    runAct(def);
+  };
+  // Update 0.13 — clicking someone you know on the stage opens their profile
+  useEffect(() => {
+    const pick = (e: Event) => openPeople((e as CustomEvent<string>).detail);
+    window.addEventListener('lifesim:pick', pick);
+    return () => window.removeEventListener('lifesim:pick', pick);
+  });
 
   const dismiss = useCallback(() => dispatch({ type: 'dismiss' }), []);
   const eventsPending = !!eventResult || !!game.currentEvent;
@@ -160,7 +185,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
       <NewsTicker game={game} />
       <StatsCard game={game} />
       <TopPills game={game} onDevice={() => setDevice({ app: null })} onPeople={() => openPeople()} onAutopilot={autopilot} onPause={() => setPaused(true)} />
-      <PlacesCard game={game} tab={tab} setTab={setTab} />
+      <PlacesCard game={game} tab={tab} setTab={setTab} onMap={() => setMap(true)} />
       <ActionsCard game={game} tab={tab} onAct={act} onGo={setTab} onStory={() => setDevice({ app: 'diary' })} />
       {pipe.stage === 'result' && pipe.result && <ResultCard key={`${pipe.result.title}-${game.s.turn}`} game={game} result={pipe.result} onDone={dismiss} />}
       {bannerNote && !showEvent && pipe.stage === 'idle' && <NotificationBanner key={bannerNote.id} game={game} note={bannerNote} onOpen={openChat} onDone={bannerDone} />}
@@ -171,7 +196,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
       {people && !takeover && <PeopleScreen game={game} initial={people.pid} onClose={() => setPeople(null)} onResult={onResult} onOpenChat={hasPhone(game) ? openChat : undefined} />}
       {report && !showEvent && <MonthSummary game={game} report={report} onClose={() => setReport(null)} />}
       {game.s.session && pipe.stage === 'idle' && (
-        <Desktop game={game} host={{ ...host, onClose: () => undefined }} onShutdown={(summary) => onResult(game.flush('Computer session', '🖥️', summary))} />
+        <Desktop game={game} initial={deskApp} host={{ ...host, onClose: () => undefined }} onShutdown={(summary) => { setDeskApp(undefined); onResult(game.flush('Computer session', '🖥️', summary)); }} />
       )}
       {game.s.night && pipe.stage === 'idle' && (
         <NightScreen game={game} onChange={() => onResult(game.flush('', '', ''), false)} onEnd={(summary) => onResult(game.flush('Night out', '🌙', summary))} />
@@ -179,6 +204,7 @@ export function PlayScreen({ game, stage, tab, setTab, onTitle, onRestart, onChi
       {game.s.date && pipe.stage === 'idle' && (
         <DateScreen game={game} onChange={() => onResult(game.flush('', '', ''), false)} onEnd={(summary) => onResult(game.flush('Date', '🕯️', summary))} />
       )}
+      {map && !takeover && <CityMap game={game} onGo={(id) => { setMap(false); if (id === 'startup') openStartup(); else setTab(id); }} onClose={() => setMap(false)} />}
       {build && !showEvent && <BuildScreen game={game} onClose={() => setBuild(false)} onResult={onResult} />}
       {mini && !showEvent && <MiniHost game={game} def={mini} onCancel={() => setMini(null)} onDone={(r) => { const d = mini; setMini(null); game.mini = r; runAct(d); }} />}
       {paused && <PauseMenu onResume={() => setPaused(false)} onTitle={onTitle} onRestart={onRestart} />}

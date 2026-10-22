@@ -1,3 +1,5 @@
+import { MINI_THEMES, playMulOf } from './minigames/themes';
+import { takeMini } from './minigames/types';
 import {
   MONTHS, PHASES, STAT_LABEL,
   type ActiveEvent, type FxKind, type GameState, type LogKind, type MeterKey, type Person, type Phase, type Role, type StatKey,
@@ -62,6 +64,9 @@ export class Game {
   private monthFlag = false;
   /** Update 0.12 — the result of the minigame played for the next activity (not saved) */
   mini: import('./minigames/types').MiniResult | null = null;
+  /** Update 0.13 — while a themed activity runs: its minigame score (null = not played) */
+  playScore: number | null = null;
+  private playMul = 1;
   /** set by systems to request saving; UI wires this */
   onSave: ((g: Game) => void) | null = null;
 
@@ -125,6 +130,8 @@ export class Game {
     if (d > 0 && k !== 'energy' && k !== 'health' && k !== 'mood') {
       delta *= this.gainMult(k) * Math.max(0.22, 1 - st[k] / 125);
     }
+    // Update 0.13 — how well you played the activity's minigame
+    if (d > 0 && k !== 'energy' && k !== 'health') delta *= this.playMul;
     if (k === 'health' && d < 0 && this.hasTrait('iron')) delta *= 0.7;
     const before = st[k];
     st[k] = clamp(before + delta, 0, this.maxOf(k));
@@ -315,7 +322,15 @@ export class Game {
     const e = this.energyCost(def);
     if (e > 0) this.stat('energy', -e);
     if (def.cooldown) this.cooldown(`act:${def.id}`, def.cooldown);
-    const text = def.run(this);
+    // Update 0.13 — themed minigames: the score scales the gains (and some activities read playScore directly)
+    const theme = MINI_THEMES[def.id];
+    const played = theme ? takeMini(this, theme.engine) : null;
+    this.playScore = played?.played ? played.score : null;
+    this.playMul = played?.played ? playMulOf(played.score) : 1;
+    let text = def.run(this);
+    this.playMul = 1;
+    this.playScore = null;
+    if (played?.played && played.note) text = `${text} ${played.note}`.trim();
     this.log(text, def.kind ?? CAT_KIND[def.cat] ?? 'info');
     // Update 0.8 — free activities (a computer sitting) don't use the time slot
     if (def.free) return this.result(def.name, def.icon, text);
