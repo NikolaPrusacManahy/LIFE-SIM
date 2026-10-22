@@ -4,6 +4,15 @@ type Card = [icon: string, title: string, lines: string[]];
 
 const UPDATES: [string, Card[]][] = [
   [
+    'Update 0.14 — Connected Lives (in progress)',
+    [
+      ['💬', 'Chats feel alive', ['180+ new texts and reactions: friends, partners, exes,', 'family, coworkers, rivals, admirers — all answerable.']],
+      ['🎌', 'Personas have topics', ['Otaku talk powerscaling, manga and conventions;', 'book nerds ask for recommendations.']],
+      ['📩', 'A calmer inbox', ['At most 0–3 casual texts a month. No more birthday spam —', 'birthdays are capped at 2 and never double-text.']],
+      ['📱', 'Phone fits', ['Every app row is reachable now (the last row was cut off).']],
+    ],
+  ],
+  [
     'Update 0.13 — Infinite Lives (in progress)',
     [
       ['🖼️', 'The world has its own window', ['The scene sits between your stats and the city list.', 'No more panels over the art.']],

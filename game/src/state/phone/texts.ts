@@ -9,6 +9,7 @@ import { newId } from '../Game';
 import { isRomanceEligible, say } from '../npc/identity';
 import { YANDERE_MORNING, YANDERE_OUTFITS, isYandere } from '../datenight/yandere';
 import { expireInvites, pushMsg } from './convo';
+import { STARTERS } from './chatter';
 import { todaySlot } from './plans';
 import { personaOpener } from './voice';
 import { pushNote } from './notify';
@@ -40,6 +41,44 @@ export function sendText(g: Game, p: Person, kind: string, text: string, extra: 
 }
 
 
+// Update 0.14 — cap casual incoming texts to 0–3 a month so the inbox doesn't spam (birthdays included).
+// Story-critical texts (detective, threats, crew, the stalker) bypass the cap.
+const MONTH_BUDGET_KEY = (g: Game) => `inboxbudget:${g.s.clock}`;
+const MONTH_SENT_KEY = (g: Game) => `inboxsent:${g.s.clock}`;
+/** 0–3 casual texts this month, fixed per month. */
+export function monthlyTextBudget(g: Game): number {
+  const k = MONTH_BUDGET_KEY(g);
+  if (!g.s.flags[k]) g.s.flags[k] = ((g.s.clock * 2654435761) >>> 0) % 4 + 1; // store 1..4, read as 0..3
+  return g.s.flags[k] - 1;
+}
+/** True (and counts one) if there's room for another casual text this month. */
+export function allowCasualText(g: Game): boolean {
+  if (g.flag(MONTH_SENT_KEY(g)) >= monthlyTextBudget(g)) return false;
+  g.inc(MONTH_SENT_KEY(g));
+  return true;
+}
+
+/** Update 0.14 — send a varied, role-appropriate opener from the big STARTERS library. */
+function sendStarter(g: Game, p: Person): boolean {
+  const pools: string[] = [];
+  const role = p.role;
+  if (['partner', 'spouse', 'engaged'].includes(role)) pools.push('partner_sweet', 'partner_miss', 'partner_worry');
+  else if (['dating', 'talking', 'crush', 'fling'].includes(role)) pools.push('partner_sweet', 'partner_miss', 'friend_check');
+  else if (role === 'ex' && g.age >= 18 && g.ageOf(p) >= 18) pools.push('ex_closure');
+  else if (FAMILY.includes(role)) pools.push('family_warm');
+  else if (role === 'coworker' || p.labels.includes('coworker')) pools.push('coworker_vent', 'friend_check');
+  else if (p.labels.includes('rival') || p.rivalry >= 50) pools.push('rival_jab');
+  else {
+    pools.push('friend_check', 'friend_hang', 'friend_meme', 'friend_rant', 'friend_good', 'friend_fav');
+    if (p.rel >= 60) pools.push('bestie_deep');
+    if (isRomanceEligible(g, p) && p.attraction >= 45 && !ROMANTIC.includes(role)) pools.push('admirer_hint');
+  }
+  if (!pools.length) return false;
+  const s = STARTERS[g.pick(pools)];
+  sendText(g, p, s.kind, `${p.name}: "${g.pick(s.lines)}"`);
+  return true;
+}
+
 /** Each time slot: maybe a text arrives; stale texts expire and cost a little friendship. */
 export function textsTick(g: Game) {
   soberUp(g);
@@ -56,9 +95,13 @@ export function textsTick(g: Game) {
     }
   }
   if (partnerTick(g)) return;
-  if (!g.chance(0.22)) return;
+  if (!g.chance(0.45)) return;
   const contacts = g.s.people.filter((p) => p.alive && p.status === 'alive' && p.theyHaveNumber && !p.blocked && p.role !== 'teacher' && p.role !== 'professor' && (!p.tags.includes('detective') || g.s.underworld.cases.some((c) => c.suspect && c.status === 'open')));
   if (!contacts.length) return;
+  // Update 0.14 — story-critical senders (threat, detective, crew) bypass the cap; everyone else respects it
+  const p0 = contacts[Math.floor(Math.random() * contacts.length)];
+  const isCritical = p0.tags.includes('detective') || p0.rivalry >= 60 || !!p0.crewRole;
+  if (!isCritical && !allowCasualText(g)) return;
   const weighted = contacts.flatMap((p) => (hasTrait(p, 'clingy') || hasTrait(p, 'partyanimal') ? [p, p, p] : [p]));
   const p = weighted[Math.floor(Math.random() * weighted.length)];
   const roll = Math.random();
@@ -92,6 +135,8 @@ export function textsTick(g: Game) {
     sendText(g, p, 'detective', `${p.name}: "We’d like to ask you a few more questions."`);
     return;
   }
+  // Update 0.14 — a big varied pool of role-appropriate openers
+  if (roll < 0.55 && sendStarter(g, p)) return;
   if (ROMANTIC.includes(p.role) && canBeIntimate(g, p) && g.phase === 'night' && roll < 0.35) {
     sendText(g, p, 'uup', line(g, 'uup', p, true), { mature: true });
   } else if (['dating', 'partner', 'talking'].includes(p.role) && roll < 0.5) {
@@ -125,6 +170,8 @@ function partnerTick(g: Game): boolean {
   }
   const keen = (hasTrait(p, 'romantic') || hasTrait(p, 'clingy') ? 1.6 : 1) * (hasTrait(p, 'homebody') ? 0.6 : 1) * (p.romance >= 60 || p.rel >= 70 ? 1.2 : 0.8);
   if (!g.chance(Math.min(0.9, 0.5 * keen))) return false;
+  // Update 0.14 — a partner's casual message counts against the monthly cap (neglect above always goes)
+  if (!allowCasualText(g)) return false;
   // Update 0.12 — a yandere partner's morning selfie
   if (COMMITTED.includes(p.role) && isYandere(p) && g.phase === 'morning' && g.chance(0.6)) {
     sendText(g, p, 'goodmorning', `${p.name}: "${YANDERE_MORNING}"`);

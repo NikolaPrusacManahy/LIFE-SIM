@@ -55,7 +55,8 @@ check('a yandere date fills the spark about twice as fast', gainOf(true) > gainO
     p.hasNumber = p.theyHaveNumber = true;
     p.lastContact = g.s.clock;
     g.s.phase = 0;
-    for (let t = 0; t < 30; t++) textsTick(g);
+    // Update 0.14 — reset the monthly inbox cap each slot so the loop can keep finding a selfie
+    for (let t = 0; t < 30; t++) { g.s.flags[`inboxsent:${g.s.clock}`] = 0; g.s.flags[`inboxbudget:${g.s.clock}`] = 4; textsTick(g); }
     const chat = g.s.chats[p.id] ?? [];
     if (chat.some((m) => m.photo?.includes('morning outfit')) && chat.some((m) => m.text.includes(YANDERE_MORNING))) selfies++;
   }

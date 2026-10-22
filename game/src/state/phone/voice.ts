@@ -18,11 +18,11 @@ export const VOICE: Record<Persona, Lines> = {
   },
   otaku: {
     greet: ['YAHALLO~ (≧▽≦)', 'ohayo senpai!! ✨', 'konnichiwa~ just finished an episode, perfect timing'],
-    talk: ['the new arc just dropped and I am NOT okay 😭', 'today was filler-episode energy tbh', 'I’m rereading the manga for the 4th time. no regrets'],
+    talk: ['the new arc just dropped and I am NOT okay 😭', 'today was filler-episode energy tbh', 'I’m rereading the manga for the 4th time. no regrets', 'ok but who would win: my favourite captain vs literally anyone. he solos.', 'hot take: the anime ruined the pacing, read the manga', 'I spent all day planning my cosplay for the next con 🧵'],
     flirt: ['n-nani?! you’re acting like a shoujo protagonist rn 😳', 'senpai noticed me… I can die happy ✨', 'this is literally episode 12 confession scene energy'],
     ok: ['sugoi!! ✨', 'that’s so kawaii~ (◕‿◕)', 'arigatou!! you get it!!'],
     fail: ['…that’s so cringe, even for me', 'nande?? 😑', 'you’re giving villain arc'],
-    open: ['have you seen the new season?? we NEED to talk', 'I found a ramen place that tastes like it’s from an anime 🍜', 'which character would you be? I’ll start: you’re totally the quiet genius'],
+    open: ['have you seen the new season?? we NEED to talk', 'I found a ramen place that tastes like it’s from an anime 🍜', 'which character would you be? I’ll start: you’re totally the quiet genius', 'POWERSCALING debate: could my top 3 beat your top 3? be serious', 'what’s your all-time favourite manga? wrong answers get blocked (jk… mostly)', 'there’s a cosplay convention next month 👀 come with me??', 'I just finished a 24-episode binge, ask me anything', 'rank these: shonen, seinen, shoujo. defend your answer'],
   },
   nerd: {
     greet: ['hello world 👋', 'ping. you there?', 'hey — 0 latency reply, impressive'],
@@ -42,11 +42,11 @@ export const VOICE: Record<Persona, Lines> = {
   },
   booknerd: {
     greet: ['Salutations. Your timing is impeccable.', 'Ah — a welcome interruption to chapter twelve.', 'Hello! I was just thinking about you, somewhere between paragraphs.'],
-    talk: ['Today was rather melancholic, in a Brontë sort of way.', 'I’m rereading Dostoevsky. Equal parts despair and delight.', 'My day was unremarkable, but this conversation redeems it entirely.'],
+    talk: ['Today was rather melancholic, in a Brontë sort of way.', 'I’m rereading Dostoevsky. Equal parts despair and delight.', 'My day was unremarkable, but this conversation redeems it entirely.', 'I finished a 900-page tome last night. I am changed.', 'The sequel was a disappointment. The author owes me closure.'],
     flirt: ['You are, quite frankly, the most compelling plot twist of my year.', 'If you were a novel, I would refuse to put you down.', 'I’m usually eloquent. You render me… inarticulate.'],
     ok: ['How delightfully put.', 'Exquisite. Truly.', 'I shall treasure that sentiment.'],
     fail: ['How… pedestrian.', 'I find that rather unpersuasive.', 'Hm. Let us say I remain unconvinced.'],
-    open: ['Have you read anything that changed you? I need a recommendation.', 'I found a first edition at a flea market. I am beside myself.', 'Quick: favourite opening line of any book. Go.'],
+    open: ['Have you read anything that changed you? I need a recommendation.', 'I found a first edition at a flea market. I am beside myself.', 'Quick: favourite opening line of any book. Go.', 'I’m making my autumn reading list — recommend me one book, make it count.', 'Fantasy or literary fiction? Choose wisely; I am judging.', 'There’s a tiny bookshop downtown I must show you.', 'If you could reread one book for the first time, which?', 'I annotated my favourite novel for you. Too much? Too much.'],
   },
   gamer: {
     greet: ['yo gg 🎮', 'sup, just got off a ranked match', 'ayyy you’re online'],

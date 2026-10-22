@@ -27,7 +27,7 @@ export function TitleScreen({ hasSave, onContinue, onNew }: Props) {
         <button className={`btn btn-lg ${hasSave ? '' : 'btn-primary'}`} onClick={onNew}>✦ New Life</button>
       </div>
       <p className="ttl-foot ttl-anim">
-        v0.13 · <button className="ttl-notes" onClick={() => setNotes(true)}>Update 0.13 — Infinite Lives</button> · <button className="ttl-notes" onClick={() => setCredits(true)}>Credits</button> · <button className="ttl-notes" onClick={() => setSetts(true)}>⚙️ Settings</button>
+        v0.14 · <button className="ttl-notes" onClick={() => setNotes(true)}>Update 0.14 — Connected Lives</button> · <button className="ttl-notes" onClick={() => setCredits(true)}>Credits</button> · <button className="ttl-notes" onClick={() => setSetts(true)}>⚙️ Settings</button>
       </p>
       {notes && <UpdateNotes onClose={() => setNotes(false)} />}
       {credits && <Credits onClose={() => setCredits(false)} />}

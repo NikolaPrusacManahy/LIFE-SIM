@@ -9,6 +9,7 @@ import { say } from '../npc/identity';
 import { npcState, setMad, clearMad, type NpcState } from '../npc/mood';
 import { canBeIntimate, askNight } from '../systems/intimacy';
 import { createPlan, nextSlot, slotLabel, todaySlot, PLAN_LABEL } from './plans';
+import { EXTRA_CONTEXT, EXTRA_REACT } from './chatter';
 
 // Update 0.8 — conversations as threads of turns. Every NPC message has a kind; the composer offers
 // contextual replies to the latest unanswered one. Each reply → your bubble → their reaction bubble with an effect chip.
@@ -185,6 +186,9 @@ export const CONTEXT: Record<string, { type: MsgType; replies: CtxReply[] }> = {
 };
 
 /** NPC kinds that don't expect an answer. */
+// Update 0.14 — fold in the big extra library of message kinds.
+Object.assign(CONTEXT, EXTRA_CONTEXT);
+
 export const NO_REPLY = new Set(['closing', 'expired', 'reaction', 'system']);
 
 // ------------------------------------------------------------ reaction lines
@@ -204,6 +208,9 @@ const REACT: Record<Intent, string[]> = {
   night: ['omw 😏', 'see you soon 🌙'],
   cold: ['…okay.', 'k.', 'right.', 'wow okay'],
 };
+// Update 0.14 — more reaction variety.
+for (const [intent, lines] of Object.entries(EXTRA_REACT)) REACT[intent as Intent]?.push(...lines);
+
 const MAD = ['still mad about {reason}.', 'not really in the mood to talk.', '…', 'oh NOW you text me?'];
 const AWKWARD = ['haha… ok 😅', 'oh! um. thanks?', 'that’s… sweet I guess'];
 const FLIRT_FAIL = ['lol', 'cheesy 😂', 'did you google that'];

@@ -39,11 +39,12 @@ export function relationshipsMonth(g: Game) {
     p.mood = Math.max(10, Math.min(95, p.mood + (Math.random() - 0.5) * 30));
     relabel(g, p);
 
-    // birthdays of people who matter
-    if (p.birthMonth === g.month && p.status === 'alive' && (FAMILY.includes(p.role) || ['partner', 'spouse', 'engaged', 'dating'].includes(p.role) || p.tags.includes('bestie'))) {
-      sendText(g, p, 'birthday', `🎂 It’s ${p.name}’s birthday today!`);
-      // Update 0.8 — birthdays come with an invitation
+    // Update 0.14 — birthdays: at most 2 a month, one text each (no double notify+invite spam)
+    const closeEnough = FAMILY.includes(p.role) || ['partner', 'spouse', 'engaged', 'dating'].includes(p.role) || (p.tags.includes('bestie') && p.rel >= 60);
+    if (p.birthMonth === g.month && p.status === 'alive' && closeEnough && g.flag(`bdaysent:${g.s.clock}`) < 2) {
+      g.inc(`bdaysent:${g.s.clock}`);
       if (p.rel >= 50 && g.ageOf(p) >= 13) sendText(g, p, 'invite', `${p.name}: "it’s my birthday!! dinner tonight? 🎂"`, { ctx: { plan: 'food' } });
+      else sendText(g, p, 'birthday', `🎂 It’s ${p.name}’s birthday today!`);
     }
 
     // NPC life goes on

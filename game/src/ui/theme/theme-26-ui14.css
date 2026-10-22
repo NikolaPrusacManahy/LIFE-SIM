@@ -1,0 +1,7 @@
+/* Update 0.14 — phone home: fit all app rows (the last row was cut off); let it scroll if needed */
+.dev-home { overflow-y: auto; scrollbar-width: none; }
+.dev-home::-webkit-scrollbar { display: none; }
+.dev-clock { font-size: 68px; margin-top: 4px; }
+.dev-grid { margin-top: 18px; gap: 16px 16px; padding-bottom: 16px; }
+.dev-tile-icon { width: 64px; height: 64px; border-radius: 20px; font-size: 29px; }
+.dev-foot { padding-top: 6px; }

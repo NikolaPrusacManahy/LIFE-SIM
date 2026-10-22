@@ -100,6 +100,14 @@ Built from your chat request. The name "Personas" is my placeholder. All of `npm
 - **Hackr** (crime; `web/hack.ts`, `screens/desktop/hack/HackApp.tsx`, `theme-22-hack.css`, test `test-hack.ts`): needs 18+, a non-library computer and the GhostTunnel VPN ($60, Bitstore; `web.installed` 'vpn'). 4 fictional leaked accounts a month (`s.hack`, all adults 18–75), each with a riddle hint and the letter count; 3 guesses (the first uses a computer action). Crack → their profile (name, age, job, city) and maybe loot: 35% a credit card ($200–3,000 cash, heat +8, karma −3, 15% chance of a fraud case), 12% a Bitcons wallet ($800–12,000 in coins, heat +5, karma −3). 3 wrong → locked, heat +3.
 - **Webhook:** `webhook_patchnotes/update-0.12-personas.json` (10/10 embeds).
 
+## Update 0.14 — Connected Lives (in progress)
+- **Messaging overhaul** (`state/phone/chatter.ts`, wired into `convo.ts` and `texts.ts`; test `test-chatter.ts`):
+  - `STARTERS` (role-grouped opener pools) + `EXTRA_CONTEXT` (new answerable kinds: favour, deep, sweet, missyou, jab, admirer_hint, congrats, family, coworker) + `EXTRA_REACT` (more NPC reaction lines). ~180 new messages/reactions.
+  - `textsTick` picks a role-appropriate opener via `sendStarter`; personas gained more `open`/`talk` topics in `voice.ts` (otaku powerscaling/manga/cosplay, book nerd recommendations).
+- **Inbox cap** (designer: too many texts, birthday spam): `allowCasualText`/`monthlyTextBudget` in `texts.ts` limit casual incoming texts to **0–3 a month** (story-critical senders — detective, threats ≥60 rivalry, crew — bypass). Birthdays in `relationships.ts` are capped at 2/month and send one text (invite OR notice, never both).
+- **Phone home grid** fits/scrolls so the last app row is reachable (`theme-26-ui14.css`).
+- **Not built yet (designer's big 0.14 list):** cleaner People/Messages visuals (need in-game direction), ViewTube channel tycoon screen, streaming screen, politics to president, video-game-at-home minigame, full-screen Discorb with servers, game forums / OtakuPit / Chirp posting feeds. **Blocked by the safety filter:** dating-app chat-before-numbers and casual-intent messaging.
+
 ## Update 0.11 — START-UP
 Built from your chat request. The name "START-UP" is the app's name, reused as the version name. All of `npm run verify` passes; the new test is `test-startup.ts`.
 - **Where:** Computer (PC, laptop or library) → 🚀 START-UP. Each management move is one computer action (`sessionDo`). Skill points are free.
