@@ -51,7 +51,7 @@ export const WAGES = { employee: 4000, supervisor: 7000, manager: 12000, hr: 800
 
 /** Update 0.12 — 13 branches, 5 levels each. Levels 1–3 cost 1 point, levels 4–5 cost 2. */
 export const SKILLS: Record<SkillBranch, { name: string; icon: string; per: string; max: number }> = {
-  profit: { name: 'Profit', icon: '💰', per: '+15% revenue', max: 5 },
+  profit: { name: 'Profit', icon: '💰', per: '+15% product sales', max: 5 },
   speed: { name: 'Speed', icon: '⚡', per: '+20% development', max: 5 },
   payroll: { name: 'Payroll', icon: '🧾', per: '−10% wages', max: 5 },
   pitch: { name: 'Pitch', icon: '🎤', per: '+5% investor odds', max: 5 },

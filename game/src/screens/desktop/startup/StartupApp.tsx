@@ -4,7 +4,7 @@ import type { Appeal, IdeaId, SkillBranch } from '../../../state/startup/types';
 import { APPEAL, BUILDINGS, IDEAS, IDEA_ORDER, ROUNDS, SKILLS, SKILL_ORDER, STATUS, STATUS_ORDER, STATUS_POINTS, skillCost } from '../../../state/startup/data';
 import {
   MARKETING, capOf, costsOf, crunch, found, foundLock, headcount, hire, hireLock, investOwn, launch, layOff, learnSkill, marketing, nextBuilding,
-  outputOf, payYourself, pitch, pitchLock, pitchOdds, sellCompany, startup, upgradeBuilding, valuationOf, wagesOf, type HireKind,
+  outputOf, payYourself, pitch, pitchLock, pitchOdds, sellCompany, startup, upgradeBuilding, valuationOf, wagesOf, productRevenue, staffSales, type HireKind,
 } from '../../../state/startup/company';
 import { energyDo } from '../../../state/web/sites';
 import { fmt } from '../../../state/systems/finance';
@@ -46,7 +46,7 @@ export function StartupApp(props: DeskProps) {
             <Stat label="Company cash" value={fmt(c.cash)} bad={c.cash < 0} />
             <Stat label="Valuation" value={fmt(val)} />
             <Stat label="Your share" value={`${(c.stake * 100).toFixed(1)}% · ${fmt(val * c.stake)}`} />
-            <Stat label="Revenue / mo" value={fmt(c.revenue)} />
+            <Stat label="Revenue / mo" value={fmt(c.revenue)} sub={c.version ? `📦 ${fmt(productRevenue(c))} · 👥 ${fmt(staffSales(c))}` : undefined} />
             <Stat label="Costs / mo" value={fmt(costsOf(c))} />
             <Stat label="Last month" value={`${c.profit >= 0 ? '+' : ''}${fmt(c.profit)}`} bad={c.profit < 0} />
             <Stat label="Paid to you (total)" value={fmt(c.paid ?? 0)} />
@@ -151,8 +151,8 @@ function Founding({ game, notify }: DeskProps) {
   );
 }
 
-const Stat = ({ label, value, bad }: { label: string; value: string; bad?: boolean }) => (
-  <div className={`sup-stat ${bad ? 'bad' : ''}`}><small>{label}</small><b>{value}</b></div>
+const Stat = ({ label, value, bad, sub }: { label: string; value: string; bad?: boolean; sub?: string }) => (
+  <div className={`sup-stat ${bad ? 'bad' : ''}`}><small>{label}</small><b>{value}</b>{sub && <em className="sup-sub">{sub}</em>}</div>
 );
 const Bar = ({ label, v, color }: { label: string; v: number; color: string }) => (
   <div className="sup-bar"><small>{label}</small><i><em style={{ width: `${Math.max(0, Math.min(100, v))}%`, background: color }} /></i></div>

@@ -6,7 +6,8 @@ import { hasTrait } from '../npc/traits';
 import { bump } from '../npc/interactions';
 import { line } from '../npc/lines';
 import { newId } from '../Game';
-import { isRomanceEligible } from '../npc/identity';
+import { isRomanceEligible, say } from '../npc/identity';
+import { YANDERE_MORNING, YANDERE_OUTFITS, isYandere } from '../datenight/yandere';
 import { expireInvites, pushMsg } from './convo';
 import { todaySlot } from './plans';
 import { personaOpener } from './voice';
@@ -124,6 +125,12 @@ function partnerTick(g: Game): boolean {
   }
   const keen = (hasTrait(p, 'romantic') || hasTrait(p, 'clingy') ? 1.6 : 1) * (hasTrait(p, 'homebody') ? 0.6 : 1) * (p.romance >= 60 || p.rel >= 70 ? 1.2 : 0.8);
   if (!g.chance(Math.min(0.9, 0.5 * keen))) return false;
+  // Update 0.12 — a yandere partner's morning selfie
+  if (COMMITTED.includes(p.role) && isYandere(p) && g.phase === 'morning' && g.chance(0.6)) {
+    sendText(g, p, 'goodmorning', `${p.name}: "${YANDERE_MORNING}"`);
+    if (hasPhone(g) && p.theyHaveNumber && !p.blocked) pushMsg(g, p.id, { from: p.id, text: '', photo: say(g.pick(YANDERE_OUTFITS), p), turn: g.s.turn });
+    return true;
+  }
   if (COMMITTED.includes(p.role)) {
     const r = Math.random();
     if (r < 0.15 && p.trust < 45) sendText(g, p, 'checkin', `${p.name}: "can we talk tonight?"`);

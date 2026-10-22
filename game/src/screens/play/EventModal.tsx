@@ -37,7 +37,7 @@ export function EventModal({ game, result, onChoose, onContinue }: Props) {
         {choices.map((c, i) => {
           const hint = typeof c.choice.hint === 'function' ? c.choice.hint(game, ev.ctx) : c.choice.hint;
           return (
-            <button key={i} className="evt-choice" disabled={!!c.disabled} onClick={() => onChoose(i)}>
+            <button key={i} className={`evt-choice ${c.choice.tone === 'risk' ? 'evt-risk' : ''}`} disabled={!!c.disabled} onClick={() => onChoose(i)}>
               <span>{c.choice.label}</span>
               {(c.disabled || hint) && <small>{c.disabled ?? hint}</small>}
             </button>

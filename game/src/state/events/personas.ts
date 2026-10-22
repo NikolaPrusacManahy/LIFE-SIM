@@ -1,7 +1,7 @@
 import type { Game } from '../Game';
 import type { Ctx, EventDef } from './types';
 import { say } from '../npc/identity';
-import { acceptStalker, refuseStalker } from '../systems/stalker';
+import { LETTER_NOTES, acceptStalker, letterToPolice, refuseStalker } from '../systems/stalker';
 import { acceptShy, refuseShy } from '../systems/shy';
 
 // Update 0.12 — persona events: a yandere's handiwork, the stalker's reveal, a shy confession.
@@ -33,6 +33,17 @@ export const PERSONA_EVENTS: EventDef[] = [
     choices: [
       { label: '♡ Accept their love', run: (g) => acceptStalker(g) },
       { label: 'Refuse', hint: 'It won’t end well', run: (g) => refuseStalker(g) },
+    ],
+  },
+  // Update 0.12 — a letter at your door (Mature Content; the photos are never shown)
+  {
+    id: 'stalker_letter', icon: '✉️', who: (_g, c) => c.pid, mature: true,
+    title: 'A Letter at Your Door',
+    text: (g) => `A plain envelope, no name. Inside: [explicit photos], the face hidden behind a mask. A note: “${g.pick(LETTER_NOTES)}”`,
+    choices: [
+      { label: '🗑️ Throw it away', run: (g) => { g.stat('mood', -3); return 'Straight in the trash. Your skin is crawling.'; } },
+      { label: '📥 Keep it', run: (g) => { g.stat('mood', -1); const s = g.s.stalker; if (s) s.stage = Math.min(3, s.stage + 1); return 'You put it in a drawer. Somehow, they’ll know.'; } },
+      { label: '🚓 Hand it to the police', hint: '35% they back off', run: (g) => letterToPolice(g) },
     ],
   },
   {

@@ -5,6 +5,7 @@ import { settings } from '../settings';
 import { darkCrimeOn } from '../crime/consent';
 import { newId } from '../Game';
 import { fmt } from './finance';
+import { say } from '../npc/identity';
 
 // Update 0.12 — stalked by a yandere (adults only, always the opposite sex). An unknown number sends photos of you,
 // what you did today, things only you know. You can try to escape — or surrender to their… way of showing love.
@@ -21,6 +22,10 @@ export interface Stalker {
   month: number;
   sent: number;
   read: boolean;
+  /** Update 0.12 — times you pushed them away (every 2nd one, they bribe a friend of yours) */
+  refusals?: number;
+  /** a remark waiting for your reaction (index into REMARKS) */
+  remark?: number | null;
 }
 
 export const STALK_REVEAL = 4;
@@ -75,8 +80,75 @@ export function secretsAbout(g: Game): string[] {
   return out;
 }
 
+/** Update 0.12 — married to someone who isn't a yandere: every yandere leaves your life, the unknown number goes quiet. */
+export function marriedOff(g: Game): boolean {
+  if (!g.s.people.some((p) => p.role === 'spouse' && p.alive && p.persona !== 'yandere')) return false;
+  for (const p of g.s.people) if (p.persona === 'yandere' && p.role !== 'spouse' && p.status === 'alive') p.status = 'moved';
+  if (g.s.stalker) {
+    g.s.stalker = null;
+    g.log('💍 The unknown number never texted again.', 'good');
+  }
+  return true;
+}
+
+/** Update 0.12 — they pay one of your friends to drop you. Nobody gets hurt; you just lose them. */
+export function bribeFriend(g: Game): Person | null {
+  const s = g.s.stalker;
+  const f = g.s.people.find((p) => p.alive && p.status === 'alive' && p.role === 'friend' && p.rel >= 30 && g.ageOf(p) >= 18 && p.id !== s?.pid);
+  if (!s || !f) return null;
+  f.rel = Math.min(f.rel, 5);
+  f.trust = Math.min(f.trust, 5);
+  f.role = 'acquaintance';
+  f.memory.unshift({ clock: g.s.clock, text: 'Was paid to drop you', tone: 'bad' });
+  push(g, 'anon', `${f.name} won’t be answering you anymore~ everyone has a price ♡ I’m the only one you need.`);
+  g.log(`💸 ${f.name} stopped talking to you. No reason given.`, 'bad', f.id);
+  return f;
+}
+
+/** Update 0.12 — creepy-flirty remarks (Mature Content only); you pick how to react. */
+export const REMARKS = [
+  'be honest~ do you ever think about me at night? because I think about you ♡',
+  'I’d be such a good partner to you. I’d do anything you ask. anything~',
+  'do you like it when someone takes charge? or do you want to be the one in control~',
+  'save yourself for me, okay? I’m going to be the mother of your kids one day ♡',
+  'I promise I’ll take good care of you~ why are you still resisting? we’re meant to be.',
+];
+export type RemarkTone = 'sweet' | 'sarcastic' | 'funny' | 'cold';
+export const REMARK_REPLIES: { id: RemarkTone; label: string; hint: string }[] = [
+  { id: 'sweet', label: '😊 Play along nicely', hint: 'She melts' },
+  { id: 'sarcastic', label: '🙄 Sarcastic', hint: 'She likes that too' },
+  { id: 'funny', label: '😂 Joke it off', hint: 'She giggles' },
+  { id: 'cold', label: '🧊 Shut it down', hint: 'A friend pays for it' },
+];
+const REMARK_BACK: Record<RemarkTone, string[]> = {
+  sweet: ['you DO care ♡ I knew it. I’m screaming into my pillow~', 'see? we’re perfect together ♡'],
+  sarcastic: ['ooh, attitude~ that’s so hot of you ♡', 'keep talking like that. I dare you ♡'],
+  funny: ['hehe~ you’re so funny. that’s why I picked you ♡', 'stop making me laugh, I’m trying to be serious ♡'],
+  cold: ['that wasn’t nice. somebody is going to pay for that ♡', 'okay. then I’ll take away someone else you like ♡'],
+};
+
+export function answerRemark(g: Game, tone: RemarkTone): string {
+  const s = g.s.stalker;
+  if (!s || s.remark == null) return '';
+  push(g, 'me', REMARK_REPLIES.find((r) => r.id === tone)!.label.slice(3));
+  s.remark = null;
+  s.read = true;
+  push(g, 'anon', g.pick(REMARK_BACK[tone]));
+  if (tone !== 'cold') return 'She liked that.';
+  const f = bribeFriend(g);
+  return f ? `${f.name} just cut you off.` : 'She’s upset.';
+}
+
+/** Someone you've been close to lately: the unknown number noticed. */
+function jealousLine(g: Game): string | null {
+  const s = g.s.stalker!;
+  const near = g.s.people.find((p) => p.id !== s.pid && p.alive && p.status === 'alive' && (p.lastContact ?? -9) >= g.s.clock - 1 && ['crush', 'talking', 'dating', 'partner', 'fling', 'friend'].includes(p.role) && g.ageOf(p) >= 18);
+  return near ? say(g.pick(['I saw you getting close to {name}. who is {name} to you?? WHO IS {name}', 'you smiled at {name} today. you never smile at me like that.', '{name}… {name}… {name}. I can’t stop thinking about that name. I hate it.']), near) : null;
+}
+
 /** Monthly: maybe begin; otherwise the anonymous messages get closer and closer. */
 export function stalkerMonth(g: Game) {
+  if (marriedOff(g)) return;
   const s = g.s.stalker;
   if (!s) {
     const c = stalkCandidate(g);
@@ -95,6 +167,13 @@ export function stalkerMonth(g: Game) {
   const lines = secretsAbout(g);
   push(g, 'anon', g.pick(lines), g.chance(0.6) ? g.pick(['📷 A photo of you, taken from across the street', '📷 You, asleep. Taken through your window', '📷 You at work, from behind a car', '📷 You, smiling at someone else. Their face is scratched out', '📷 A jar of hair. The label has your name on it', '📷 Your toothbrush, in someone else’s bathroom']) : undefined);
   if (s.stage >= 2) push(g, 'anon', g.pick(['soon ♡', 'we’re meant to be. you’ll see.', 'I’m closer than you think.']));
+  const jealous = g.chance(0.5) ? jealousLine(g) : null;
+  if (jealous) push(g, 'anon', jealous);
+  if (settings.mature && s.stage >= 1 && s.remark == null && g.chance(0.45)) {
+    s.remark = g.rand(0, REMARKS.length - 1);
+    push(g, 'anon', REMARKS[s.remark]);
+  }
+  if (settings.mature && s.stage >= 1 && g.chance(0.2) && !g.queued('stalker_letter')) g.queue('stalker_letter', { pid: p.id });
   if (s.stage >= STALK_REVEAL && !g.queued('stalker_reveal')) g.queue('stalker_reveal', { pid: p.id });
 }
 
@@ -143,6 +222,27 @@ function escaped(g: Game, text: string): string {
   return text;
 }
 
+/** Update 0.12 — every 2nd time you push them away (and they're still there), a friend of yours is paid to drop you. */
+function refused(g: Game, text: string): string {
+  const s = g.s.stalker;
+  if (!s) return text;
+  s.refusals = (s.refusals ?? 0) + 1;
+  if (s.refusals % 2 === 0) {
+    const f = bribeFriend(g);
+    if (f) return `${text} And ${f.name} just cut you off.`;
+  }
+  return text;
+}
+
+/** Update 0.12 — the letter at your door (Mature Content). */
+export const LETTER_NOTES = ['Who needs SpicyHub when you have me? ♡', 'I hope these keep you company tonight~', 'Just for you. Nobody else will ever see these ♡'];
+export function letterToPolice(g: Game): string {
+  if (!g.s.stalker) return 'Nobody to report.';
+  if (g.chance(0.35)) return escaped(g, '🚓 The police took the letter. Whoever sent it backed off.');
+  push(g, 'anon', 'you showed them my letter?? those were for YOU ♡');
+  return refused(g, 'The police filed it. Nothing came of it.');
+}
+
 /** Answer the unknown number. */
 export function anonReply(g: Game, r: AnonReply): string {
   const s = g.s.stalker;
@@ -162,22 +262,22 @@ export function anonReply(g: Game, r: AnonReply): string {
     case 'leave':
       s.stage = Math.min(STALK_REVEAL - 1, s.stage + 1);
       push(g, 'anon', g.pick(['never ♡', 'you don’t mean that.', 'that hurt. I’ll forgive you. this time.']));
-      return 'That made it worse.';
+      return refused(g, 'That made it worse.');
     case 'block':
       if (g.chance(0.4)) return escaped(g, '🚫 Blocked. The messages stopped. For good.');
       push(g, 'anon', 'new number ♡ you can’t block love.');
       s.stage = Math.min(STALK_REVEAL - 1, s.stage + 1);
-      return 'A new number. Same person.';
+      return refused(g, 'A new number. Same person.');
     case 'police':
       if (g.chance(0.35)) return escaped(g, '🚓 The police took a report. Whoever it was backed off.');
       push(g, 'anon', 'the police? really? ♡ they can’t help you. only I can.');
-      return 'The police took a report. Nothing came of it.';
+      return refused(g, 'The police took a report. Nothing came of it.');
     case 'move':
       g.money(-3000);
       if (g.chance(0.6)) return escaped(g, '📦 New apartment, new routine. They lost you.');
       push(g, 'anon', 'nice new place ♡ the view from across the street is lovely.');
       s.stage = Math.min(STALK_REVEAL - 1, s.stage + 1);
-      return 'They found you.';
+      return refused(g, 'They found you.');
     case 'listen':
       push(g, 'anon', 'I knew you’d understand ♡ meet me. tonight.');
       if (!g.queued('stalker_reveal')) g.queue('stalker_reveal', { pid: s.pid, surrender: 1 });

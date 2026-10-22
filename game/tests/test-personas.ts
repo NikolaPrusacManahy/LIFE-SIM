@@ -205,7 +205,7 @@ const contact = (g: Game, gender: Person['gender'], age = 25, role: Person['role
   for (let i = 0; i < 200; i++) { const t = mk(16); admirerEncounter(t, 'park'); const q = t.currentEvent && t.personById(t.currentEvent.ctx.pid); if (q?.persona === 'yandere') teenY++; }
   check('teens never meet a yandere', teenY === 0);
   let yp = null;
-  for (let i = 0; i < 2000 && !yp; i++) { const pr = nextProfile(g); if (pr.persona === 'yandere') yp = pr; }
+  for (let i = 0; i < 6000 && !yp; i++) { const pr = nextProfile(g); if (pr.persona === 'yandere') yp = pr; }
   check('Spark shows personas — a yandere as “maybe a bit passionate”', !!yp && personaShown(yp).includes('passionate'));
   g.s.flags.swipes = 0;
   const r = yp ? swipe(g, yp, true) : null;

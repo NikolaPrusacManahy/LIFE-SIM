@@ -3,7 +3,7 @@ import { check, done } from './harness';
 import { createLife, randomLook } from '../src/state/newGame';
 import type { Game } from '../src/state/Game';
 import {
-  costsOf, crunch, layOff, found, foundLock, headcount, hire, hireLock, launch, learnSkill, pitch, pitchOdds, revenueOf, sellCompany, startup,
+  costsOf, crunch, layOff, found, foundLock, headcount, hire, hireLock, launch, learnSkill, pitch, pitchOdds, revenueOf, productRevenue, staffSales, hypeFloor, versionFactor, sellCompany, startup,
   upgradeBuilding, valuationOf, wagesOf, refreshStatus, stakeValue,
 } from '../src/state/startup/company';
 import { startupMonth } from '../src/state/startup/month';
@@ -63,10 +63,10 @@ const mk = (money = 200000): Game => {
   const pts = c.points;
   launch(g);
   check('launching starts revenue and gives a skill point', c.version === 1 && c.revenue > 0 && c.points === pts + 1);
-  const r0 = revenueOf(c);
+  const r0 = productRevenue(c);
   c.points++;
   learnSkill(g, 'profit');
-  check('Profit skill: +15% revenue', Math.abs(revenueOf(c) - r0 * 1.15) <= 2);
+  check('Profit skill: +15% product sales', Math.abs(productRevenue(c) - r0 * 1.15) <= 2);
   const w0 = wagesOf(c);
   c.points++;
   learnSkill(g, 'payroll');
@@ -234,4 +234,23 @@ const mk = (money = 200000): Game => {
 }
 
 check('every idea has numbers', Object.values(IDEAS).every((i) => i.found > 0 && i.potential > 0 && i.work > 0));
+// ---------- Update 0.12 — big companies stop bleeding: staff sell, later versions sell more, the brand holds hype
+{
+  const g = mk(1e9);
+  found(g, '', 'phone', 'normal', 100000);
+  const c = startup(g)!;
+  c.version = 30;
+  c.quality = 100;
+  c.hype = 60;
+  c.building = 'skyscraper';
+  c.staff = { employees: 230, supervisors: 25, manager: true, hr: true };
+  check('staff bring in more than they cost at full quality', staffSales(c) > wagesOf(c));
+  check('v30 sells far more than v3', versionFactor(30) > versionFactor(3) * 2);
+  check('a big late-game company (like v30 at the skyscraper) makes a profit', revenueOf(c) > costsOf(c), `${revenueOf(c)} vs ${costsOf(c)}`);
+  check('the brand floor is 2 hype per launch (max 40)', hypeFloor(c) === 40);
+  c.hype = 90;
+  for (let m = 0; m < 36; m++) startupMonth(g);
+  check('…so hype decays down to 40 and no lower', c.hype >= 40, `${c.hype}`);
+}
+
 done();

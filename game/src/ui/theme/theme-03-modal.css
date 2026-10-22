@@ -27,3 +27,8 @@
 .ksk-head b { font: 600 22px var(--display); }
 .ksk-icon { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; font-size: 23px; background: linear-gradient(135deg, #fff0f5, #f1ecff); }
 .ksk-body { overflow-y: auto; }
+/* Update 0.12 — risky choices (e.g. no protection) are a red button */
+.evt-choice.evt-risk { background: #e5394f; color: #fff; }
+.evt-choice.evt-risk small { color: rgba(255, 255, 255, 0.85); }
+.evt-choice.evt-risk::after { color: #fff; }
+.evt-choice.evt-risk:hover:not(:disabled) { background: #c92a3f; }

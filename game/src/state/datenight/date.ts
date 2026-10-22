@@ -13,6 +13,8 @@ import { itemCount, spendItem } from '../inventory/items';
 import { homeBonus } from './venues';
 import { quoteFor } from './quotes';
 import { startDesire, theyAsk } from './desire';
+import { YANDERE_DATE_LINES, YANDERE_LEAVE_TEXTS, YANDERE_SPARK, isYandere } from './yandere';
+import { sendText } from '../phone/texts';
 
 /** Update 0.11 — a date indoors (yours or theirs) */
 export const indoors = (g: Game) => g.s.date?.venue === 'home' || g.s.date?.venue === 'theirs';
@@ -91,8 +93,10 @@ export function dateAct(g: Game, id: string): string {
   if (a.cost) g.money(-a.cost);
   if (a.drink) d.intox = Math.min(100, d.intox + a.drink);
   const ok = Math.random() < oddsOf(g, a);
-  d.spark = Math.max(0, Math.min(100, d.spark + (ok ? a.gain : -5)));
-  d.quote = quoteFor(a.id, ok);
+  // Update 0.12 — a yandere's spark fills twice as fast, and they say what they're thinking
+  const crazy = isYandere(p);
+  d.spark = Math.max(0, Math.min(100, d.spark + (ok ? a.gain * (crazy ? YANDERE_SPARK : 1) : -5)));
+  d.quote = crazy ? g.pick(YANDERE_DATE_LINES) : quoteFor(a.id, ok);
   const line = ok ? say(g.pick([`${a.icon} {name} lights up.`, `${a.icon} {name} can’t stop smiling.`, `${a.icon} That went perfectly.`]), p, g.s.name) : say(g.pick([`${a.icon} It fell a little flat.`, `${a.icon} {name} smiles politely.`, `${a.icon} Awkward pause.`]), p, g.s.name);
   tick(g, line);
   // sometimes they're the one who suggests going back to yours
@@ -215,6 +219,9 @@ export function calmNight(g: Game): string {
 /** Update 0.12 — the player ends the date: what you can ask for depends on how it went (events/dateafter.ts). */
 export function finishDate(g: Game): string {
   const d = g.s.date;
+  // Update 0.12 — leave a yandere's date early and you'll hear about it
+  const p = d ? g.personById(d.pid) : null;
+  if (d && d.time > 0 && isYandere(p)) sendText(g, p!, 'p_yandere', `${p!.name}: "${g.pick(YANDERE_LEAVE_TEXTS)}"`);
   const text = endDate(g);
   if (d && d.spark >= 40 && d.venue !== 'home' && d.venue !== 'theirs') g.queue('date_after', { pid: d.pid, spark: d.spark });
   return text;

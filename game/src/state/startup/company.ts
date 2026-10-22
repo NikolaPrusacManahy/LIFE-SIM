@@ -34,12 +34,30 @@ export function found(g: Game, name: string, idea: IdeaId, appeal: Appeal, inves
 
 // ---------------------------------------------------------------- numbers
 
-export function revenueOf(c: Startup): number {
+/** Update 0.12 — the product keeps selling better after v3 (+4% a version), so later versions are worth the work. */
+export const VERSION_GROWTH = 0.04;
+export const versionFactor = (v: number) => Math.min(1, 0.45 + v * 0.2) + VERSION_GROWTH * Math.max(0, v - 3);
+
+export function productRevenue(c: Startup): number {
   if (!c.version) return 0;
   const idea = IDEAS[c.idea];
-  const versionF = Math.min(1, 0.45 + c.version * 0.2);
-  return Math.round(idea.potential * APPEAL[c.appeal].ceiling * Math.pow(c.hype / 100, 1.5) * (c.quality / 100) * versionF * (1 + 0.15 * c.skills.profit));
+  return Math.round(idea.potential * APPEAL[c.appeal].ceiling * Math.pow(c.hype / 100, 1.5) * (c.quality / 100) * versionFactor(c.version) * (1 + 0.15 * c.skills.profit));
 }
+
+/** Update 0.12 — staff sell and support the product: each brings in 1.2× their wage at full quality (0.84× at 40),
+ *  +10% with a manager. Hiring pays for itself once the product is decent. */
+export const STAFF_SALES = 1.2;
+export function staffSales(c: Startup): number {
+  if (!c.version) return 0;
+  const s = c.staff;
+  const raw = (s.employees * WAGES.employee + s.supervisors * WAGES.supervisor) * STAFF_SALES * (0.6 + 0.4 * (c.quality / 100));
+  return Math.round(raw * (s.manager ? 1.1 : 1));
+}
+
+export const revenueOf = (c: Startup) => productRevenue(c) + staffSales(c);
+
+/** Update 0.12 — every launch builds the brand: hype never fades below 2 per version (up to 40). */
+export const hypeFloor = (c: Startup) => Math.min(40, c.version * 2);
 
 export function wagesOf(c: Startup): number {
   const s = c.staff;

@@ -1,4 +1,5 @@
 import { firstName } from '../data/names';
+import { marriedOff } from '../systems/stalker';
 import { fmt } from '../systems/finance';
 import { makeBaby } from '../systems/relationships';
 import { checkHint, type EventDef } from './types';
@@ -156,6 +157,8 @@ function wed(g: Parameters<EventDef['text']>[0], pid: string, cost: number, mood
   g.banner('💍 Just Married', 0xff8fab);
   g.achieve('married');
   g.milestone(`Married ${p.name}`);
+  // Update 0.12 — married: every yandere leaves your life
+  marriedOff(g);
   return `You said "I do." ${p.name} is your spouse.`;
 }
 

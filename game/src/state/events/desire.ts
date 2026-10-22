@@ -51,7 +51,7 @@ export const DESIRE_EVENTS: EventDef[] = [
       // the no-condom argument: you can always insist, and they accept it
       if (c.style === 'raw') {
         return [
-          { label: 'Okay… no condom', hint: 'High pregnancy & STI risk', run: (gg) => (canBeIntimate(gg, p) ? `${encounter(gg, p!, 'none')}${styleAfter(gg, p, 'raw')}` : passed) },
+          { label: 'Okay… no condom', hint: 'High pregnancy & STI risk', tone: 'risk', run: (gg) => (canBeIntimate(gg, p) ? `${encounter(gg, p!, 'none')}${styleAfter(gg, p, 'raw')}` : passed) },
           { label: '🛡️ Insist on a condom', run: (gg) => { if (!canBeIntimate(gg, p)) return passed; toProtection(gg, c); return say('{name} rolls {their} eyes, smiling: “Fine, fine.”', p, gg.s.name); } },
           notTonight,
         ];

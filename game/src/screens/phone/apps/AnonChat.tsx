@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Game } from '../../../state/Game';
-import { ANON_REPLIES, anonLock, anonReply } from '../../../state/systems/stalker';
+import { ANON_REPLIES, REMARK_REPLIES, anonLock, anonReply, answerRemark, type RemarkTone } from '../../../state/systems/stalker';
 import { sfx } from '../../../ui/audio';
 
 /** Update 0.12 — the unknown number. No contextual chips here: you can only try to get away, or give in. */
@@ -29,6 +29,13 @@ export function AnonChat({ game, onBack, done }: { game: Game; onBack: () => voi
     done('', '', '');
     bump((x) => x + 1);
   };
+  // Update 0.12 — she asked you something: react to it first
+  const react = (tone: RemarkTone) => {
+    setNote(answerRemark(game, tone) || null);
+    sfx('message');
+    done('', '', '');
+    bump((x) => x + 1);
+  };
   return (
     <div className="cht-wrap anon-wrap">
       <div className="cht-head">
@@ -47,6 +54,16 @@ export function AnonChat({ game, onBack, done }: { game: Game; onBack: () => voi
         ))}
       </div>
       {note && <div className="app-msg" onClick={() => setNote(null)}>{note}</div>}
+      {s.remark != null ? (
+        <div className="anon-choices">
+          {REMARK_REPLIES.map((r) => (
+            <button key={r.id} className={`anon-choice ${r.id === 'cold' ? '' : 'give'}`} onClick={() => react(r.id)}>
+              <b>{r.label}</b>
+              <small>{r.hint}</small>
+            </button>
+          ))}
+        </div>
+      ) : (
       <div className="anon-choices">
         {ANON_REPLIES.map((r) => {
           const lock = anonLock(game, r.id);
@@ -58,6 +75,7 @@ export function AnonChat({ game, onBack, done }: { game: Game; onBack: () => voi
           );
         })}
       </div>
+      )}
     </div>
   );
 }

@@ -52,3 +52,4 @@
 .sup-appeal b { font: 600 13px var(--display); }
 .sup-appeal small { font: 700 10.5px var(--font); color: var(--ink-faint); }
 .sup-invest { display: flex; flex-direction: column; gap: 4px; font: 700 12.5px var(--font); }
+.sup-stat .sup-sub { display: block; font: 600 11px var(--font); font-style: normal; color: #8a86a0; margin-top: 2px; } /* Update 0.12 — product vs staff sales */

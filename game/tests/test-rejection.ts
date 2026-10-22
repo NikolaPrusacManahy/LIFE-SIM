@@ -3,7 +3,8 @@ import { check, done } from './harness';
 import { applySettings } from '../src/state/settings';
 import { createLife, randomLook } from '../src/state/newGame';
 import { admirerEncounter } from '../src/state/encounters/pools';
-import { REJECT_TURN, rejectAdmirer, secretsAbout, stalkerMonth } from '../src/state/systems/stalker';
+import { REJECT_TURN, REMARKS, answerRemark, anonReply, marriedOff, rejectAdmirer, secretsAbout, startStalking, stalkerMonth } from '../src/state/systems/stalker';
+import { EVENT_BY_ID } from '../src/state/events';
 import { makeMatch } from '../src/state/npc/match';
 import { makeYandere } from '../src/state/npc/persona';
 import type { Game } from '../src/state/Game';
@@ -75,6 +76,74 @@ const admirer = (g: Game) => {
   for (let i = 0; i < 50 && !ev; i++) { admirerEncounter(g, 'library'); ev = g.s.events[0]; }
   const labels = g.choicesFor(ev).map((c) => c.choice.label);
   check('admirer cards have a Reject option', labels.includes('🙅 Reject them') && labels.includes('Ignore'));
+}
+
+// ---------- stalker escalation without violence: bribed friends, remarks, letters, jealousy; marriage ends it
+const withStalker = () => {
+  const g = mk();
+  const y = makeYandere(g, 'acquaintance', 'Library')!;
+  startStalking(g, y);
+  const f = g.addPerson('friend', { age: 25, gender: 'male', met: 'x', where: 'x' });
+  f.rel = 70;
+  return { g, y, f };
+};
+{
+  const { g, f } = withStalker();
+  anonReply(g, 'leave');
+  check('one refusal: your friend is still your friend', f.role === 'friend');
+  g.s.stalker!.sent = 0;
+  anonReply(g, 'leave');
+  check('every 2nd refusal: they pay a friend to cut you off (nobody is hurt)', f.role === 'acquaintance' && f.rel <= 5 && f.alive && f.status === 'alive');
+}
+{
+  const { g, f } = withStalker();
+  g.s.stalker!.remark = 0;
+  answerRemark(g, 'funny');
+  check('a funny / sweet / sarcastic reaction gets a reply and keeps your friend', f.role === 'friend' && g.s.stalker!.remark === null);
+  g.s.stalker!.remark = 1;
+  answerRemark(g, 'cold');
+  check('a cold reaction: a friend is paid to drop you', f.role === 'acquaintance' && f.alive);
+  check('remarks are flirty, never explicit', REMARKS.every((r) => !/condom|raw|breed|seed|naked/i.test(r)));
+}
+{
+  let remarks = 0;
+  let letters = 0;
+  for (let i = 0; i < 80; i++) {
+    const { g } = withStalker();
+    g.s.stalker!.stage = 1;
+    stalkerMonth(g);
+    if (g.s.stalker?.remark != null) remarks++;
+    if (g.queued('stalker_letter')) letters++;
+  }
+  check('remarks and letters show up while it goes on (Mature Content on)', remarks > 15 && letters > 5, `${remarks} remarks, ${letters} letters`);
+  check('the letter is a Mature event and never shows the photos', !!EVENT_BY_ID.stalker_letter?.mature);
+  applySettings({ ageConfirmed: true, isAdult: true, mature: false });
+  let leak = 0;
+  for (let i = 0; i < 80; i++) {
+    const { g } = withStalker();
+    g.s.stalker!.stage = 1;
+    stalkerMonth(g);
+    if (g.s.stalker?.remark != null || g.queued('stalker_letter')) leak++;
+  }
+  check('with Mature Content off: no remarks, no letters', leak === 0);
+  applySettings({ ageConfirmed: true, isAdult: true, mature: true });
+}
+{
+  let seen = 0;
+  for (let i = 0; i < 60; i++) {
+    const { g } = withStalker();
+    const c = g.addPerson('talking', { age: 24, gender: 'female', met: 'x', where: 'x' });
+    c.lastContact = g.s.clock;
+    stalkerMonth(g);
+    if (g.s.stalker!.msgs.some((m) => m.text.includes(c.name))) seen++;
+  }
+  check('they notice who you’ve been getting close to', seen > 15, `${seen}/60`);
+}
+{
+  const { g, y } = withStalker();
+  const other = makeYandere(g, 'acquaintance', 'Park')!;
+  const w = g.addPerson('spouse', { age: 25, gender: 'female', met: 'x', where: 'x' });
+  check('married to someone else: every yandere leaves and the unknown number stops', marriedOff(g) && !g.s.stalker && y.status === 'moved' && other.status === 'moved' && w.status === 'alive');
 }
 
 done();

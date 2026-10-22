@@ -30,7 +30,7 @@ export const ADULT_EVENTS: EventDef[] = [
         // Update 0.9 — at their place they have some in the nightstand
         { label: '🛡️ Use a condom', hint: (c.theirs || c.place || c.spot) && !condoms(g) ? 'They have one' : `You have ${condoms(g)}`, req: (gg) => (condoms(gg) > 0 || c.theirs || c.place || c.spot ? null : 'Buy condoms at the clinic'), run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'condom'), gg) : 'The moment passed.') },
         { label: '📅 Rely on birth control', when: () => pill, hint: 'Low pregnancy risk · no STI protection', run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'pill'), gg) : 'The moment passed.') },
-        { label: 'No protection', hint: 'High pregnancy & STI risk', run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'none'), gg) : 'The moment passed.') },
+        { label: 'No protection', hint: 'High pregnancy & STI risk', tone: 'risk', run: (gg) => (canBeIntimate(gg, p) ? wake(c, encounter(gg, p!, 'none'), gg) : 'The moment passed.') },
         { label: 'Actually, let’s wait', run: (gg) => { if (p) gg.rel(p, 1); return 'You decided to slow down. That’s okay.'; } },
       ];
     },

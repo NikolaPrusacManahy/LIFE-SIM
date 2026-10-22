@@ -1,5 +1,5 @@
 import type { Game } from '../Game';
-import { DIVIDEND_TAX, costsOf, dividendRate, outputOf, refreshStatus, revenueOf, startup } from './company';
+import { DIVIDEND_TAX, costsOf, dividendRate, hypeFloor, outputOf, refreshStatus, revenueOf, startup } from './company';
 import { fmt } from '../systems/finance';
 
 // Update 0.11 — the company keeps running between your computer sittings.
@@ -11,7 +11,7 @@ export function startupMonth(g: Game) {
   if (c.progress < 100) c.progress = Math.min(100, c.progress + outputOf(c));
   // hype fades a little every month; the market does its thing
   // the higher the hype, the faster it fades
-  c.hype = Math.max(0, c.hype - (3 + c.hype * 0.05) * (1 - 0.15 * c.skills.brand));
+  c.hype = Math.max(Math.min(c.hype, hypeFloor(c)), c.hype - (3 + c.hype * 0.05) * (1 - 0.15 * c.skills.brand));
   const r = Math.random();
   const viral = 0.05 + 0.02 * c.skills.viral;
   if (c.version && r < viral) {

@@ -10,6 +10,8 @@ export interface ChoiceDef {
   /** return a reason string to show the choice disabled */
   req?: (g: Game, ctx: Ctx) => string | null;
   run: (g: Game, ctx: Ctx) => string;
+  /** Update 0.12 — 'risk' shows the choice as a red button */
+  tone?: 'risk';
 }
 
 export interface RandomSpec {
